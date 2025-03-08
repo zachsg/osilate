@@ -19,6 +19,7 @@ struct SummaryView: View {
     
     @State private var showToday = false
     @State private var animationAmount = 0.0
+    @State private var healthReportIsShowing = false
     
     var movePercent: Double {
         if showToday {
@@ -84,6 +85,16 @@ struct SummaryView: View {
                 refresh()
             }
             .navigationTitle(summaryString)
+            .toolbar {
+                ToolbarItem {
+                    Button(healthReportTitle, systemImage: healthReportSystemImage) {
+                        healthReportIsShowing.toggle()
+                    }
+                }
+            }
+            .sheet(isPresented: $healthReportIsShowing) {
+                HealthReportSheet(sheetIsShowing: $healthReportIsShowing)
+            }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {

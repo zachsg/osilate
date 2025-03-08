@@ -11,6 +11,20 @@ import Foundation
 let summaryString = "Summary"
 let summarySystemImage = "house.circle"
 
+// MARK: Health report
+let healthReportTitle = "Health Report"
+let healthReportSystemImage = "stethoscope"
+let inRangeSystemImage = "checkmark.square.fill"
+let outRangeSystemImage = "exclamationmark.triangle.fill"
+// Overall
+let overallTitle = "Overall"
+let overallSystemImage = "target"
+// Body temp
+let bodyTempTitle = "Body Temp"
+let bodyTempLowSystemImage = "thermometer.low"
+let bodyTempNormalSystemImage = "thermometer.medium"
+let bodyTempHighSystemImage = "thermometer.high"
+
 // MARK: Move
 let moveString = "Move"
 let moveSystemImage = "figure.walk.circle"

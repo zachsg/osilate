@@ -56,6 +56,14 @@ class HealthController {
     var mindfulMinutesWeek = 0
     var mindfulMinutesWeekByDay: [Date: Int] = [:]
     
+    // Body temp
+    var bodyTempLoading = false
+    var bodyTempToday = 0.0
+    var bodyTempByDayLoading = false
+    var bodyTempByDay: [Date: Double] = [:]
+    var hasBodyTempToday = false
+    var bodyTempLastUpdated: Date = .now
+    
     init() {
         requestAuthorization()
     }
@@ -69,7 +77,8 @@ class HealthController {
             HKObjectType.quantityType(forIdentifier: .heartRateRecoveryOneMinute)!,
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
             HKObjectType.quantityType(forIdentifier: .vo2Max)!,
-            HKObjectType.categoryType(forIdentifier: .mindfulSession)!
+            HKObjectType.categoryType(forIdentifier: .mindfulSession)!,
+            HKQuantityType(.appleSleepingWristTemperature)
         ])
         let toShare = Set([
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
@@ -1175,5 +1184,124 @@ class HealthController {
             }
             
         })
+    }
+    
+    // MARK: - Body temp
+    func loadBodyTempToday() {
+        bodyTempLoading = true
+        
+        let quantityType = HKQuantityType(.appleSleepingWristTemperature)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking for body temp 6 hours before midnight of today
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-21600)
+        
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: .now, options: .strictStartDate)
+        
+        let query = HKStatisticsQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: predicate,
+            options: .mostRecent
+        ) { _, result, error in
+            guard let result = result else {
+                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                return
+            }
+            
+            let recentTemp = result.mostRecentQuantity()
+            
+            let metricOrImperial = UnitLength(forLocale: .current)
+            let unit = metricOrImperial == .feet ? HKUnit.degreeFahrenheit() : HKUnit.degreeCelsius()
+            
+            let bodyTemp = recentTemp?.doubleValue(for: unit)
+            let lastUpdated = result.endDate
+            
+            DispatchQueue.main.async {
+                if lastUpdated.isToday() {
+                    self.bodyTempToday = bodyTemp ?? 0
+                    self.bodyTempLastUpdated = lastUpdated
+                    self.hasBodyTempToday = true
+                } else {
+                    self.hasBodyTempToday = false
+                }
+                
+                self.bodyTempLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    func loadBodyTempTwoWeeks() {
+        bodyTempByDayLoading = true
+        
+        let quantityType = HKQuantityType(.appleSleepingWristTemperature)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking for body temp 6 hours before midnight of 14 days ago
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-1036800)
+        
+        let interval = DateComponents(day: 1)
+        
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .mostRecent,
+            anchorDate: start,
+            intervalComponents: interval
+        )
+        
+        query.initialResultsHandler = { query, results, error in
+            if let error = error as? HKError {
+                switch (error.code) {
+                case .errorDatabaseInaccessible:
+                    // HealthKit couldn't access the database because the device is locked.
+                    return
+                default:
+                    // Handle other HealthKit errors here.
+                    return
+                }
+            }
+            
+            guard let statsCollection = results else {
+                assertionFailure("")
+                return
+            }
+            
+            let end = Date.now
+            
+            let metricOrImperial = UnitLength(forLocale: .current)
+            let unit = metricOrImperial == .feet ? HKUnit.degreeFahrenheit() : HKUnit.degreeCelsius()
+            
+            var bodyTempByDayTemp: [Date: Double] = [:]
+            statsCollection.enumerateStatistics(from: start, to: end) { (statistics, stop) in
+                if let quantity = statistics.mostRecentQuantity() {
+                    let bodyTemp = quantity.doubleValue(for: unit)
+                    let date = statistics.endDate
+                    
+                    bodyTempByDayTemp[date] = bodyTemp
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.bodyTempByDay = bodyTempByDayTemp
+                
+                var hasBodyTempToday = false
+                for (date, _) in bodyTempByDayTemp {
+                    if date.isToday() {
+                        hasBodyTempToday = true
+                        break
+                    }
+                }
+                
+                self.hasBodyTempToday = hasBodyTempToday ? true : false
+                
+                self.bodyTempByDayLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
     }
 }
