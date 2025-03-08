@@ -10,9 +10,13 @@ import SwiftData
 
 @main
 struct OsilateApp: App {
+    @State private var healthController = HealthController()
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            OMeditate.self,
+            O478Breath.self,
+            OBoxBreath.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -28,5 +32,6 @@ struct OsilateApp: App {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        .environment(healthController)
     }
 }

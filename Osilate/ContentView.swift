@@ -6,56 +6,62 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    @Environment(HealthController.self) private var healthController
+    
+    @State private var tabSelected: OTabSelected = .summary
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        TabView(selection: $tabSelected) {
+            Tab(summaryString, systemImage: summarySystemImage, value: .summary) {
+                SummaryView()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+            
+            Tab(moveString, systemImage: moveSystemImage, value: .move) {
+                Text("Move")
             }
-        } detail: {
-            Text("Select an item")
+            
+            Tab(sweatString, systemImage: sweatSystemImage, value: .sweat) {
+                Text("Sweat")
+            }
+            
+            Tab(breatheString, systemImage: breatheSystemImage, value: .breathe) {
+                BreatheView()
+            }
+            
+            Tab(settingsString, systemImage: settingsSystemImage, value: .settings) {
+                SettingsView()
+            }
         }
+        .tint(tabTint(selection: tabSelected))
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+    
+    private func tabTint(selection: OTabSelected) -> Color {
+        return switch selection {
+        case .summary:
+            .accentColor
+        case .move:
+            .move
+        case .sweat:
+            .sweat
+        case .breathe:
+            .breathe
+        default:
+            .accentColor
         }
     }
 }
 
 #Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+    let healthController = HealthController()
+        healthController.stepCountToday = 3000
+        healthController.stepCountWeek = 50000
+        healthController.zone2Today = 5
+        healthController.zone2Week = 60
+        healthController.mindfulMinutesToday = 5
+        healthController.mindfulMinutesWeek = 15
+    
+    return ContentView()
+        .environment(healthController)
 }
