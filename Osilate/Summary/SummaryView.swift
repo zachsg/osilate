@@ -106,6 +106,9 @@ struct SummaryView: View {
         
         healthController.getStepCountWeekByDay()
         healthController.getStepCountHourly()
+        
+        healthController.getZone2WeekByDay()
+        healthController.getZone2Hourly()
     }
 }
 
