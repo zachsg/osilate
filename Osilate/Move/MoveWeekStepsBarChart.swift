@@ -47,12 +47,12 @@ struct MoveWeekStepsBarChart: View {
                             x: .value("Day", date.weekDay()),
                             y: .value("Steps", steps)
                         )
-                        .foregroundStyle(steps >= dailyMoveGoal ? .accent : .accent.opacity(0.5))
+                        .foregroundStyle(steps >= dailyMoveGoal ? .move : .move.opacity(0.5))
                         .cornerRadius(50)
                     }
                     
                     RuleMark(y: .value("Goal", dailyMoveGoal))
-                        .foregroundStyle(.accent)
+                        .foregroundStyle(.move)
                 }
             }
             .frame(height: Double(UIScreen.main.bounds.height) / 3)

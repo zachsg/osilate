@@ -21,6 +21,7 @@ struct SweatRing: View {
                     .stroke(style: .init(lineWidth: 30, lineCap: .round))
                     .rotation(.degrees(270))
                     .foregroundStyle(.sweat)
+                    .shadow(radius: 2)
                     .frame(height: 240)
             }
     }

@@ -53,7 +53,7 @@ struct MoveDayStepsBarChart: View {
                             x: .value("Hour", date.hour()),
                             y: .value("Steps", steps)
                         )
-                        .foregroundStyle(.accent)
+                        .foregroundStyle(.move)
                         .cornerRadius(50)
                     }
                 }

@@ -21,6 +21,7 @@ struct BreatheRing: View {
                     .stroke(style: .init(lineWidth: 30, lineCap: .round))
                     .rotation(.degrees(270))
                     .foregroundStyle(.breathe)
+                    .shadow(radius: 2)
                     .frame(height: 180)
             }
     }
