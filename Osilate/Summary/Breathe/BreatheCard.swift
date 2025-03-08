@@ -23,7 +23,7 @@ struct BreatheCard: View {
         DisclosureGroup {
             Text("Graph goes here...")
         } label: {
-            VStack(alignment: .leading) {
+            Gauge(value: breathePercent > 1 ? 1 : breathePercent) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
                         .font(.title2.bold())
@@ -38,6 +38,7 @@ struct BreatheCard: View {
                     }
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
+                    .tint(.secondary)
                     
                     Spacer()
                     
@@ -49,17 +50,12 @@ struct BreatheCard: View {
                             .foregroundStyle(.breathe)
                     }
                     .buttonStyle(.bordered)
-                    .tint(.breathe)
                 }
-                
-                ProgressView(value: breathePercent > 1 ? 1 : breathePercent)
-                    .scaleEffect(x: 1, y: 4)
-                    .tint(.breathe)
             }
+            .tint(.breathe)
         }
         .padding(.horizontal)
-        .padding(.top, 4)
-        .padding(.bottom, 12)
+        .padding(.vertical, 4)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 12, height: 12)))
         .padding(.horizontal, 8)

@@ -16,9 +16,17 @@ class HealthController {
     // Steps
     var stepCountToday = 0
     var stepCountWeek = 0
+    var stepCountMonth = 0
     var stepCountHourly: [Int: Int] = [:]
+    var stepCountDayByHour: [Date: Int] = [:]
     var stepCountWeekByDay: [Date: Int] = [:]
+    var stepCountMonthByDay: [Date: Int] = [:]
     var latestSteps: Date = .now
+    
+    var stepsTodayLoading = false
+    var stepsDayByHourLoading = false
+    var stepsWeekByDayLoading = false
+    var stepsMonthByDayLoading = false
     
     // Zone 2
     var zone2Today = 0
@@ -31,6 +39,10 @@ class HealthController {
     // Walk/run distance
     var walkRunDistanceToday = 0.0
     var latestWalkRunDistance: Date = .now
+    
+    var distanceToday = 0.0
+    var distanceWeek = 0.0
+    var distanceMonth = 0.0
     
     // VO2 max
     var cardioFitnessMostRecent = 0.0
@@ -99,6 +111,89 @@ class HealthController {
     }
     
     // MARK: - Steps
+    func getStepCountFor(_ timeFrame: OTimePeriod) {
+        let quantityType = HKQuantityType(.stepCount)
+        
+        let calendar = Calendar.current
+        
+        let predicate: NSPredicate
+        switch timeFrame {
+        case .day:
+            let startDate = Calendar.current.startOfDay(for: .now)
+            predicate = HKQuery.predicateForSamples(
+                withStart: startDate,
+                end: .now,
+                options: .strictStartDate
+            )
+        case .week:
+            let todayNumber = calendar.component(.weekday, from: .now)
+            let sixDaysAgo = todayNumber == 7 ? 1 : todayNumber + 1
+            let components = DateComponents(
+                calendar: calendar,
+                timeZone: calendar.timeZone,
+                hour: 3,
+                minute: 0,
+                second: 0,
+                weekday: sixDaysAgo
+            )
+            
+            guard let anchorDate = calendar.nextDate(
+                after: .now,
+                matching: components,
+                matchingPolicy: .nextTime,
+                repeatedTimePolicy: .first,
+                direction: .backward
+            ) else {
+                fatalError("*** unable to find the previous Monday. ***")
+            }
+            
+            predicate = HKQuery.predicateForSamples(
+                withStart: anchorDate,
+                end: .now,
+                options: .strictStartDate
+            )
+        case .month:
+            let monthAgo = calendar.startOfDay(for: .now.addingTimeInterval(-86400 * 30))
+            
+            predicate = HKQuery.predicateForSamples(
+                withStart: monthAgo,
+                end: .now,
+                options: .strictStartDate
+            )
+        }
+        
+        let query = HKStatisticsQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, error in
+            guard let result = result, let sum = result.sumQuantity() else {
+                print("failed to read step count: \(error?.localizedDescription ?? "UNKNOWN ERROR")")
+                return
+            }
+            
+            let steps = Int(sum.doubleValue(for: HKUnit.count()))
+            
+            DispatchQueue.main.async {
+                switch timeFrame {
+                case .day:
+                    self.stepCountToday = steps
+                    self.stepsTodayLoading = false
+                case .week:
+                    self.stepCountWeek = steps
+                case .month:
+                    self.stepCountMonth = steps
+                }
+            }
+        }
+        
+        if timeFrame == .day {
+            stepsTodayLoading = true
+        }
+        
+        healthStore.execute(query)
+    }
+    
     func getStepCountToday() {
         guard let quantityType = HKObjectType.quantityType(forIdentifier: .stepCount) else {
             fatalError("*** Unable to create a step count type ***")
@@ -187,13 +282,71 @@ class HealthController {
         healthStore.execute(query)
     }
     
+    func getStepCountMonthByDay(refresh: Bool = false) {
+        let calendar = Calendar.current
+        
+        let interval = DateComponents(day: 1)
+        let monthAgo = calendar.startOfDay(for: .now.addingTimeInterval(-86400 * 30))
+        
+        let quantityType = HKQuantityType(.stepCount)
+        
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .cumulativeSum,
+            anchorDate: monthAgo,
+            intervalComponents: interval
+        )
+        
+        query.initialResultsHandler = { query, results, error in
+            if let error = error as? HKError {
+                switch (error.code) {
+                case .errorDatabaseInaccessible:
+                    // HealthKit couldn't access the database because the device is locked.
+                    return
+                default:
+                    // Handle other HealthKit errors here.
+                    return
+                }
+            }
+            
+            guard let statsCollection = results else {
+                assertionFailure("")
+                return
+            }
+            
+            let endDate = Date.now
+            let startDate = calendar.startOfDay(for: .now.addingTimeInterval(-86400 * 30))
+            
+            var stepCountMonthByDayTemp: [Date: Int] = [:]
+            statsCollection.enumerateStatistics(from: startDate, to: endDate)
+            { (statistics, stop) in
+                if let quantity = statistics.sumQuantity() {
+                    let date = statistics.startDate
+                    let value = quantity.doubleValue(for: .count())
+                    stepCountMonthByDayTemp[date] = Int(value)
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.stepCountMonthByDay = stepCountMonthByDayTemp
+                self.stepsMonthByDayLoading = false
+            }
+        }
+        
+        if refresh {
+            stepCountDayByHour = [:]
+        }
+        
+        stepsMonthByDayLoading = true
+        
+        healthStore.execute(query)
+    }
+    
     func getStepCountWeekByDay(refresh: Bool = false) {
         let calendar = Calendar.current
         
-        // Create a 1-week interval.
         let interval = DateComponents(day: 1)
-        
-        // Set the anchor for 3 a.m. 6 days ago.
         let todayNumber = calendar.component(.weekday, from: .now)
         let sixDaysAgo = todayNumber == 7 ? 1 : todayNumber + 1
         let components = DateComponents(
@@ -215,11 +368,8 @@ class HealthController {
             fatalError("*** unable to find the previous Monday. ***")
         }
         
-        guard let quantityType = HKObjectType.quantityType(forIdentifier: .stepCount) else {
-            fatalError("*** Unable to create a step count type ***")
-        }
-                
-        // Create the query.
+        let quantityType = HKQuantityType(.stepCount)
+        
         let query = HKStatisticsCollectionQuery(
             quantityType: quantityType,
             quantitySamplePredicate: nil,
@@ -228,9 +378,7 @@ class HealthController {
             intervalComponents: interval
         )
         
-        // Set the results handler.
         query.initialResultsHandler = { query, results, error in
-            // Handle errors here.
             if let error = error as? HKError {
                 switch (error.code) {
                 case .errorDatabaseInaccessible:
@@ -243,8 +391,6 @@ class HealthController {
             }
             
             guard let statsCollection = results else {
-                // You should only hit this case if you have an unhandled error. Check for bugs
-                // in your code that creates the query, or explicitly handle the error.
                 assertionFailure("")
                 return
             }
@@ -256,7 +402,6 @@ class HealthController {
                 fatalError("*** Unable to calculate the start date ***")
             }
             
-            // Enumerate over all the statistics objects between the start and end dates.
             var stepCountWeekByDayTemp: [Date: Int] = [:]
             statsCollection.enumerateStatistics(from: startDate, to: endDate)
             { (statistics, stop) in
@@ -268,43 +413,80 @@ class HealthController {
                 }
             }
             
-            // Dispatch to the main queue to update the UI.
             DispatchQueue.main.async {
                 self.stepCountWeekByDay = stepCountWeekByDayTemp
+                self.stepsWeekByDayLoading = false
             }
         }
-        
-//        query.statisticsUpdateHandler = { query, statistics, collection, error in
-//            guard let collection else {
-//                print("no collection found")
-//                return
-//            }
-//
-//            let endDate = Date()
-//            let oneWeekAgo = DateComponents(day: -6)
-//            guard let startDate = calendar.date(byAdding: oneWeekAgo, to: endDate) else {
-//                fatalError("*** Unable to calculate the start date ***")
-//            }
-//
-//            collection.enumerateStatistics(from: startDate, to: Date()){ (statistics, stop) in
-//                guard let quantity = statistics.sumQuantity() else {
-//                    return
-//                }
-//
-//                let date = statistics.startDate
-//                let value = quantity.doubleValue(for: .count())
-//
-//                self.stepCountWeekByDay[date] = Int(value)
-//
-//                DispatchQueue.main.async {
-//                    // Update UI
-//                }
-//            }
-//        }
         
         if refresh {
             stepCountWeekByDay = [:]
         }
+        
+        stepsWeekByDayLoading = true
+        
+        healthStore.execute(query)
+    }
+    
+    func getStepCountDayByHour(refresh: Bool = false) {
+        let calendar = Calendar.current
+        
+        let interval = DateComponents(hour: 1)
+        let startOfToday = calendar.startOfDay(for: .now)
+        
+        let quantityType = HKQuantityType(.stepCount)
+        
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .cumulativeSum,
+            anchorDate: startOfToday,
+            intervalComponents: interval
+        )
+        
+        query.initialResultsHandler = { query, results, error in
+            if let error = error as? HKError {
+                switch (error.code) {
+                case .errorDatabaseInaccessible:
+                    // HealthKit couldn't access the database because the device is locked.
+                    return
+                default:
+                    // Handle other HealthKit errors here.
+                    return
+                }
+            }
+            
+            guard let statsCollection = results else {
+                assertionFailure("")
+                return
+            }
+            
+            let endDate = Date.now
+            let startDate = calendar.startOfDay(for: .now)
+            
+            var stepCountDayByHourTemp: [Date: Int] = [:]
+            statsCollection.enumerateStatistics(from: startDate, to: endDate)
+            { (statistics, stop) in
+                if let quantity = statistics.sumQuantity() {
+                    let date = statistics.startDate
+                    let value = quantity.doubleValue(for: .count())
+                    if value > 300 {
+                        stepCountDayByHourTemp[date] = Int(value)
+                    }
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.stepCountDayByHour = stepCountDayByHourTemp
+                self.stepsDayByHourLoading = false
+            }
+        }
+        
+        if refresh {
+            stepCountDayByHour = [:]
+        }
+        
+        stepsDayByHourLoading = true
         
         healthStore.execute(query)
     }
@@ -882,17 +1064,56 @@ class HealthController {
     }
 
     // MARK: - Distance
-    func getWalkRunDistanceToday() {
-        guard let quantityType = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) else {
-            fatalError("*** Unable to create a distance type ***")
-        }
+    func getDistanceFor(_ timeFrame: OTimePeriod) {
+        let quantityType = HKQuantityType(.distanceWalkingRunning)
         
-        let startDate = Calendar.current.startOfDay(for: .now)
-        let predicate = HKQuery.predicateForSamples(
-            withStart: startDate,
-            end: .now,
-            options: .strictStartDate
-        )
+        let calendar = Calendar.current
+        
+        let predicate: NSPredicate
+        switch timeFrame {
+        case .day:
+            let startDate = Calendar.current.startOfDay(for: .now)
+            predicate = HKQuery.predicateForSamples(
+                withStart: startDate,
+                end: .now,
+                options: .strictStartDate
+            )
+        case .week:
+            let todayNumber = calendar.component(.weekday, from: .now)
+            let sixDaysAgo = todayNumber == 7 ? 1 : todayNumber + 1
+            let components = DateComponents(
+                calendar: calendar,
+                timeZone: calendar.timeZone,
+                hour: 3,
+                minute: 0,
+                second: 0,
+                weekday: sixDaysAgo
+            )
+            
+            guard let anchorDate = calendar.nextDate(
+                after: .now,
+                matching: components,
+                matchingPolicy: .nextTime,
+                repeatedTimePolicy: .first,
+                direction: .backward
+            ) else {
+                fatalError("*** unable to find the previous Monday. ***")
+            }
+            
+            predicate = HKQuery.predicateForSamples(
+                withStart: anchorDate,
+                end: .now,
+                options: .strictStartDate
+            )
+        case .month:
+            let monthAgo = calendar.startOfDay(for: .now.addingTimeInterval(-86400 * 30))
+            
+            predicate = HKQuery.predicateForSamples(
+                withStart: monthAgo,
+                end: .now,
+                options: .strictStartDate
+            )
+        }
         
         let query = HKStatisticsQuery(
             quantityType: quantityType,
@@ -904,15 +1125,20 @@ class HealthController {
                 return
             }
            
-            let desiredLengthUnit = UnitLength(forLocale: .current)
-            let lengthUnit = desiredLengthUnit == UnitLength.feet ? HKUnit.mile() : HKUnit.meter()
+            let unit = UnitLength(forLocale: .current)
+            let lengthUnit = unit == UnitLength.feet ? HKUnit.mile() : HKUnit.meter()
             
-            // TODO: Fix to work with Km and not just Miles
             let distance = sum.doubleValue(for: lengthUnit)
             
             DispatchQueue.main.async {
-                self.walkRunDistanceToday = distance
-                self.latestWalkRunDistance = result.endDate
+                switch timeFrame {
+                case .day:
+                    self.distanceToday = distance
+                case .week:
+                    self.distanceWeek = distance
+                case .month:
+                    self.distanceMonth = distance
+                }
             }
         }
         

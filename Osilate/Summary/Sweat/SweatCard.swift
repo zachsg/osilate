@@ -35,7 +35,7 @@ struct SweatCard: View {
                     }
             }
         } label: {
-            VStack(alignment: .leading) {
+            Gauge(value: sweatPercent > 1 ? 1 : sweatPercent) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(showToday ? healthController.zone2Today : healthController.zone2Week, format: .number)
                         .font(.title2.bold())
@@ -50,6 +50,7 @@ struct SweatCard: View {
                     }
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
+                    .tint(.secondary)
                     
                     Spacer()
                     
@@ -61,17 +62,12 @@ struct SweatCard: View {
                             .foregroundStyle(.sweat)
                     }
                     .buttonStyle(.bordered)
-                    .tint(.sweat)
                 }
-                
-                ProgressView(value: sweatPercent > 1 ? 1 : sweatPercent)
-                    .scaleEffect(x: 1, y: 4)
-                    .tint(.sweat)
             }
+            .tint(.sweat)
         }
         .padding(.horizontal)
-        .padding(.top, 4)
-        .padding(.bottom, 12)
+        .padding(.vertical, 4)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 12, height: 12)))
         .padding(.horizontal, 8)

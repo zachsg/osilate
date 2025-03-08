@@ -19,7 +19,7 @@ struct ContentView: View {
             }
             
             Tab(moveString, systemImage: moveSystemImage, value: .move) {
-                Text("Move")
+                MoveView()
             }
             
             Tab(sweatString, systemImage: sweatSystemImage, value: .sweat) {

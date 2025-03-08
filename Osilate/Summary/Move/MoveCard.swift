@@ -35,7 +35,7 @@ struct MoveCard: View {
                     }
             }
         } label: {
-            VStack(alignment: .leading) {
+            Gauge(value: movePercent > 1 ? 1 : movePercent) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(showToday ? healthController.stepCountToday : healthController.stepCountWeek, format: .number)
                         .font(.title2.bold())
@@ -50,6 +50,7 @@ struct MoveCard: View {
                     }
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
+                    .tint(.secondary)
                     
                     Spacer()
                     
@@ -61,17 +62,12 @@ struct MoveCard: View {
                             .foregroundStyle(.move)
                     }
                     .buttonStyle(.bordered)
-                    .tint(.move)
                 }
-                
-                ProgressView(value: movePercent > 1 ? 1 : movePercent)
-                    .scaleEffect(x: 1, y: 4)
-                    .tint(.move)
             }
+            .tint(.move)
         }
         .padding(.horizontal)
-        .padding(.top, 4)
-        .padding(.bottom, 12)
+        .padding(.vertical, 4)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 12, height: 12)))
         .padding(.horizontal, 8)
