@@ -20,6 +20,12 @@ struct SummaryDisplay: View {
                 .fontWeight(.heavy)
                 .foregroundStyle(.secondary)
             
+            if !showToday {
+                Text("includes today")
+                    .font(.caption2.italic())
+                    .foregroundStyle(.secondary)
+            }
+            
             HStack {
                 VStack(alignment: .trailing) {
                     Text("Move")

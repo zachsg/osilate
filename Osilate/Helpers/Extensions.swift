@@ -223,3 +223,20 @@ extension Double {
         }
     }
 }
+
+struct ThousandsAbbreviationFormatStyle: FormatStyle {
+    func format(_ value: Int) -> String {
+        if value >= 1000 {
+            let thousands = Double(value) / 1000.0
+            return String(format: "%.0fk", thousands)
+        } else {
+            return String(value)
+        }
+    }
+}
+
+extension FormatStyle where Self == ThousandsAbbreviationFormatStyle {
+    static var thousandsAbbr: ThousandsAbbreviationFormatStyle {
+        ThousandsAbbreviationFormatStyle()
+    }
+}

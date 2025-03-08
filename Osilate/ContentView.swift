@@ -15,7 +15,7 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $tabSelected) {
             Tab(summaryString, systemImage: summarySystemImage, value: .summary) {
-                SummaryView()
+                SummaryView(tabSelected: $tabSelected)
             }
             
             Tab(moveString, systemImage: moveSystemImage, value: .move) {
@@ -55,12 +55,21 @@ struct ContentView: View {
 
 #Preview {
     let healthController = HealthController()
-        healthController.stepCountToday = 3000
-        healthController.stepCountWeek = 50000
-        healthController.zone2Today = 5
-        healthController.zone2Week = 60
-        healthController.mindfulMinutesToday = 5
-        healthController.mindfulMinutesWeek = 15
+    healthController.stepCountToday = 3000
+    healthController.stepCountWeek = 50000
+    healthController.zone2Today = 5
+    healthController.zone2Week = 60
+    healthController.mindfulMinutesToday = 5
+    healthController.mindfulMinutesWeek = 15
+    
+    let today: Date = .now
+    for i in 0...6 {
+        let date = Calendar.current.date(byAdding: .day, value: -i, to: today)
+        if let date {
+            healthController.stepCountWeekByDay[date] = Int.random(in: 0...20000)
+            healthController.zone2WeekByDay[date] = Int.random(in: 0...50)
+        }
+    }
     
     return ContentView()
         .environment(healthController)

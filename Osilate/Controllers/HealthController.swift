@@ -16,12 +16,14 @@ class HealthController {
     // Steps
     var stepCountToday = 0
     var stepCountWeek = 0
+    var stepCountHourly: [Int: Int] = [:]
     var stepCountWeekByDay: [Date: Int] = [:]
     var latestSteps: Date = .now
     
     // Zone 2
     var zone2Today = 0
     var zone2Week = 0
+    var zone2Hourly: [Int: Int] = [:]
     var zone2WeekByDay: [Date: Int] = [:]
     var zone2ByDay: [Date: Int] = [:]
     var latestZone2: Date = .now
@@ -298,6 +300,73 @@ class HealthController {
         healthStore.execute(query)
     }
     
+    func getStepCountHourly(refresh: Bool = false) {
+        let calendar = Calendar.current
+        
+        // Create a 1-week interval.
+        let interval = DateComponents(hour: 1)
+        
+        let anchorDate = calendar.startOfDay(for: Date())
+        
+        guard let quantityType = HKObjectType.quantityType(forIdentifier: .stepCount) else {
+            fatalError("*** Unable to create a step count type ***")
+        }
+                
+        // Create the query.
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .cumulativeSum,
+            anchorDate: anchorDate,
+            intervalComponents: interval
+        )
+        
+        // Set the results handler.
+        query.initialResultsHandler = { query, results, error in
+            // Handle errors here.
+            if let error = error as? HKError {
+                switch (error.code) {
+                case .errorDatabaseInaccessible:
+                    // HealthKit couldn't access the database because the device is locked.
+                    return
+                default:
+                    // Handle other HealthKit errors here.
+                    return
+                }
+            }
+            
+            guard let statsCollection = results else {
+                // You should only hit this case if you have an unhandled error. Check for bugs
+                // in your code that creates the query, or explicitly handle the error.
+                assertionFailure("")
+                return
+            }
+            
+            // Enumerate over all the statistics objects between the start and end dates.
+            var stepCountHourlyTemp: [Int: Int] = [:]
+            statsCollection.enumerateStatistics(from: anchorDate, to: Date())
+            { (statistics, stop) in
+                if let quantity = statistics.sumQuantity() {
+                    let hour = calendar.component(.hour, from: statistics.startDate)
+                    let value = quantity.doubleValue(for: .count())
+                    
+                    stepCountHourlyTemp[hour] = Int(value)
+                }
+            }
+            
+            // Dispatch to the main queue to update the UI.
+            DispatchQueue.main.async {
+                self.stepCountHourly = stepCountHourlyTemp
+            }
+        }
+        
+        if refresh {
+            stepCountHourly = [:]
+        }
+        
+        healthStore.execute(query)
+    }
+    
     // MARK: - Zone 2
     func getZone2Today() {
         @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
@@ -533,6 +602,81 @@ class HealthController {
         
         healthStore.execute(query)
     }
+    
+    func getZone2Hourly(refresh: Bool = false) {
+        @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
+        
+        let calendar = Calendar.current
+        
+        let anchorDate = calendar.startOfDay(for: Date())
+        
+        let predicate = HKQuery.predicateForSamples(
+            withStart: anchorDate,
+            end: .now,
+            options: .strictStartDate
+        )
+        
+        guard let quantityType = HKObjectType.quantityType(forIdentifier: .heartRate) else {
+            fatalError("*** Unable to create a heart rate type ***")
+        }
+        
+        let heartRateUnit:HKUnit = HKUnit(from: "count/min")
+        
+        let sortDescriptors = [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)]
+        
+        let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sortDescriptors, resultsHandler: { (query, results, error) in
+            guard error == nil else {
+                print("error")
+                return
+            }
+            
+            var latest: Date?
+            var zone2HourlyTemp: [Int: Int] = [:]
+            for (_, sample) in results!.enumerated() {
+                guard let currData:HKQuantitySample = sample as? HKQuantitySample else { return }
+                
+                let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
+                if heartRate >= Double(zone2Min) {
+                    let hour = calendar.component(.hour, from: sample.startDate)
+                    let value = zone2HourlyTemp[hour] ?? 0
+                    if let latest {
+                        let timeSinceLastZone2 = sample.startDate.timeIntervalSince(latest).second
+                        if timeSinceLastZone2 < 120 {
+                            zone2HourlyTemp[hour] = value + timeSinceLastZone2
+                        } else {
+                            zone2HourlyTemp[hour] = value + 1
+                        }
+                    } else {
+                        zone2HourlyTemp[hour] = value + 1
+                    }
+                    
+                    latest = sample.startDate
+                }
+            }
+            
+            let hour = calendar.component(.hour, from: .now)
+            for i in 1...hour {
+                if zone2HourlyTemp[i] != nil {
+                    let value = zone2HourlyTemp[i] ?? 0
+                    zone2HourlyTemp[i] = Int((Double(value) / 60).rounded())
+                } else {
+                    zone2HourlyTemp[i] = 0
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.latestZone2 = latest ?? .distantPast
+                self.zone2Hourly = zone2HourlyTemp
+            }
+        })
+        
+        if refresh {
+            zone2Hourly = [:]
+        }
+        
+        healthStore.execute(query)
+    }
+
 
     func getZone2Recent() {
         @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault

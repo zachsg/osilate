@@ -15,6 +15,8 @@ struct SummaryView: View {
     @AppStorage(dailySweatGoalKey) var dailySweatGoal = dailySweatGoalDefault
     @AppStorage(dailyBreatheGoalKey) var dailyBreatheGoal = dailyBreatheGoalDefault
     
+    @Binding var tabSelected: OTabSelected
+    
     @State private var showToday = false
     @State private var animationAmount = 0.0
     
@@ -69,11 +71,11 @@ struct SummaryView: View {
                     }
                     
                     VStack(spacing: 12) {
-                        MoveCard(showToday: showToday, movePercent: movePercent)
+                        MoveCard(tabSelected: $tabSelected, showToday: showToday, movePercent: movePercent)
                         
-                        SweatCard(showToday: showToday, sweatPercent: sweatPercent)
+                        SweatCard(tabSelected: $tabSelected, showToday: showToday, sweatPercent: sweatPercent)
                         
-                        BreatheCard(showToday: showToday, breathePercent: breathePercent)
+                        BreatheCard(tabSelected: $tabSelected, showToday: showToday, breathePercent: breathePercent)
                     }
                 }
                 .padding()
@@ -101,6 +103,9 @@ struct SummaryView: View {
         healthController.getStepCountWeek()
         healthController.getZone2Week()
         healthController.getMindfulMinutesWeek()
+        
+        healthController.getStepCountWeekByDay()
+        healthController.getStepCountHourly()
     }
 }
 
@@ -113,6 +118,6 @@ struct SummaryView: View {
         healthController.mindfulMinutesToday = 10
         healthController.mindfulMinutesWeek = 45
     
-    return SummaryView()
+    return SummaryView(tabSelected: .constant(.summary))
         .environment(healthController)
 }
