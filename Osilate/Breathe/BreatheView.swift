@@ -9,11 +9,16 @@ import SwiftData
 import SwiftUI
 
 struct BreatheView: View {
+    @Environment(HealthController.self) private var healthController
+    
     @Environment(\.scenePhase) var scenePhase
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \OMeditate.date) private var meditates: [OMeditate]
     @Query(sort: \OBoxBreath.date) private var boxes: [OBoxBreath]
     @Query(sort: \O478Breath.date) private var four78s: [O478Breath]
+    
+    @AppStorage(showTodayKey) var showToday = showTodayDefault
+    @AppStorage(dailyBreatheGoalKey) var dailyBreatheGoal = dailyBreatheGoalDefault
     
     @State private var historySheetIsShowing = false
     @State private var meditateSheetIsShowing = false
@@ -35,19 +40,66 @@ struct BreatheView: View {
         return activities.sorted { $0.date > $1.date }
     }
     
+    var breathePercent: Double {
+        if showToday {
+            (Double(healthController.mindfulMinutesToday * 60) / Double(dailyBreatheGoal)).rounded(toPlaces: 2)
+        } else {
+            (Double(healthController.mindfulMinutesWeek * 60) / Double(dailyBreatheGoal * 7)).rounded(toPlaces: 2)
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             VStack {
                 if activities.isEmpty {
                     List {
+                        ActivityRingAndStats(percent: breathePercent, color: .breathe) {
+                            HStack(spacing: 2) {
+                                Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
+                                    .foregroundStyle(.breathe)
+                                    .font(.title.bold())
+                                
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("minutes")
+                                    HStack(spacing: 4) {
+                                        Text("of")
+                                        Text((showToday ? dailyBreatheGoal : (dailyBreatheGoal * 7)) / 60, format: .number)
+                                    }
+                                }
+                                .foregroundStyle(.secondary)
+                                .font(.caption2)
+                            }
+                        }
+                        
                         StatsSection()
                         
                         Label("No time like the present. Let's take action!", systemImage: arrowSystemImage)
                             .font(.title2)
                             .multilineTextAlignment(.center)
                     }
+                    .refreshable {
+                        refresh()
+                    }
                 } else {
                     List {
+                        ActivityRingAndStats(percent: breathePercent, color: .breathe) {
+                            HStack(spacing: 2) {
+                                Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
+                                    .foregroundStyle(.breathe)
+                                    .font(.title.bold())
+                                
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("minutes")
+                                    HStack(spacing: 4) {
+                                        Text("of")
+                                        Text((showToday ? dailyBreatheGoal : (dailyBreatheGoal * 7)) / 60, format: .number)
+                                    }
+                                }
+                                .foregroundStyle(.secondary)
+                                .font(.caption2)
+                            }
+                        }
+                        
                         StatsSection()
                                
                         Section {
@@ -60,6 +112,9 @@ struct BreatheView: View {
                                 .font(.footnote.bold())
                                 .foregroundStyle(.accent)
                         }
+                    }
+                    .refreshable {
+                        refresh()
                     }
                 }
             }
@@ -115,9 +170,16 @@ struct BreatheView: View {
                         modelContext.insert(meditate)
                         modelContext.delete(meditate)
                     }
+                    
+                    refresh()
                 }
             }
         }
+    }
+    
+    private func refresh() {
+        healthController.getMindfulMinutesToday()
+        healthController.getMindfulMinutesWeek()
     }
 
     private func deleteActivities(offsets: IndexSet) {

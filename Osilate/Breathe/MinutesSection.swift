@@ -15,12 +15,14 @@ struct MinutesSection: View {
     @Query(sort: \O478Breath.date) var four78s: [O478Breath]
     @Query(sort: \OBoxBreath.date) var boxes: [OBoxBreath]
     
-    var minToday: Int {
+    @AppStorage(showTodayKey) var showToday = showTodayDefault
+    
+    var minutes: Int {
         var minutes = 0
         
-        let todayMeditates = meditates.filter { $0.date.isToday() }
-        let today478s = four78s.filter { $0.date.isToday() }
-        let todayBoxes = boxes.filter { $0.date.isToday() }
+        let todayMeditates = meditates.filter { showToday ? $0.date.isToday() : isPastWeek(date: $0.date) }
+        let today478s = four78s.filter { showToday ? $0.date.isToday() : isPastWeek(date: $0.date) }
+        let todayBoxes = boxes.filter { showToday ? $0.date.isToday() : isPastWeek(date: $0.date) }
         
         for meditate in todayMeditates { minutes += meditate.duration }
         
@@ -35,7 +37,7 @@ struct MinutesSection: View {
         HStack(spacing: 32) {
             VStack {
                 HStack(spacing: 4) {
-                    Text(minToday, format: .number)
+                    Text(minutes, format: .number)
                         .font(.title.bold())
                     
                     VStack(alignment: .leading, spacing: 0) {

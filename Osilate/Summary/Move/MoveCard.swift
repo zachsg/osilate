@@ -10,11 +10,11 @@ import SwiftUI
 struct MoveCard: View {
     @Environment(HealthController.self) private var healthController
     
+    @AppStorage(showTodayKey) var showToday = showTodayDefault
     @AppStorage(dailyMoveGoalKey) var dailyMoveGoal = dailyMoveGoalDefault
     
     @Binding var tabSelected: OTabSelected
     
-    var showToday: Bool
     var movePercent: Double
     
     @State private var isExpanded = false
@@ -79,6 +79,6 @@ struct MoveCard: View {
     healthController.stepCountToday = 5000
     healthController.stepCountWeek = 35000
     
-    return MoveCard(tabSelected: .constant(.summary), showToday: true, movePercent: 0.7)
+    return MoveCard(tabSelected: .constant(.summary), movePercent: 0.7)
         .environment(healthController)
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct SweatSection: View {
     @AppStorage(dailySweatGoalKey) var dailySweatGoal = dailySweatGoalDefault
     @AppStorage(zone2MinKey) var zone2Min = zone2MinDefault
+    @AppStorage(userAgeKey) var userAge = userAgeDefault
     
     var body: some View {
         Section {
@@ -26,17 +27,24 @@ struct SweatSection: View {
                 }
             }
             
-            Stepper(value: $zone2Min.animation(), in: 100...200, step: 1) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("Zone 2 starts at")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text((zone2Min), format: .number)
-                        .fontWeight(.bold)
-                    Text("bpm")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            VStack {
+                Stepper(value: $zone2Min.animation(), in: 100...200, step: 1) {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text("Zone 2 starts at")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text((zone2Min), format: .number)
+                            .fontWeight(.bold)
+                        Text("bpm")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                
+                Button("Auto-calculate Zone 2") {
+                    zone2Min = Int((Double(220 - userAge) * 0.7).rounded())
+                }
+                .buttonStyle(.bordered)
             }
         } header: {
             HStack {
@@ -44,7 +52,7 @@ struct SweatSection: View {
                 Text(sweatString)
             }
         } footer: {
-            Text("If you're new to Zone training, a good BPM (heart beats / minute) threshold to start with is 220 minus your age.")
+            Text("Auto-calculation of Zone 2 is based on your age.")
         }
     }
 }

@@ -13,7 +13,7 @@ struct StatsSection: View {
         Section {
             ScrollView(.horizontal) {
                 HStack {
-                    MinutesSection()
+//                    MinutesSection()
                     
                     StreaksSection()
                 }

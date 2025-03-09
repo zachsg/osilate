@@ -23,7 +23,7 @@ struct ContentView: View {
             }
             
             Tab(sweatString, systemImage: sweatSystemImage, value: .sweat) {
-                Text("Sweat")
+                SweatView()
             }
             
             Tab(breatheString, systemImage: breatheSystemImage, value: .breathe) {
@@ -35,6 +35,38 @@ struct ContentView: View {
             }
         }
         .tint(tabTint(selection: tabSelected))
+        .onAppear {
+            healthController.getStepCountToday()
+            healthController.getZone2Today()
+            healthController.getMindfulMinutesToday()
+            
+            healthController.getStepCountWeek()
+            healthController.getZone2Week()
+            healthController.getMindfulMinutesWeek()
+            
+            healthController.getStepCountWeekByDay()
+            healthController.getStepCountHourly()
+            
+            healthController.getZone2WeekByDay()
+            healthController.getZone2Hourly()
+            
+            healthController.getStepCountFor(.day)
+            healthController.getStepCountFor(.week)
+            healthController.getStepCountFor(.month)
+            
+            healthController.getDistanceFor(.day)
+            healthController.getDistanceFor(.week)
+            healthController.getDistanceFor(.month)
+
+            healthController.getStepCountDayByHour()
+            healthController.getStepCountMonthByDay()
+            
+            healthController.getCardioFitnessRecent()
+            healthController.getRhrRecent()
+            healthController.getRecoveryRecent()
+
+            healthController.getZone2Recent()
+        }
     }
     
     private func tabTint(selection: OTabSelected) -> Color {
@@ -55,7 +87,7 @@ struct ContentView: View {
 
 #Preview {
     let healthController = HealthController()
-    healthController.stepCountToday = 3000
+    healthController.stepCountToday = 3500
     healthController.stepCountWeek = 50000
     healthController.zone2Today = 5
     healthController.zone2Week = 60

@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct SummaryDisplay: View {
-    var showToday: Bool
+    @AppStorage(showTodayKey) var showToday = showTodayDefault
+    
     var movePercent: Double
     var sweatPercent: Double
     var breathePercent: Double

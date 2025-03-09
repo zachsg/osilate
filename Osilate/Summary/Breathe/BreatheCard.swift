@@ -10,11 +10,11 @@ import SwiftUI
 struct BreatheCard: View {
     @Environment(HealthController.self) private var healthController
     
+    @AppStorage(showTodayKey) var showToday = showTodayDefault
     @AppStorage(dailyBreatheGoalKey) var dailyBreatheGoal = dailyBreatheGoalDefault
     
     @Binding var tabSelected: OTabSelected
     
-    var showToday: Bool
     var breathePercent: Double
     
     @State private var isExpanded = false
@@ -67,6 +67,6 @@ struct BreatheCard: View {
     healthController.mindfulMinutesToday = 5
     healthController.mindfulMinutesWeek = 35
     
-    return BreatheCard(tabSelected: .constant(.summary), showToday: true, breathePercent: 0.7)
+    return BreatheCard(tabSelected: .constant(.summary), breathePercent: 0.7)
         .environment(healthController)
 }

@@ -7,6 +7,9 @@
 
 import Foundation
 
+let showTodayKey = "showToday"
+let showTodayDefault = false
+
 // MARK: Summary
 let summaryString = "Summary"
 let summarySystemImage = "house.circle"
@@ -28,6 +31,7 @@ let bodyTempHighSystemImage = "thermometer.high"
 // MARK: Move
 let moveString = "Move"
 let moveSystemImage = "figure.walk.circle"
+let stepsSystemImage = "figure.walk"
 
 let dailyMoveGoalKey = "dailyStepsGoal"
 let dailyMoveGoalDefault = 8000
@@ -40,6 +44,13 @@ let dailySweatGoalKey = "dailyZone2Goal"
 let dailySweatGoalDefault = 1200 // 20 minutes
 let zone2MinKey = "zone2Threshold"
 let zone2MinDefault = 136
+
+// VO2 max
+let vO2SystemImage = "heart"
+let vO2Units = "VO₂max"
+
+// Heart
+let heartUnits = "bpm"
 
 // MARK: Breathe
 let breatheString = "Breathe"

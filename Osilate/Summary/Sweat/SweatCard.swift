@@ -10,11 +10,11 @@ import SwiftUI
 struct SweatCard: View {
     @Environment(HealthController.self) private var healthController
     
+    @AppStorage(showTodayKey) var showToday = showTodayDefault
     @AppStorage(dailySweatGoalKey) var dailySweatGoal = dailySweatGoalDefault
     
     @Binding var tabSelected: OTabSelected
     
-    var showToday: Bool
     var sweatPercent: Double
     
     @State private var isExpanded = false
@@ -79,6 +79,6 @@ struct SweatCard: View {
     healthController.zone2Today = 5
     healthController.zone2Week = 35
     
-    return SweatCard(tabSelected: .constant(.summary), showToday: true, sweatPercent: 0.7)
+    return SweatCard(tabSelected: .constant(.summary), sweatPercent: 0.7)
         .environment(healthController)
 }

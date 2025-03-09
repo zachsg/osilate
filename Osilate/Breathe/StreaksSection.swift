@@ -71,6 +71,10 @@ struct StreaksSection: View {
                 Text("No actions taken yet!")
                     .font(.headline)
             }
+        } else {
+            Text("No current streaks")
+                .font(.headline)
+                .foregroundStyle(.secondary)
         }
     }
     

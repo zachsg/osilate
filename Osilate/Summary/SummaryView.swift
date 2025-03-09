@@ -11,13 +11,13 @@ struct SummaryView: View {
     @Environment(\.scenePhase) var scenePhase
     @Environment(HealthController.self) private var healthController
     
+    @AppStorage(showTodayKey) var showToday = showTodayDefault
     @AppStorage(dailyMoveGoalKey) var dailyMoveGoal = dailyMoveGoalDefault
     @AppStorage(dailySweatGoalKey) var dailySweatGoal = dailySweatGoalDefault
     @AppStorage(dailyBreatheGoalKey) var dailyBreatheGoal = dailyBreatheGoalDefault
     
     @Binding var tabSelected: OTabSelected
     
-    @State private var showToday = false
     @State private var animationAmount = 0.0
     @State private var healthReportIsShowing = false
     
@@ -51,13 +51,13 @@ struct SummaryView: View {
                 VStack {
                     ZStack {
                         ZStack {
-                            MoveRing(movePercent: movePercent)
+                            ActivityRing(percent: movePercent, color: .move, strokeWidth: 28, height: 300)
                             
-                            SweatRing(sweatPercent: sweatPercent)
+                            ActivityRing(percent: sweatPercent, color: .sweat, strokeWidth: 28, height: 240)
                             
-                            BreatheRing(breathePercent: breathePercent)
+                            ActivityRing(percent: breathePercent, color: .breathe, strokeWidth: 28, height: 180)
                             
-                            SummaryDisplay(showToday: showToday, movePercent: movePercent, sweatPercent: sweatPercent, breathePercent: breathePercent)
+                            SummaryDisplay(movePercent: movePercent, sweatPercent: sweatPercent, breathePercent: breathePercent)
                         }
                         .rotation3DEffect(.degrees(animationAmount), axis: (x: 0, y: 1, z: 0))
                     }
@@ -72,11 +72,11 @@ struct SummaryView: View {
                     }
                     
                     VStack(spacing: 12) {
-                        MoveCard(tabSelected: $tabSelected, showToday: showToday, movePercent: movePercent)
+                        MoveCard(tabSelected: $tabSelected, movePercent: movePercent)
                         
-                        SweatCard(tabSelected: $tabSelected, showToday: showToday, sweatPercent: sweatPercent)
+                        SweatCard(tabSelected: $tabSelected, sweatPercent: sweatPercent)
                         
-                        BreatheCard(tabSelected: $tabSelected, showToday: showToday, breathePercent: breathePercent)
+                        BreatheCard(tabSelected: $tabSelected, breathePercent: breathePercent)
                     }
                 }
                 .padding()
@@ -100,9 +100,6 @@ struct SummaryView: View {
             if newPhase == .active {
                 refresh()
             }
-        }
-        .onAppear {
-            refresh()
         }
     }
     

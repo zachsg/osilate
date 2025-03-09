@@ -181,6 +181,26 @@ extension Int {
             "circle"
         }
     }
+    
+    func rhrTrend(given average: Int) -> ORHRTrend {
+        return if self >= average + 2 {
+            .worsening
+        } else if self <= average - 2 {
+            .improving
+        } else {
+            .stable
+        }
+    }
+
+    func recoveryTrend(given average: Int) -> ORecoveryTrend {
+        return if self >= average + 2 {
+            .improving
+        } else if self <= average - 2 {
+            .worsening
+        } else {
+            .stable
+        }
+    }
 }
 
 extension Double {
@@ -228,7 +248,7 @@ struct ThousandsAbbreviationFormatStyle: FormatStyle {
     func format(_ value: Int) -> String {
         if value >= 1000 {
             let thousands = Double(value) / 1000.0
-            return String(format: "%.0fk", thousands)
+            return thousands.truncatingRemainder(dividingBy: 10) == 0 ? String(format: "%.0fk", thousands) : String(format: "%.1fk", thousands)
         } else {
             return String(value)
         }
