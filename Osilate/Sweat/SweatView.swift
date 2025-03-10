@@ -37,41 +37,55 @@ struct SweatView: View {
         NavigationStack {
             List {
                 ActivityRingAndStats(percent: sweatPercent, color: .sweat) {
-                    HStack(spacing: 2) {
-                        Text(zone2, format: .number)
-                            .font(.title.bold())
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Minutes")
+                            .font(.caption)
                         
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("minutes")
-                            HStack(spacing: 4) {
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text(zone2, format: .number)
+                                .font(.title2.bold())
+                                .foregroundStyle(.sweat)
+                            
+                            HStack(spacing: 2) {
                                 Text("of")
                                 Text(showToday ? dailySweatGoal / 60 : (dailySweatGoal / 60) * 7, format: .number)
-                                    .fontWeight(.bold)
                             }
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
                         }
-                        .foregroundStyle(.secondary)
-                        .font(.caption2)
                     }
                 }
                 
-                Section("Progress") {
-                    StatRow(headerImage: vO2SystemImage, headerTitle: "Latest cardio fitness", date: healthController.latestCardioFitness, stat: healthController.cardioFitnessMostRecent, color: .sweat, units: vO2Units) {
+                Section {
+                    StatRow(headerImage: vO2SystemImage, headerTitle: "Latest cardio fitness", date: healthController.latestCardioFitness, loading: healthController.cardioFitnessLoading, stat: healthController.cardioFitnessMostRecent, color: .sweat, units: vO2Units) {
                         VO2Chart()
+                            .task {
+                                healthController.getCardioFitnessRecent()
+                                healthController.getZone2Recent()
+                            }
                     } badge: {
                         VO2Badge()
                     }
 
-                    StatRow(headerImage: vO2SystemImage, headerTitle: "Latest resting heart rate", date: healthController.latestRhr, stat: Double(healthController.rhrMostRecent), color: .sweat, units: heartUnits) {
+                    StatRow(headerImage: vO2SystemImage, headerTitle: "Latest resting heart rate", date: healthController.latestRhr, loading: healthController.rhrLoading, stat: Double(healthController.rhrMostRecent), color: .sweat, units: heartUnits) {
                         RHRChart()
+                            .task {
+                                healthController.getRhrRecent()
+                            }
                     } badge: {
                         RHRBadge()
                     }
 
-                    StatRow(headerImage: vO2SystemImage, headerTitle: "Latest cardio recovery", date: healthController.latestRecovery, stat: Double(healthController.recoveryMostRecent), color: .sweat, units: heartUnits) {
+                    StatRow(headerImage: vO2SystemImage, headerTitle: "Latest cardio recovery", date: healthController.latestRecovery, loading: healthController.recoveryLoading, stat: Double(healthController.recoveryMostRecent), color: .sweat, units: heartUnits) {
                         RecoveryChart()
+                            .task {
+                                healthController.getRecoveryRecent()
+                            }
                     } badge: {
                         RecoveryBadge()
                     }
+                } header: {
+                    HeaderLabel(title: "Progress", systemImage: streaksSystemImage)
                 }
             }
             .navigationTitle(sweatString)
@@ -84,16 +98,15 @@ struct SweatView: View {
                 refresh()
             }
         }
+        .onAppear {
+            refresh()
+        }
     }
     
     private func refresh() {
         healthController.getCardioFitnessRecent()
         healthController.getRhrRecent()
         healthController.getRecoveryRecent()
-
-        healthController.getZone2Today()
-        healthController.getZone2Week()
-        healthController.getZone2Recent()
     }
 }
 

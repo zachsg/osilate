@@ -25,7 +25,7 @@ struct SweatCard: View {
                 DayZone2BarChart()
                     .padding(.top)
                     .task {
-                        healthController.getZone2Hourly()
+                        healthController.getZone2DayByHour()
                     }
             } else {
                 WeekZone2BarChart()

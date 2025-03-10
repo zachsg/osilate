@@ -37,9 +37,7 @@ struct OverallReport: View {
                 }
             }
         } header: {
-            HeaderView {
-                Label(overallTitle, systemImage: overallSystemImage)
-            }
+            HeaderLabel(title: overallTitle, systemImage: overallSystemImage)
         }
     }
 }

@@ -11,18 +11,9 @@ import SwiftUI
 struct StatsSection: View {
     var body: some View {
         Section {
-            ScrollView(.horizontal) {
-                HStack {
-//                    MinutesSection()
-                    
-                    StreaksSection()
-                }
-            }
-            .padding(.top, 4)
+            StreaksSection()
         } header: {
-            Label("Progress", systemImage: streaksSystemImage)
-                .font(.footnote.bold())
-                .foregroundStyle(.accent)
+            HeaderLabel(title: "Progress", systemImage: streaksSystemImage)
         }
     }
 }

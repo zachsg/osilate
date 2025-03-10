@@ -99,37 +99,50 @@ struct VO2Chart: View {
                     Text(")")
                 }
             ) {
-                Chart {
-                    ForEach(healthController.cardioFitnessByDay.sorted { $0.key < $1.key }, id: \.key) { date, vO2 in
-                        LineMark(
-                            x: .value("Day", date),
-                            y: .value(vO2Units, vO2)
-                        )
-                        .foregroundStyle(.sweat)
+                ZStack {
+                    Chart {
+                        ForEach(healthController.cardioFitnessByDay.sorted { $0.key < $1.key }, id: \.key) { date, vO2 in
+                            LineMark(
+                                x: .value("Day", date),
+                                y: .value(vO2Units, vO2)
+                            )
+                            .lineStyle(.init(lineWidth: 3, lineCap: .round))
+                            .foregroundStyle(.sweat)
+                        }
+                        
+                        RuleMark(y: .value("Average", averageVO2))
+                            .foregroundStyle(.accent.opacity(0.7))
                     }
-
-                    RuleMark(y: .value("Average", averageVO2))
-                        .foregroundStyle(.accent.opacity(0.4))
-                }
-                .chartYScale(domain: lowHigh.low...lowHigh.high)
-                .chartForegroundStyleScale([vO2Units: .sweat])
-                .chartLegend(.visible)
-
-                Chart {
-                    ForEach(healthController.zone2ByDay.sorted { $0.key < $1.key }, id: \.key) { date, zone2 in
-                        BarMark(
-                            x: .value("Day", date),
-                            y: .value(heartUnits, zone2)
-                        )
-                        .foregroundStyle(.sweat)
+                    .chartYScale(domain: lowHigh.low...lowHigh.high)
+                    .chartForegroundStyleScale([vO2Units: .sweat])
+                    .chartLegend(.visible)
+                    
+                    if healthController.cardioFitnessLoading {
+                        ProgressView()
                     }
-
-                    RuleMark(y: .value("Average", averageZone2))
-                        .foregroundStyle(.accent.opacity(0.4))
                 }
-                .chartYScale(domain: lowHighZone2.low...lowHighZone2.high)
-                .chartForegroundStyleScale(["Zone 2 HR minutes": .sweat])
-                .chartLegend(.visible)
+
+                ZStack {
+                    Chart {
+                        ForEach(healthController.zone2ByDay.sorted { $0.key < $1.key }, id: \.key) { date, zone2 in
+                            BarMark(
+                                x: .value("Day", date),
+                                y: .value(heartUnits, zone2)
+                            )
+                            .foregroundStyle(.sweat)
+                        }
+                        
+                        RuleMark(y: .value("Average", averageZone2))
+                            .foregroundStyle(.accent.opacity(0.7))
+                    }
+                    .chartYScale(domain: lowHighZone2.low...lowHighZone2.high)
+                    .chartForegroundStyleScale(["Zone 2 HR minutes": .sweat])
+                    .chartLegend(.visible)
+                    
+                    if healthController.zone2ByDayLoading {
+                        ProgressView()
+                    }
+                }
 
             }
             .padding()

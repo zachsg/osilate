@@ -61,19 +61,26 @@ struct RecoveryChart: View {
                 Text(")")
             }
             ) {
-                Chart {
-                    ForEach(healthController.recoveryByDay.sorted { $0.key < $1.key }, id: \.key) { date, hr in
-                        LineMark(
-                            x: .value("Day", date),
-                            y: .value(heartUnits, hr)
-                        )
-                        .foregroundStyle(.sweat)
+                ZStack {
+                    Chart {
+                        ForEach(healthController.recoveryByDay.sorted { $0.key < $1.key }, id: \.key) { date, hr in
+                            LineMark(
+                                x: .value("Day", date),
+                                y: .value(heartUnits, hr)
+                            )
+                            .lineStyle(.init(lineWidth: 3, lineCap: .round))
+                            .foregroundStyle(.sweat)
+                        }
+                        
+                        RuleMark(y: .value("Average", averageRecovery))
+                            .foregroundStyle(.accent.opacity(0.7))
                     }
-
-                    RuleMark(y: .value("Average", averageRecovery))
-                        .foregroundStyle(.accent.opacity(0.4))
+                    .chartYScale(domain: lowHigh.low...lowHigh.high)
+                    
+                    if healthController.recoveryLoading {
+                        ProgressView()
+                    }
                 }
-                .chartYScale(domain: lowHigh.low...lowHigh.high)
             }
             .padding()
 

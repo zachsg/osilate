@@ -35,11 +35,16 @@ struct RecoveryBadge: View {
                     .foregroundStyle(trend == .improving ? .green : trend == .worsening ? .yellow : .accent)
             }
 
-            Image(systemName: progressSystemImage)
-                .resizable()
-                .frame(width: 30, height: 30)
-                .foregroundStyle(trend == .improving ? .green : trend == .worsening ? .yellow : .accent)
-                .rotationEffect(.degrees(trend == .improving ? 45 : trend == .worsening ? 135 : 90))
+            if healthController.recoveryLoading {
+                ProgressView()
+                    .frame(width: 30, height: 30)
+            } else {
+                Image(systemName: progressSystemImage)
+                    .resizable()
+                    .frame(width: 30, height: 30)
+                    .foregroundStyle(trend == .improving ? .green : trend == .worsening ? .yellow : .accent)
+                    .rotationEffect(.degrees(trend == .improving ? 45 : trend == .worsening ? 135 : 90))
+            }
         }
         .foregroundStyle(.secondary)
         .font(.caption)

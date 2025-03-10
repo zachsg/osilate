@@ -54,20 +54,21 @@ struct BreatheView: View {
                 if activities.isEmpty {
                     List {
                         ActivityRingAndStats(percent: breathePercent, color: .breathe) {
-                            HStack(spacing: 2) {
-                                Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
-                                    .foregroundStyle(.breathe)
-                                    .font(.title.bold())
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("Minutes")
+                                    .font(.caption)
                                 
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text("minutes")
-                                    HStack(spacing: 4) {
+                                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                    Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
+                                        .font(.title2.bold())
+                                    
+                                    HStack(spacing: 2) {
                                         Text("of")
                                         Text((showToday ? dailyBreatheGoal : (dailyBreatheGoal * 7)) / 60, format: .number)
                                     }
+                                    .foregroundStyle(.secondary)
+                                    .font(.caption)
                                 }
-                                .foregroundStyle(.secondary)
-                                .font(.caption2)
                             }
                         }
                         
@@ -83,20 +84,22 @@ struct BreatheView: View {
                 } else {
                     List {
                         ActivityRingAndStats(percent: breathePercent, color: .breathe) {
-                            HStack(spacing: 2) {
-                                Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
-                                    .foregroundStyle(.breathe)
-                                    .font(.title.bold())
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("Minutes")
+                                    .font(.caption)
                                 
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text("minutes")
-                                    HStack(spacing: 4) {
+                                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                    Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
+                                        .font(.title2.bold())
+                                        .foregroundStyle(.breathe)
+                                    
+                                    HStack(spacing: 2) {
                                         Text("of")
                                         Text((showToday ? dailyBreatheGoal : (dailyBreatheGoal * 7)) / 60, format: .number)
                                     }
+                                    .foregroundStyle(.secondary)
+                                    .font(.caption)
                                 }
-                                .foregroundStyle(.secondary)
-                                .font(.caption2)
                             }
                         }
                         
@@ -108,9 +111,7 @@ struct BreatheView: View {
                             }
                             .onDelete(perform: deleteActivities)
                         } header: {
-                            Label("Actions", systemImage: actionsSystemImage)
-                                .font(.footnote.bold())
-                                .foregroundStyle(.accent)
+                            HeaderLabel(title: "Actions", systemImage: actionsSystemImage)
                         }
                     }
                     .refreshable {

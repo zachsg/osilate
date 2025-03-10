@@ -32,10 +32,10 @@ struct BodyTempReport: View {
                     }
                     
                     RuleMark(y: .value("Top", bodyTempHealthyRange.high))
-                        .foregroundStyle(.accent.opacity(0.3))
+                        .foregroundStyle(.accent.opacity(0.7))
                     
                     RuleMark(y: .value("Bottom", bodyTempHealthyRange.low))
-                        .foregroundStyle(.accent.opacity(0.3))
+                        .foregroundStyle(.accent.opacity(0.7))
                 }
                 .chartYScale(domain: bodyTempRange.low < bodyTempRange.high ? bodyTempRange.low...bodyTempRange.high : 95...98)
                 .frame(height: isExpanded ? 320 : 128)
@@ -46,9 +46,7 @@ struct BodyTempReport: View {
                 }
             }
         } header: {
-            HeaderView {
-                Label(bodyTempTitle, systemImage: todayTempStatus == .normal ? bodyTempNormalSystemImage : todayTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
-            }
+            HeaderLabel(title: bodyTempTitle, systemImage: todayTempStatus == .normal ? bodyTempNormalSystemImage : todayTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
         } footer: {
             // TODO: Fix to work with current locale vs just imperial.
             Text("Units: Degrees fahrenheit.")

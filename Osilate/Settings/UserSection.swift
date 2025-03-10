@@ -33,10 +33,7 @@ struct UserSection: View {
                 }
             }
         } header: {
-            HStack {
-                Image(systemName: userSystemImage)
-                Text("Profile")
-            }
+            HeaderLabel(title: "Profile", systemImage: userSystemImage)
         }
     }
 }

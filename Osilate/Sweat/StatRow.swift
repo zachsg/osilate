@@ -8,10 +8,11 @@
 import SwiftUI
 
 extension StatRow {
-    init(headerImage: String, headerTitle: String, date: Date, stat: Double, color: Color, goal: Int? = nil, units: String? = nil, @ViewBuilder destination: @escaping () -> Destination, @ViewBuilder badge: @escaping () -> Badge) {
+    init(headerImage: String, headerTitle: String, date: Date, loading: Bool, stat: Double, color: Color, goal: Int? = nil, units: String? = nil, @ViewBuilder destination: @escaping () -> Destination, @ViewBuilder badge: @escaping () -> Badge) {
         self.headerImage = headerImage
         self.headerTitle = headerTitle
         self.date = date
+        self.loading = loading
         self.stat = stat
         self.color = color
         self.goal = goal
@@ -20,16 +21,16 @@ extension StatRow {
         self.badge = badge
     }
     
-    init(headerImage: String, headerTitle: String, date: Date, stat: Double, color: Color, goal: Int? = nil, units: String? = nil, @ViewBuilder badge: @escaping () -> Badge) where Destination == EmptyView {
-        self.init(headerImage: headerImage, headerTitle: headerTitle, date: date, stat: stat, color: color, goal: goal, units: units, destination: nil, badge: badge)
+    init(headerImage: String, headerTitle: String, date: Date, loading: Bool, stat: Double, color: Color, goal: Int? = nil, units: String? = nil, @ViewBuilder badge: @escaping () -> Badge) where Destination == EmptyView {
+        self.init(headerImage: headerImage, headerTitle: headerTitle, date: date, loading: loading, stat: stat, color: color, goal: goal, units: units, destination: nil, badge: badge)
     }
 
-    init(headerImage: String, headerTitle: String, date: Date, stat: Double, color: Color, goal: Int? = nil, units: String? = nil, @ViewBuilder destination: @escaping () -> Destination) where Badge == EmptyView {
-        self.init(headerImage: headerImage, headerTitle: headerTitle, date: date, stat: stat, color: color, goal: goal, units: units, destination: destination, badge: nil)
+    init(headerImage: String, headerTitle: String, date: Date, loading: Bool, stat: Double, color: Color, goal: Int? = nil, units: String? = nil, @ViewBuilder destination: @escaping () -> Destination) where Badge == EmptyView {
+        self.init(headerImage: headerImage, headerTitle: headerTitle, date: date, loading: loading, stat: stat, color: color, goal: goal, units: units, destination: destination, badge: nil)
     }
 
-    init(headerImage: String, headerTitle: String, date: Date, stat: Double, color: Color, goal: Int? = nil, units: String? = nil) where Destination == EmptyView, Badge == EmptyView {
-        self.init(headerImage: headerImage, headerTitle: headerTitle, date: date, stat: stat, color: color, goal: goal, units: units, destination: nil, badge: nil)
+    init(headerImage: String, headerTitle: String, date: Date, loading: Bool, stat: Double, color: Color, goal: Int? = nil, units: String? = nil) where Destination == EmptyView, Badge == EmptyView {
+        self.init(headerImage: headerImage, headerTitle: headerTitle, date: date, loading: loading, stat: stat, color: color, goal: goal, units: units, destination: nil, badge: nil)
     }
 }
 
@@ -37,6 +38,7 @@ struct StatRow<Destination: View, Badge: View>: View {
     let headerImage: String
     let headerTitle: String
     let date: Date
+    let loading: Bool
     let stat: Double
     let color: Color
     let goal: Int?
@@ -64,6 +66,10 @@ struct StatRow<Destination: View, Badge: View>: View {
                     Text(headerTitle)
                 }
                 .foregroundStyle(color)
+                
+//                if loading {
+//                    ProgressView()
+//                }
                 
                 Spacer()
                 
@@ -124,7 +130,7 @@ struct StatRow<Destination: View, Badge: View>: View {
     healthController.cardioFitnessAverage = 42.2
     healthController.latestCardioFitness = .now
 
-    return StatRow(headerImage: stepsSystemImage, headerTitle: "Steps today", date: .now, stat: 7000, color: .move, goal: 10000, units: nil) {
+    return StatRow(headerImage: stepsSystemImage, headerTitle: "Steps today", date: .now, loading: false, stat: 7000, color: .move, goal: 10000, units: nil) {
         Text("Destination")
     } badge: {
         VO2Badge()

@@ -25,7 +25,7 @@ struct MoveCard: View {
                 DayStepsBarChart()
                     .padding(.top)
                     .task {
-                        healthController.getStepCountHourly()
+                        healthController.getStepCountDayByHour()
                     }
             } else {
                 WeekStepsBarChart()

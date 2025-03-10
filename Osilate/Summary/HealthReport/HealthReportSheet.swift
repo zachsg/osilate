@@ -89,7 +89,7 @@ struct HealthReportSheet: View {
                 Section {
                     Text("Coming soon...")
                 } header: {
-                    Label("Resting Heart Rate", systemImage: "heart.fill")
+                    HeaderLabel(title: "Resting Heart Rate", systemImage: "heart.fill")
                 } footer: {
                     Text("Units: Beats per minute.")
                 }
@@ -97,19 +97,19 @@ struct HealthReportSheet: View {
                 Section {
                     Text("Coming soon...")
                 } header: {
-                    Label("Respiration Rate", systemImage: "lungs.fill")
+                    HeaderLabel(title: "Respiration Rate", systemImage: "lungs.fill")
                 }
                 
                 Section {
                     Text("Coming soon...")
                 } header: {
-                    Label("Blood Oxygen", systemImage: "drop.degreesign.fill")
+                    HeaderLabel(title: "Blood Oxygen", systemImage: "drop.degreesign.fill")
                 }
                 
                 Section {
                     Text("Coming soon...")
                 } header: {
-                    Label("Sleep Duration", systemImage: "bed.double.fill")
+                    HeaderLabel(title: "Sleep Duration", systemImage: "bed.double.fill")
                 }
             }
             .navigationTitle(healthReportTitle)

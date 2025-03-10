@@ -12,13 +12,19 @@ struct DayZone2BarChart: View {
     @Environment(HealthController.self) private var healthController
     
     var body: some View {
-        Chart {
-            ForEach(healthController.zone2Hourly.sorted { $0.key < $1.key }, id: \.key) { hour, minutes in
-                BarMark(
-                    x: .value("Hour", hour),
-                    y: .value("Minutes", minutes)
-                )
-                .cornerRadius(2)
+        ZStack {
+            Chart {
+                ForEach(healthController.zone2DayByHour.sorted { $0.key < $1.key }, id: \.key) { hour, minutes in
+                    BarMark(
+                        x: .value("Hour", hour),
+                        y: .value("Minutes", minutes)
+                    )
+                    .cornerRadius(2)
+                }
+            }
+            
+            if healthController.zone2DayByHourLoading {
+                ProgressView()
             }
         }
     }
@@ -27,8 +33,12 @@ struct DayZone2BarChart: View {
 #Preview {
     let healthController = HealthController()
     
-    for i in 0...12 {
-        healthController.zone2Hourly[i] = Int.random(in: 0...45)
+    let today: Date = .now
+    for i in 0...5 {
+        let date = Calendar.current.date(byAdding: .hour, value: -i, to: today)
+        if let date {
+            healthController.zone2DayByHour[date] = Int.random(in: 5...60)
+        }
     }
     
     return DayZone2BarChart()

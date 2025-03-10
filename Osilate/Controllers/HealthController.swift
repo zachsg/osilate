@@ -17,7 +17,6 @@ class HealthController {
     var stepCountToday = 0
     var stepCountWeek = 0
     var stepCountMonth = 0
-    var stepCountHourly: [Int: Int] = [:]
     var stepCountDayByHour: [Date: Int] = [:]
     var stepCountWeekByDay: [Date: Int] = [:]
     var stepCountMonthByDay: [Date: Int] = [:]
@@ -31,10 +30,14 @@ class HealthController {
     // Zone 2
     var zone2Today = 0
     var zone2Week = 0
-    var zone2Hourly: [Int: Int] = [:]
+    var zone2DayByHour: [Date: Int] = [:]
     var zone2WeekByDay: [Date: Int] = [:]
     var zone2ByDay: [Date: Int] = [:]
     var latestZone2: Date = .now
+    
+    var zone2DayByHourLoading = false
+    var zone2WeekByDayLoading = false
+    var zone2ByDayLoading = false
 
     // Walk/run distance
     var walkRunDistanceToday = 0.0
@@ -49,18 +52,24 @@ class HealthController {
     var cardioFitnessAverage = 0.0
     var cardioFitnessByDay: [Date: Double] = [:]
     var latestCardioFitness: Date = .now
+    
+    var cardioFitnessLoading = false
 
     // Resting heart rate
     var rhrMostRecent = 0
     var rhrAverage = 0
     var rhrByDay: [Date: Int] = [:]
     var latestRhr: Date = .now
+    
+    var rhrLoading = false
 
     // Cardio recovery
     var recoveryMostRecent = 0
     var recoveryAverage = 0
     var recoveryByDay: [Date: Int] = [:]
     var latestRecovery: Date = .now
+    
+    var recoveryLoading = false
     
     // Mindful Minutes
     var mindfulMinutesToday = 0
@@ -335,7 +344,7 @@ class HealthController {
         }
         
         if refresh {
-            stepCountDayByHour = [:]
+            stepCountMonthByDay = [:]
         }
         
         stepsMonthByDayLoading = true
@@ -470,10 +479,13 @@ class HealthController {
                 if let quantity = statistics.sumQuantity() {
                     let date = statistics.startDate
                     let value = quantity.doubleValue(for: .count())
-                    if value > 300 {
-                        stepCountDayByHourTemp[date] = Int(value)
-                    }
+                    stepCountDayByHourTemp[date] = Int(value)
                 }
+            }
+            
+            for i in 1...24 {
+                let hour = Date.now.getTodayAtHour(i)
+                stepCountDayByHourTemp[hour] = stepCountDayByHourTemp[hour] ?? 0
             }
             
             DispatchQueue.main.async {
@@ -487,73 +499,6 @@ class HealthController {
         }
         
         stepsDayByHourLoading = true
-        
-        healthStore.execute(query)
-    }
-    
-    func getStepCountHourly(refresh: Bool = false) {
-        let calendar = Calendar.current
-        
-        // Create a 1-week interval.
-        let interval = DateComponents(hour: 1)
-        
-        let anchorDate = calendar.startOfDay(for: Date())
-        
-        guard let quantityType = HKObjectType.quantityType(forIdentifier: .stepCount) else {
-            fatalError("*** Unable to create a step count type ***")
-        }
-                
-        // Create the query.
-        let query = HKStatisticsCollectionQuery(
-            quantityType: quantityType,
-            quantitySamplePredicate: nil,
-            options: .cumulativeSum,
-            anchorDate: anchorDate,
-            intervalComponents: interval
-        )
-        
-        // Set the results handler.
-        query.initialResultsHandler = { query, results, error in
-            // Handle errors here.
-            if let error = error as? HKError {
-                switch (error.code) {
-                case .errorDatabaseInaccessible:
-                    // HealthKit couldn't access the database because the device is locked.
-                    return
-                default:
-                    // Handle other HealthKit errors here.
-                    return
-                }
-            }
-            
-            guard let statsCollection = results else {
-                // You should only hit this case if you have an unhandled error. Check for bugs
-                // in your code that creates the query, or explicitly handle the error.
-                assertionFailure("")
-                return
-            }
-            
-            // Enumerate over all the statistics objects between the start and end dates.
-            var stepCountHourlyTemp: [Int: Int] = [:]
-            statsCollection.enumerateStatistics(from: anchorDate, to: Date())
-            { (statistics, stop) in
-                if let quantity = statistics.sumQuantity() {
-                    let hour = calendar.component(.hour, from: statistics.startDate)
-                    let value = quantity.doubleValue(for: .count())
-                    
-                    stepCountHourlyTemp[hour] = Int(value)
-                }
-            }
-            
-            // Dispatch to the main queue to update the UI.
-            DispatchQueue.main.async {
-                self.stepCountHourly = stepCountHourlyTemp
-            }
-        }
-        
-        if refresh {
-            stepCountHourly = [:]
-        }
         
         healthStore.execute(query)
     }
@@ -784,6 +729,7 @@ class HealthController {
             DispatchQueue.main.async {
                 self.latestZone2 = latest ?? .distantPast
                 self.zone2WeekByDay = zone2WeekByDayTemp
+                self.zone2WeekByDayLoading = false
             }
         })
         
@@ -791,10 +737,12 @@ class HealthController {
             zone2WeekByDay = [:]
         }
         
+        zone2WeekByDayLoading = true
+        
         healthStore.execute(query)
     }
     
-    func getZone2Hourly(refresh: Bool = false) {
+    func getZone2DayByHour(refresh: Bool = false) {
         @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
         
         let calendar = Calendar.current
@@ -822,48 +770,47 @@ class HealthController {
             }
             
             var latest: Date?
-            var zone2HourlyTemp: [Int: Int] = [:]
+            var zone2DayByHourTemp: [Date: Int] = [:]
             for (_, sample) in results!.enumerated() {
                 guard let currData:HKQuantitySample = sample as? HKQuantitySample else { return }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 if heartRate >= Double(zone2Min) {
-                    let hour = calendar.component(.hour, from: sample.startDate)
-                    let value = zone2HourlyTemp[hour] ?? 0
+                    let date = sample.startDate
+                    let value = zone2DayByHourTemp[date] ?? 0
                     if let latest {
                         let timeSinceLastZone2 = sample.startDate.timeIntervalSince(latest).second
                         if timeSinceLastZone2 < 120 {
-                            zone2HourlyTemp[hour] = value + timeSinceLastZone2
+                            zone2DayByHourTemp[date] = value + timeSinceLastZone2
                         } else {
-                            zone2HourlyTemp[hour] = value + 1
+                            zone2DayByHourTemp[date] = value + 1
                         }
                     } else {
-                        zone2HourlyTemp[hour] = value + 1
+                        zone2DayByHourTemp[date] = value + 1
                     }
                     
                     latest = sample.startDate
                 }
             }
             
-            let hour = calendar.component(.hour, from: .now)
-            for i in 1...hour {
-                if zone2HourlyTemp[i] != nil {
-                    let value = zone2HourlyTemp[i] ?? 0
-                    zone2HourlyTemp[i] = Int((Double(value) / 60).rounded())
-                } else {
-                    zone2HourlyTemp[i] = 0
-                }
+            for i in 1...24 {
+                let hour = Date.now.getTodayAtHour(i)
+                let value = Int(Double(zone2DayByHourTemp[hour] ?? 0 / 60).rounded())
+                zone2DayByHourTemp[hour] = value
             }
             
             DispatchQueue.main.async {
                 self.latestZone2 = latest ?? .distantPast
-                self.zone2Hourly = zone2HourlyTemp
+                self.zone2DayByHour = zone2DayByHourTemp
+                self.zone2DayByHourLoading = false
             }
         })
         
         if refresh {
-            zone2Hourly = [:]
+            zone2DayByHour = [:]
         }
+        
+        zone2DayByHourLoading = true
         
         healthStore.execute(query)
     }
@@ -920,21 +867,21 @@ class HealthController {
 
             var checking: Date = calendar.startOfDay(for: .now)
             let dayInSeconds: TimeInterval = 86400
-            for _ in 1...60 {
-                if zone2ByDayTemp[checking] != nil {
-                    let value = zone2ByDayTemp[checking] ?? 0
-                    zone2ByDayTemp[checking] = Int((Double(value) / 60).rounded())
-                } else {
-                    zone2ByDayTemp[checking] = 0
-                }
+            for _ in 1...61 {
+                let value = Int(Double(zone2ByDayTemp[checking] ?? 0 / 60).rounded())
+                zone2ByDayTemp[checking] = value
+
                 checking = checking.addingTimeInterval(-dayInSeconds)
             }
 
             DispatchQueue.main.async {
                 self.latestZone2 = latest
                 self.zone2ByDay = zone2ByDayTemp
+                self.zone2ByDayLoading = false
             }
         })
+        
+        zone2ByDayLoading = true
 
         healthStore.execute(query)
     }
@@ -994,9 +941,12 @@ class HealthController {
                     self.rhrAverage = Int((Double(sum) / Double(count)).rounded())
                     self.rhrByDay = byDay
                     self.latestRhr = bestSample.endDate
+                    self.rhrLoading = false
                 }
             }
         }
+        
+        rhrLoading = true
 
         healthStore.execute(query)
     }
@@ -1056,9 +1006,12 @@ class HealthController {
                     self.recoveryAverage = Int((Double(sum) / Double(count)).rounded())
                     self.recoveryByDay = byDay
                     self.latestRecovery = bestSample.endDate
+                    self.recoveryLoading = false
                 }
             }
         }
+        
+        recoveryLoading = true
 
         healthStore.execute(query)
     }
@@ -1201,9 +1154,12 @@ class HealthController {
                     self.cardioFitnessAverage = sum / Double(count)
                     self.cardioFitnessByDay = cardioByDay
                     self.latestCardioFitness = bestSample.endDate
+                    self.cardioFitnessLoading = false
                 }
             }
         }
+        
+        cardioFitnessLoading = true
         
         healthStore.execute(query)
     }

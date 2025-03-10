@@ -25,10 +25,7 @@ struct MoveSection: View {
                 }
             }
         } header: {
-            HStack {
-                Image(systemName: moveSystemImage)
-                Text(moveString)
-            }
+            HeaderLabel(title: moveString, systemImage: moveSystemImage, color: .move)
         }
     }
 }

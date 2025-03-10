@@ -61,19 +61,26 @@ struct RHRChart: View {
                 Text(")")
             }
             ) {
-                Chart {
-                    ForEach(healthController.rhrByDay.sorted { $0.key < $1.key }, id: \.key) { date, rhr in
-                        PointMark(
-                            x: .value("Day", date),
-                            y: .value(heartUnits, rhr)
-                        )
-                        .foregroundStyle(.sweat)
+                ZStack {
+                    Chart {
+                        ForEach(healthController.rhrByDay.sorted { $0.key < $1.key }, id: \.key) { date, rhr in
+                            LineMark(
+                                x: .value("Day", date),
+                                y: .value(heartUnits, rhr)
+                            )
+                            .lineStyle(.init(lineWidth: 3, lineCap: .round))
+                            .foregroundStyle(.sweat)
+                        }
+                        
+                        RuleMark(y: .value("Average", averageRhr))
+                            .foregroundStyle(.accent.opacity(0.7))
                     }
-
-                    RuleMark(y: .value("Average", averageRhr))
-                        .foregroundStyle(.accent.opacity(0.4))
+                    .chartYScale(domain: lowHigh.low...lowHigh.high)
+                    
+                    if healthController.rhrLoading {
+                        ProgressView()
+                    }
                 }
-                .chartYScale(domain: lowHigh.low...lowHigh.high)
             }
             .padding()
 

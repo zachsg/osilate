@@ -35,38 +35,6 @@ struct ContentView: View {
             }
         }
         .tint(tabTint(selection: tabSelected))
-        .onAppear {
-            healthController.getStepCountToday()
-            healthController.getZone2Today()
-            healthController.getMindfulMinutesToday()
-            
-            healthController.getStepCountWeek()
-            healthController.getZone2Week()
-            healthController.getMindfulMinutesWeek()
-            
-            healthController.getStepCountWeekByDay()
-            healthController.getStepCountHourly()
-            
-            healthController.getZone2WeekByDay()
-            healthController.getZone2Hourly()
-            
-            healthController.getStepCountFor(.day)
-            healthController.getStepCountFor(.week)
-            healthController.getStepCountFor(.month)
-            
-            healthController.getDistanceFor(.day)
-            healthController.getDistanceFor(.week)
-            healthController.getDistanceFor(.month)
-
-            healthController.getStepCountDayByHour()
-            healthController.getStepCountMonthByDay()
-            
-            healthController.getCardioFitnessRecent()
-            healthController.getRhrRecent()
-            healthController.getRecoveryRecent()
-
-            healthController.getZone2Recent()
-        }
     }
     
     private func tabTint(selection: OTabSelected) -> Color {

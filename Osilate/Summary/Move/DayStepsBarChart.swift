@@ -12,13 +12,19 @@ struct DayStepsBarChart: View {
     @Environment(HealthController.self) private var healthController
     
     var body: some View {
-        Chart {
-            ForEach(healthController.stepCountHourly.sorted { $0.key < $1.key }, id: \.key) { hour, steps in
-                BarMark(
-                    x: .value("Hour", hour),
-                    y: .value("Steps", steps)
-                )
-                .cornerRadius(2)
+        ZStack {
+            Chart {
+                ForEach(healthController.stepCountDayByHour.sorted { $0.key < $1.key }, id: \.key) { hour, steps in
+                    BarMark(
+                        x: .value("Hour", hour),
+                        y: .value("Steps", steps)
+                    )
+                    .cornerRadius(2)
+                }
+            }
+            
+            if healthController.stepsDayByHourLoading {
+                ProgressView()
             }
         }
     }
@@ -27,8 +33,12 @@ struct DayStepsBarChart: View {
 #Preview {
     let healthController = HealthController()
     
-    for i in 0...12 {
-        healthController.stepCountHourly[i] = Int.random(in: 0...20000)
+    let today: Date = .now
+    for i in 0...5 {
+        let date = Calendar.current.date(byAdding: .hour, value: -i, to: today)
+        if let date {
+            healthController.stepCountDayByHour[date] = Int.random(in: 100...2000)
+        }
     }
     
     return DayStepsBarChart()

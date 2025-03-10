@@ -101,6 +101,9 @@ struct SummaryView: View {
                 refresh()
             }
         }
+        .onAppear {
+            refresh()
+        }
     }
     
     private func refresh() {
@@ -112,11 +115,13 @@ struct SummaryView: View {
         healthController.getZone2Week()
         healthController.getMindfulMinutesWeek()
         
-        healthController.getStepCountWeekByDay()
-        healthController.getStepCountHourly()
-        
-        healthController.getZone2WeekByDay()
-        healthController.getZone2Hourly()
+        if showToday {
+            healthController.getStepCountDayByHour()
+            healthController.getZone2DayByHour()
+        } else {
+            healthController.getStepCountWeekByDay()
+            healthController.getZone2WeekByDay()
+        }
     }
 }
 

@@ -35,11 +35,16 @@ struct RHRBadge: View {
                     .foregroundStyle(trend == .improving ? .green : trend == .worsening ? .yellow : .accent)
             }
 
-            Image(systemName: progressSystemImage)
-                .resizable()
-                .frame(width: 30, height: 30)
-                .foregroundStyle(trend == .improving ? .green : trend == .worsening ? .yellow : .accent)
-                .rotationEffect(.degrees(trend == .improving ? 135 : trend == .worsening ? 45 : 90))
+            if healthController.rhrLoading {
+                ProgressView()
+                    .frame(width: 30, height: 30)
+            } else {
+                Image(systemName: progressSystemImage)
+                    .resizable()
+                    .frame(width: 30, height: 30)
+                    .foregroundStyle(trend == .improving ? .green : trend == .worsening ? .yellow : .accent)
+                    .rotationEffect(.degrees(trend == .improving ? 135 : trend == .worsening ? 45 : 90))
+            }
         }
         .foregroundStyle(.secondary)
         .font(.caption)

@@ -14,18 +14,24 @@ struct WeekStepsBarChart: View {
     @AppStorage(dailyMoveGoalKey) var dailyMoveGoal: Int = dailyMoveGoalDefault
     
     var body: some View {
-        Chart {
-            ForEach(healthController.stepCountWeekByDay.sorted { $0.key < $1.key }, id: \.key) { date, steps in
-                BarMark(
-                    x: .value("Day", date.weekDay()),
-                    y: .value("Steps", steps)
-                )
-                .foregroundStyle(steps >= dailyMoveGoal ? .move : .accent)
-                .cornerRadius(2)
+        ZStack {
+            Chart {
+                ForEach(healthController.stepCountWeekByDay.sorted { $0.key < $1.key }, id: \.key) { date, steps in
+                    BarMark(
+                        x: .value("Day", date.weekDay()),
+                        y: .value("Steps", steps)
+                    )
+                    .foregroundStyle(steps >= dailyMoveGoal ? .move : .accent)
+                    .cornerRadius(2)
+                }
+                
+                RuleMark(y: .value("Goal", dailyMoveGoal))
+                    .foregroundStyle(.move.opacity(0.4))
             }
             
-            RuleMark(y: .value("Goal", dailyMoveGoal))
-                .foregroundStyle(.move.opacity(0.4))
+            if healthController.stepsWeekByDayLoading {
+                ProgressView()
+            }
         }
     }
 }

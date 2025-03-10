@@ -47,10 +47,7 @@ struct SweatSection: View {
                 .buttonStyle(.bordered)
             }
         } header: {
-            HStack {
-                Image(systemName: sweatSystemImage)
-                Text(sweatString)
-            }
+            HeaderLabel(title: sweatString, systemImage: sweatSystemImage, color: .sweat)
         } footer: {
             Text("Auto-calculation of Zone 2 is based on your age.")
         }

@@ -25,10 +25,7 @@ struct BreatheSection: View {
                 }
             }
         } header: {
-            HStack {
-                Image(systemName: breatheSystemImage)
-                Text(breatheString)
-            }
+            HeaderLabel(title: breatheString, systemImage: breatheSystemImage, color: .breathe)
         }
     }
 }

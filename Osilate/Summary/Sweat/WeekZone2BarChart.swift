@@ -14,18 +14,24 @@ struct WeekZone2BarChart: View {
     @AppStorage(dailySweatGoalKey) var dailySweatGoal: Int = dailySweatGoalDefault
     
     var body: some View {
-        Chart {
-            ForEach(healthController.zone2WeekByDay.sorted { $0.key < $1.key }, id: \.key) { date, minutes in
-                BarMark(
-                    x: .value("Day", date.weekDay()),
-                    y: .value("Minutes", minutes)
-                )
-                .foregroundStyle(minutes >= dailySweatGoal / 60 ? .sweat : .accent)
-                .cornerRadius(2)
+        ZStack {
+            Chart {
+                ForEach(healthController.zone2WeekByDay.sorted { $0.key < $1.key }, id: \.key) { date, minutes in
+                    BarMark(
+                        x: .value("Day", date.weekDay()),
+                        y: .value("Minutes", minutes)
+                    )
+                    .foregroundStyle(minutes >= dailySweatGoal / 60 ? .sweat : .accent)
+                    .cornerRadius(2)
+                }
+                
+                RuleMark(y: .value("Goal", dailySweatGoal / 60))
+                    .foregroundStyle(.sweat.opacity(0.4))
             }
             
-            RuleMark(y: .value("Goal", dailySweatGoal / 60))
-                .foregroundStyle(.sweat.opacity(0.4))
+            if healthController.zone2WeekByDayLoading {
+                ProgressView()
+            }
         }
     }
 }

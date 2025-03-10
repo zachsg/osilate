@@ -18,11 +18,11 @@ struct ActivityRingAndStats<Content: View>: View {
     @State private var animationAmount = 0.0
     
     var body: some View {
-        HStack(alignment: .center, spacing: 24) {
+        HStack(spacing: 24) {
             Spacer()
             
             ZStack {
-                ActivityRing(percent: percent, color: color, strokeWidth: 20, height: 100)
+                ActivityRing(percent: percent, color: color, strokeWidth: 20, height: 110)
                     .rotation3DEffect(.degrees(animationAmount), axis: (x: 0, y: 1, z: 0))
                 
                 Text(percent, format: .percent)
@@ -33,8 +33,8 @@ struct ActivityRingAndStats<Content: View>: View {
             .rotation3DEffect(.degrees(animationAmount), axis: (x: 0, y: 1, z: 0))
             
             VStack(alignment: .leading, spacing: 8) {
-                Text(showToday ? "Today" : "Past 7 Days")
-                    .font(.title3.bold())
+                Text(showToday ? "TODAY" : "PAST 7 DAYS")
+                    .font(.headline.bold())
                     .foregroundStyle(.secondary)
                 
                 VStack(alignment: .leading, spacing: 8) {
@@ -55,29 +55,33 @@ struct ActivityRingAndStats<Content: View>: View {
 }
 
 #Preview {
-    ActivityRingAndStats(percent: 0.7, color: Color.blue) {
-        HStack(spacing: 2) {
-            Text(7000, format: .number)
-                .font(.title.bold())
+    ActivityRingAndStats(percent: 0.75, color: Color.blue) {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Steps")
+                .font(.caption)
             
-            VStack(alignment: .leading, spacing: 0) {
-                Text("steps")
-                HStack(spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(7500, format: .thousandsAbbr)
+                    .font(.title2.bold())
+                    .foregroundStyle(.move)
+                
+                HStack(spacing: 2) {
                     Text("of")
                     Text(10000, format: .thousandsAbbr)
                         .fontWeight(.bold)
                 }
+                .foregroundStyle(.secondary)
+                .font(.caption)
             }
-            .foregroundStyle(.secondary)
-            .font(.caption2)
         }
         
-        HStack(alignment: .firstTextBaseline, spacing: 2) {
-            Text(5.2, format: .number)
-                .font(.title.bold())
-            Text("miles")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Miles")
+                .font(.caption)
+            
+            Text(5.4.rounded(toPlaces: 1), format: .number)
+                .font(.title2.bold())
+                .foregroundStyle(.move)
         }
     }
 }

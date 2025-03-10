@@ -72,28 +72,32 @@ struct MoveView: View {
         NavigationStack {
             List {
                 ActivityRingAndStats(percent: movePercent, color: .move) {
-                    HStack(spacing: 2) {
-                        Text(steps, format: .thousandsAbbr)
-                            .font(.title.bold())
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Steps")
+                            .font(.caption)
                         
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("steps")
-                            HStack(spacing: 4) {
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text(steps, format: .thousandsAbbr)
+                                .font(.title2.bold())
+                                .foregroundStyle(.move)
+                            
+                            HStack(spacing: 2) {
                                 Text("of")
                                 Text(showToday ? dailyMoveGoal : dailyMoveGoal * 7, format: .thousandsAbbr)
                                     .fontWeight(.bold)
                             }
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
                         }
-                        .foregroundStyle(.secondary)
-                        .font(.caption2)
                     }
                     
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text(distance, format: .number)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(distanceUnit.capitalized)
+                            .font(.caption)
+                        
+                        Text(distance.rounded(toPlaces: 1), format: .number)
                             .font(.title2.bold())
-                        Text(distanceUnit)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.move)
                     }
                 }
                 

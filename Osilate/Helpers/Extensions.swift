@@ -132,6 +132,19 @@ extension Date {
         return weekday
     }
     
+    func getTodayAtHour(_ hour: Int) -> Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day], from: self)
+
+        var newComponents = DateComponents()
+        newComponents.year = components.year
+        newComponents.month = components.month
+        newComponents.day = components.day
+        newComponents.hour = hour
+
+        return calendar.date(from: newComponents)!
+    }
+    
     func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
         return calendar.dateComponents(Set(components), from: self)
     }
@@ -248,7 +261,11 @@ struct ThousandsAbbreviationFormatStyle: FormatStyle {
     func format(_ value: Int) -> String {
         if value >= 1000 {
             let thousands = Double(value) / 1000.0
-            return thousands.truncatingRemainder(dividingBy: 10) == 0 ? String(format: "%.0fk", thousands) : String(format: "%.1fk", thousands)
+            if thousands.truncatingRemainder(dividingBy: 1) == 0 {
+                return String(format: "%.0fk", thousands)
+            } else {
+                return String(format: "%.1fk", thousands)
+            }
         } else {
             return String(value)
         }
