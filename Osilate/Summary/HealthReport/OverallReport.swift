@@ -10,9 +10,9 @@ import SwiftUI
 struct OverallReport: View {
     @Environment(HealthController.self) private var healthController
     
-    let bodyTempHealthyRange: (low: Double, high: Double)
-    let todayTempStatus: BodyTempStatus
-    
+    @Binding var bodyTempStatus: BodyMetricStatus?
+    @Binding var respirationStatus: BodyMetricStatus?
+
     var body: some View {
         Section {
             ScrollView(.horizontal) {
@@ -21,17 +21,35 @@ struct OverallReport: View {
                         if healthController.bodyTempByDayLoading {
                             ProgressView()
                         } else {
-                            Image(systemName: todayTempStatus == .normal ? bodyTempNormalSystemImage : todayTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
+                            Image(systemName: bodyTempStatus == .normal ? bodyTempNormalSystemImage : bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 32, height: 32)
                                 .foregroundStyle(.accent)
                             
-                            Image(systemName: todayTempStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                            Image(systemName: bodyTempStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 16, height: 16)
-                                .foregroundStyle(todayTempStatus == .normal ? .green : .red)
+                                .foregroundStyle(bodyTempStatus == .normal ? .green : .red)
+                        }
+                    }
+                    
+                    VStack {
+                        if healthController.respirationByDayLoading {
+                            ProgressView()
+                        } else {
+                            Image(systemName: respirationSystemImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 32, height: 32)
+                                .foregroundStyle(.accent)
+                            
+                            Image(systemName: respirationStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 16, height: 16)
+                                .foregroundStyle(respirationStatus == .normal ? .green : .red)
                         }
                     }
                 }
@@ -45,8 +63,6 @@ struct OverallReport: View {
 #Preview {
     let healthController = HealthController()
     
-    let bodyTempHealthRange = (97.0, 98.0)
-    
-    return OverallReport(bodyTempHealthyRange: bodyTempHealthRange, todayTempStatus: .normal)
+    return OverallReport(bodyTempStatus: .constant(.normal), respirationStatus: .constant(.normal))
         .environment(healthController)
 }

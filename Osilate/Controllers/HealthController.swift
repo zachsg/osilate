@@ -84,6 +84,22 @@ class HealthController {
     var hasBodyTempToday = false
     var bodyTempLastUpdated: Date = .now
     
+    // Respiration
+    var respirationLoading = false
+    var respirationToday = 0.0
+    var respirationByDayLoading = false
+    var respirationByDay: [Date: Double] = [:]
+    var hasRespirationToday = false
+    var respirationLastUpdated: Date = .now
+    
+    // Blood oxygen
+    var oxygenLoading = false
+    var oxygenToday = 0.0
+    var oxygenByDayLoading = false
+    var oxygenByDay: [Date: Double] = [:]
+    var hasOxygenToday = false
+    var oxygenLastUpdated: Date = .now
+    
     init() {
         requestAuthorization()
     }
@@ -98,7 +114,9 @@ class HealthController {
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
             HKObjectType.quantityType(forIdentifier: .vo2Max)!,
             HKObjectType.categoryType(forIdentifier: .mindfulSession)!,
-            HKQuantityType(.appleSleepingWristTemperature)
+            HKQuantityType(.appleSleepingWristTemperature),
+            HKQuantityType(.respiratoryRate),
+            HKQuantityType(.oxygenSaturation)
         ])
         let toShare = Set([
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
@@ -1263,19 +1281,19 @@ class HealthController {
         let query = HKStatisticsQuery(
             quantityType: quantityType,
             quantitySamplePredicate: predicate,
-            options: .mostRecent
+            options: .discreteAverage
         ) { _, result, error in
             guard let result = result else {
                 print("failed to read body temp: \(error?.localizedDescription ?? "")")
                 return
             }
             
-            let recentTemp = result.mostRecentQuantity()
+            let averageTemp = result.averageQuantity()
             
             let metricOrImperial = UnitLength(forLocale: .current)
             let unit = metricOrImperial == .feet ? HKUnit.degreeFahrenheit() : HKUnit.degreeCelsius()
             
-            let bodyTemp = recentTemp?.doubleValue(for: unit)
+            let bodyTemp = averageTemp?.doubleValue(for: unit)
             let lastUpdated = result.endDate
             
             DispatchQueue.main.async {
@@ -1309,7 +1327,7 @@ class HealthController {
         let query = HKStatisticsCollectionQuery(
             quantityType: quantityType,
             quantitySamplePredicate: nil,
-            options: .mostRecent,
+            options: .discreteAverage,
             anchorDate: start,
             intervalComponents: interval
         )
@@ -1338,7 +1356,7 @@ class HealthController {
             
             var bodyTempByDayTemp: [Date: Double] = [:]
             statsCollection.enumerateStatistics(from: start, to: end) { (statistics, stop) in
-                if let quantity = statistics.mostRecentQuantity() {
+                if let quantity = statistics.averageQuantity() {
                     let bodyTemp = quantity.doubleValue(for: unit)
                     let date = statistics.endDate
                     
@@ -1360,6 +1378,237 @@ class HealthController {
                 self.hasBodyTempToday = hasBodyTempToday ? true : false
                 
                 self.bodyTempByDayLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    
+    // MARK: - Respiration
+    func getRespirationToday() {
+        respirationLoading = true
+        
+        let quantityType = HKQuantityType(.respiratoryRate)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking for body temp 6 hours before midnight of today
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-21600)
+        
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: .now, options: .strictStartDate)
+        
+        let query = HKStatisticsQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: predicate,
+            options: .discreteAverage
+        ) { _, result, error in
+            guard let result = result else {
+                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                return
+            }
+            
+            let averageRespiration = result.averageQuantity()
+            
+            let respirationTemp = averageRespiration?.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
+            let lastUpdated = result.endDate
+            
+            DispatchQueue.main.async {
+                if lastUpdated.isToday() {
+                    self.respirationToday = respirationTemp ?? 0
+                    self.respirationLastUpdated = lastUpdated
+                    self.hasRespirationToday = true
+                } else {
+                    self.hasRespirationToday = false
+                }
+                
+                self.respirationLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    func getRespirationTwoWeeks() {
+        respirationByDayLoading = true
+        
+        let quantityType = HKQuantityType(.respiratoryRate)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking for body temp 6 hours before midnight of 14 days ago
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-1036800)
+        
+        let interval = DateComponents(day: 1)
+        
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .discreteAverage,
+            anchorDate: start,
+            intervalComponents: interval
+        )
+        
+        query.initialResultsHandler = { query, results, error in
+            if let error = error as? HKError {
+                switch (error.code) {
+                case .errorDatabaseInaccessible:
+                    // HealthKit couldn't access the database because the device is locked.
+                    return
+                default:
+                    // Handle other HealthKit errors here.
+                    return
+                }
+            }
+            
+            guard let statsCollection = results else {
+                assertionFailure("")
+                return
+            }
+            
+            let end = Date.now
+            
+            var respirationByDayTemp: [Date: Double] = [:]
+            statsCollection.enumerateStatistics(from: start, to: end) { (statistics, stop) in
+                if let quantity = statistics.averageQuantity() {
+                    let respiration = quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
+                    let date = statistics.endDate
+                    
+                    respirationByDayTemp[date] = respiration
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.respirationByDay = respirationByDayTemp
+                
+                var hasRespirationToday = false
+                for (date, _) in respirationByDayTemp {
+                    if date.isToday() {
+                        hasRespirationToday = true
+                        break
+                    }
+                }
+                
+                self.hasRespirationToday = hasRespirationToday ? true : false
+                
+                self.respirationByDayLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    // MARK: - Blood oxygen
+    func getOxygenToday() {
+        oxygenLoading = true
+        
+        let quantityType = HKQuantityType(.oxygenSaturation)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking for body temp 6 hours before midnight of today
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-21600)
+        var end = calendar.startOfDay(for: .now).addingTimeInterval(28800)
+        if end.compare(Date.now) == .orderedDescending {
+            end = .now
+        }
+        
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        
+        let query = HKStatisticsQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: predicate,
+            options: .discreteAverage
+        ) { _, result, error in
+            guard let result = result else {
+                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                return
+            }
+            
+            let averageRespiration = result.averageQuantity()
+            
+            let respirationTemp = averageRespiration?.doubleValue(for: HKUnit.percent())
+            let lastUpdated = result.endDate
+            
+            DispatchQueue.main.async {
+                if lastUpdated.isToday() {
+                    self.oxygenToday = respirationTemp ?? 0
+                    self.oxygenLastUpdated = lastUpdated
+                    self.hasOxygenToday = true
+                } else {
+                    self.hasOxygenToday = false
+                }
+                
+                self.oxygenLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    func getOxygenTwoWeeks() {
+        oxygenByDayLoading = true
+        
+        let quantityType = HKQuantityType(.oxygenSaturation)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking for body temp 6 hours before midnight of 14 days ago
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-1036800)
+        
+        let interval = DateComponents(day: 1)
+        
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .discreteAverage,
+            anchorDate: start,
+            intervalComponents: interval
+        )
+        
+        query.initialResultsHandler = { query, results, error in
+            if let error = error as? HKError {
+                switch (error.code) {
+                case .errorDatabaseInaccessible:
+                    // HealthKit couldn't access the database because the device is locked.
+                    return
+                default:
+                    // Handle other HealthKit errors here.
+                    return
+                }
+            }
+            
+            guard let statsCollection = results else {
+                assertionFailure("")
+                return
+            }
+            
+            let end = Date.now
+            
+            var oxygenByDayTemp: [Date: Double] = [:]
+            statsCollection.enumerateStatistics(from: start, to: end) { (statistics, stop) in
+                if let quantity = statistics.averageQuantity() {
+                    let oxygen = quantity.doubleValue(for: HKUnit.percent())
+                    let date = statistics.endDate
+                    
+                    oxygenByDayTemp[date] = oxygen
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.oxygenByDay = oxygenByDayTemp
+                
+                var hasOxygenToday = false
+                for (date, _) in oxygenByDayTemp {
+                    if date.isToday() {
+                        hasOxygenToday = true
+                        break
+                    }
+                }
+                
+                self.hasOxygenToday = hasOxygenToday ? true : false
+                
+                self.oxygenByDayLoading = false
             }
         }
         

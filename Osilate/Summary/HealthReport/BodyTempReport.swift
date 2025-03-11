@@ -11,11 +11,29 @@ import SwiftUI
 struct BodyTempReport: View {
     @Environment(HealthController.self) private var healthController
     
-    let bodyTempRange: (low: Double, high: Double)
-    let bodyTempHealthyRange: (low: Double, high: Double)
-    let todayTempStatus: BodyTempStatus
+    @Binding var bodyTempHigh: Double
+    @Binding var bodyTempLow: Double
+    @Binding var bodyTemp: Double
+    @Binding var bodyTempStatus: BodyMetricStatus?
     
+    @State private var lowestTemp = 200.0
+    @State private var highestTemp = 0.0
     @State private var isExpanded = false
+    
+    var bottomRange: Double {
+        let bottom = lowestTemp > bodyTempLow ? bodyTempLow : lowestTemp
+        return bottom - 0.5
+    }
+    
+    var topRange: Double {
+        let top = highestTemp > bodyTempHigh ? highestTemp : bodyTempHigh
+        return top + 0.5
+    }
+    
+    var units: String {
+        let metricOrImperial = UnitLength(forLocale: .current)
+        return metricOrImperial == .feet ? "fahrenheit" : "celsius"
+    }
     
     var body: some View {
         Section {
@@ -31,13 +49,13 @@ struct BodyTempReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", bodyTempHealthyRange.high))
+                    RuleMark(y: .value("Top", bodyTempHigh))
                         .foregroundStyle(.accent.opacity(0.7))
                     
-                    RuleMark(y: .value("Bottom", bodyTempHealthyRange.low))
+                    RuleMark(y: .value("Bottom", bodyTempLow))
                         .foregroundStyle(.accent.opacity(0.7))
                 }
-                .chartYScale(domain: bodyTempRange.low < bodyTempRange.high ? bodyTempRange.low...bodyTempRange.high : 95...98)
+                .chartYScale(domain: bodyTempLow < bodyTempHigh ? bottomRange...topRange : 95...98)
                 .frame(height: isExpanded ? 320 : 128)
                 .onTapGesture {
                     withAnimation {
@@ -46,20 +64,69 @@ struct BodyTempReport: View {
                 }
             }
         } header: {
-            HeaderLabel(title: bodyTempTitle, systemImage: todayTempStatus == .normal ? bodyTempNormalSystemImage : todayTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
+            HeaderLabel(title: bodyTempTitle, systemImage: bodyTempStatus == .normal ? bodyTempNormalSystemImage : bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
         } footer: {
-            // TODO: Fix to work with current locale vs just imperial.
-            Text("Units: Degrees fahrenheit.")
+            Text("Units: Degrees \(units).")
+        }
+        .task {
+            await tryAgain()
+        }
+    }
+    
+    @MainActor
+    func tryAgain() async {
+        while healthController.bodyTempByDayLoading {
+            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+        }
+        
+        calculateBodyTempRange()
+        calculateBodyTempStatus()
+    }
+    
+    private func calculateBodyTempRange() {
+        var average = 0.0
+        
+        for (_, temp) in healthController.bodyTempByDay {
+            average += temp
+            
+            if temp < lowestTemp {
+                lowestTemp = temp
+            }
+            
+            if temp > highestTemp {
+                highestTemp = temp
+            }
+        }
+        
+        average /= Double(healthController.bodyTempByDay.count)
+        
+        bodyTempLow = average - 1
+        bodyTempHigh = average + 1
+    }
+    
+    private func calculateBodyTempStatus() {
+        bodyTempStatus = if healthController.bodyTempToday < bodyTempLow {
+            .low
+        } else if healthController.bodyTempToday > bodyTempHigh {
+            .high
+        } else {
+            .normal
         }
     }
 }
 
 #Preview {
     let healthController = HealthController()
+    healthController.bodyTempToday = 98
     
-    let bodyTempHealthRange = (97.0, 98.0)
-    let bodyTempRange = (95.0, 99.0)
+    let calendar = Calendar.current
+    for i in 0...13 {
+        let date = calendar.date(byAdding: .day, value: -i, to: Date.now)
+        if let date {
+            healthController.bodyTempByDay[date] = Double(Int.random(in: 94...101))
+        }
+    }
     
-    return BodyTempReport(bodyTempRange: bodyTempRange, bodyTempHealthyRange: bodyTempHealthRange, todayTempStatus: .normal)
+    return BodyTempReport(bodyTempHigh: .constant(101), bodyTempLow: .constant(95), bodyTemp: .constant(98), bodyTempStatus: .constant(.normal))
         .environment(healthController)
 }

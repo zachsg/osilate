@@ -27,6 +27,9 @@ let bodyTempTitle = "Body Temp"
 let bodyTempLowSystemImage = "thermometer.low"
 let bodyTempNormalSystemImage = "thermometer.medium"
 let bodyTempHighSystemImage = "thermometer.high"
+// Respiration
+let respirationTitle = "Respiration Rate"
+let respirationSystemImage = "lungs.fill"
 
 // MARK: Move
 let moveString = "Move"

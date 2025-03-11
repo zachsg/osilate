@@ -8,86 +8,49 @@
 import Charts
 import SwiftUI
 
-enum BodyTempStatus {
+enum BodyMetricStatus {
     case low, normal, high
 }
 
 struct HealthReportSheet: View {
-    @Environment(\.colorScheme) var colorScheme
-    
     @Environment(HealthController.self) private var healthController
     
     @Binding var sheetIsShowing: Bool
     
-    @State private var rhr = 55.0
-
-    var color: Color {
-        colorScheme == .dark ? .black : .white
-    }
+    @State private var bodyTempHigh = 0.0
+    @State private var bodyTempLow = 0.0
+    @State private var bodyTemp = 0.0
+    @State private var bodyTempStatus: BodyMetricStatus?
     
-    var days: (today: Date, yesterday: Date, twoAgo: Date) {
-        let now = Date.now
-        let twoAgo = now.addingTimeInterval(-86400 * 2)
-        let yesterday = now.addingTimeInterval(-86400)
-        
-        return (now, yesterday, twoAgo)
-    }
+    @State private var respirationHigh = 0.0
+    @State private var respirationLow = 0.0
+    @State private var respiration = 0.0
+    @State private var respirationStatus: BodyMetricStatus?
     
-    var bodyTempRange: (low: Double, high: Double) {
-        var low = 200.0
-        var high = 0.0
-        
-        for (_, temp) in healthController.bodyTempByDay {
-            if temp > high {
-                high = temp
-            }
-            
-            if temp < low {
-                low = temp
-            }
-        }
-        
-        return (low - 1, high + 1)
-    }
+    @State private var oxygenHigh = 0.0
+    @State private var oxygenLow = 0.0
+    @State private var oxygen = 0.0
+    @State private var oxygenStatus: BodyMetricStatus?
     
-    var bodyTempHealthyRange: (low: Double, high: Double) {
-        var average = 0.0
-        
-        for (_, temp) in healthController.bodyTempByDay {
-            average += temp
-        }
-        
-        average /= Double(healthController.bodyTempByDay.count)
-        
-        return (low: average - 1, high: average + 1)
-    }
-    
-    var todayTempStatus: BodyTempStatus {
-        return if healthController.bodyTempToday < bodyTempHealthyRange.low {
-            .low
-        } else if healthController.bodyTempToday > bodyTempHealthyRange.high {
-            .high
-        } else {
-            .normal
-        }
-    }
+    @State private var rhrHigh = 0
+    @State private var rhrLow = 0
+    @State private var rhr = 0
+    @State private var rhrStatus: BodyMetricStatus?
     
     var body: some View {
         NavigationStack {
             Form {
-                OverallReport(
-                    bodyTempHealthyRange: bodyTempHealthyRange,
-                    todayTempStatus: todayTempStatus
-                )
+                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus)
                 
-                BodyTempReport(
-                    bodyTempRange: bodyTempRange,
-                    bodyTempHealthyRange: bodyTempHealthyRange,
-                    todayTempStatus: todayTempStatus
-                )
+                BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTemp: $bodyTemp, bodyTempStatus: $bodyTempStatus)
+                
+                RespirationReport(respirationHigh: $respirationHigh, respirationLow: $respirationLow, respiration: $respiration, respirationStatus: $respirationStatus)
                 
                 Section {
-                    Text("Coming soon...")
+                    HStack(spacing: 2) {
+                        Text(healthController.rhrMostRecent, format: .number)
+                        Text("BPM")
+                    }
                 } header: {
                     HeaderLabel(title: "Resting Heart Rate", systemImage: "heart.fill")
                 } footer: {
@@ -95,13 +58,7 @@ struct HealthReportSheet: View {
                 }
                 
                 Section {
-                    Text("Coming soon...")
-                } header: {
-                    HeaderLabel(title: "Respiration Rate", systemImage: "lungs.fill")
-                }
-                
-                Section {
-                    Text("Coming soon...")
+                    Text(Int((healthController.oxygenToday * 100).rounded()), format: .percent)
                 } header: {
                     HeaderLabel(title: "Blood Oxygen", systemImage: "drop.degreesign.fill")
                 }
@@ -129,14 +86,33 @@ struct HealthReportSheet: View {
             }
         }
         .onAppear {
+            healthController.getRhrRecent()
+            
             healthController.getBodyTempToday()
             healthController.getBodyTempTwoWeeks()
+            
+            healthController.getRespirationToday()
+            healthController.getRespirationTwoWeeks()
+            
+            healthController.getOxygenToday()
+            healthController.getOxygenTwoWeeks()
         }
     }
 }
 
 #Preview {
     let healthController = HealthController()
+    healthController.bodyTempToday = 98
+    healthController.respirationToday = 14
+    
+    let calendar = Calendar.current
+    for i in 0...13 {
+        let date = calendar.date(byAdding: .day, value: -i, to: Date.now)
+        if let date {
+            healthController.bodyTempByDay[date] = Double(Int.random(in: 94...101))
+            healthController.respirationByDay[date] = Double(Int.random(in: 13...18))
+        }
+    }
     
     return HealthReportSheet(sheetIsShowing: .constant(true))
         .environment(healthController)
