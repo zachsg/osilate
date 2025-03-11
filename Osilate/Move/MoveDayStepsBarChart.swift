@@ -26,21 +26,8 @@ struct MoveDayStepsBarChart: View {
     }
     
     var body: some View {
-        if loading() {
-            ProgressView()
-        } else if healthController.stepCountDayByHour.isEmpty {
-            VStack {
-                Text("No active hours to show today.")
-                    .font(.subheadline)
-                Text("Let's get moving!")
-                    .font(.headline)
-            }
-            .padding()
-        } else {
+        ZStack {
             VStack(alignment: .leading) {
-                Divider()
-                    .padding(.bottom, 4)
-                
                 HStack(spacing: 4) {
                     Text("Most active from \(hourFormatted(date: best.date)): \(best.steps) steps")
                 }
@@ -48,27 +35,21 @@ struct MoveDayStepsBarChart: View {
                 .padding(.bottom, 2)
                 
                 Chart {
-                    ForEach(healthController.stepCountDayByHour.sorted { $0.key < $1.key }, id: \.key) { date, steps in
+                    ForEach(healthController.stepCountDayByHour.sorted { $0.key < $1.key }, id: \.key) { hour, steps in
                         BarMark(
-                            x: .value("Hour", date.hour()),
+                            x: .value("Hour", hour),
                             y: .value("Steps", steps)
                         )
                         .foregroundStyle(.move)
                         .cornerRadius(50)
                     }
                 }
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "info.circle")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 12)
-                    Text("Only showing hours with >300 steps")
-                }
-                .font(.caption.italic())
-                .foregroundStyle(.secondary)
+                .frame(height: 100)
             }
-            .frame(height: Double(UIScreen.main.bounds.height) / 3)
+            
+            if healthController.stepsDayByHourLoading {
+                ProgressView()
+            }
         }
     }
     

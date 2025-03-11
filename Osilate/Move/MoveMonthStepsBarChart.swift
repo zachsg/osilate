@@ -25,13 +25,8 @@ struct MoveMonthStepsBarChart: View {
     }
     
     var body: some View {
-        if loading() {
-            ProgressView()
-        } else {
+        ZStack {
             VStack(alignment: .leading) {
-                Divider()
-                    .padding(.bottom, 4)
-                
                 HStack(spacing: 4) {
                     Text("Daily average:")
                     Text(averageStepsPerDay, format: .number)
@@ -54,13 +49,13 @@ struct MoveMonthStepsBarChart: View {
                     RuleMark(y: .value("Goal", dailyMoveGoal))
                         .foregroundStyle(.move)
                 }
+                .frame(height: 100)
             }
-            .frame(height: Double(UIScreen.main.bounds.height) / 3)
+            
+            if healthController.stepsMonthByDayLoading {
+                ProgressView()
+            }
         }
-    }
-    
-    private func loading() -> Bool {
-        healthController.stepCountWeekByDay.isEmpty
     }
 }
 

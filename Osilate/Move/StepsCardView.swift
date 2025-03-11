@@ -14,8 +14,6 @@ struct StepsCardView: View {
     let completed: Double
     let timeFrame: OTimePeriod
     
-    @Binding var isExpanded: Bool
-    
     var steps: Int {
         switch timeFrame {
         case .day:
@@ -49,7 +47,7 @@ struct StepsCardView: View {
     }
     
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
+        VStack {
             switch timeFrame {
             case .day:
                 MoveDayStepsBarChart()
@@ -67,68 +65,37 @@ struct StepsCardView: View {
                         healthController.getStepCountMonthByDay()
                     }
             }
-        } label: {
+            
             HStack(alignment: .top) {
                 VStack(alignment: .leading) {
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
                         Text(steps, format: .number)
                             .font(.title.bold())
                         
-                        if isExpanded {
-                            Text("steps")
-                                .font(.caption)
-                                .foregroundStyle(.accent)
-                        }
+                        Text("steps")
+                            .font(.caption)
+                            .foregroundStyle(.accent)
                     }
                     
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
                         Text(distance, format: .number)
                             .font(.headline.bold())
-                        
-                        if isExpanded {
-                            Text(distanceUnit)
-                                .font(.caption)
-                                .foregroundStyle(.accent)
-                        }
+                    
+                        Text(distanceUnit)
+                            .font(.caption)
+                            .foregroundStyle(.accent)
                     }
                 }
                 
                 Spacer()
-                
-                VStack(alignment: .trailing) {
-                    Text(timeFrame.rawValue.uppercased())
-                        .font(.title)
-                        .foregroundStyle(.accent.opacity(0.5))
-                    
-                    if isExpanded {
-                        if healthController.stepsDayByHourLoading && timeFrame == .day {
-                            Text("Updating...")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        } else if healthController.stepsWeekByDayLoading && timeFrame == .week {
-                            Text("Updating...")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        } else if healthController.stepsMonthByDayLoading && timeFrame == .month {
-                            Text("Updating...")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Text("")
-                                .font(.footnote)
-                        }
-                    }
-                }
             }
             .foregroundStyle(.move)
         }
-        .disclosureGroupStyle(ODisclosureGroupStyle())
-        .disabled(isExpanded)
         .padding()
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(
-            RoundedRectangle(cornerRadius: 10).stroke(isExpanded ? .move : .accent, lineWidth: 8)
+            RoundedRectangle(cornerRadius: 10).stroke(.move, lineWidth: 8)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .trim(from: completed, to: 1)
@@ -136,7 +103,8 @@ struct StepsCardView: View {
                         .rotationEffect(.degrees(180))
                 )
         )
-        .padding(.vertical, 4)
+        .padding(.horizontal)
+        .frame(height: 290)
     }
 }
 
@@ -154,6 +122,6 @@ struct StepsCardView: View {
         }
     }
     
-    return StepsCardView(completed: 0.33, timeFrame: .week, isExpanded: .constant(true))
+    return StepsCardView(completed: 0.33, timeFrame: .week)
         .environment(healthController)
 }

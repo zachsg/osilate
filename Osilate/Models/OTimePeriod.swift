@@ -7,6 +7,6 @@
 
 import Foundation
 
-enum OTimePeriod: String, Codable, Equatable {
+enum OTimePeriod: String, Codable, Equatable, CaseIterable {
     case day, week, month
 }

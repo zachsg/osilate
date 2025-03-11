@@ -179,8 +179,8 @@ struct BreatheView: View {
     }
     
     private func refresh() {
-        healthController.getMindfulMinutesToday()
-        healthController.getMindfulMinutesWeek()
+        healthController.getMindfulMinutesFor(.day)
+        healthController.getMindfulMinutesFor(.week)
     }
 
     private func deleteActivities(offsets: IndexSet) {

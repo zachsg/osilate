@@ -57,7 +57,7 @@ struct VO2Chart: View {
             sum += Double(zone2)
             count += 1
         }
-
+        
         sum /= Double(count > 0 ? count : 1)
 
         return Int((sum * 10).rounded() / 10)
@@ -124,10 +124,10 @@ struct VO2Chart: View {
 
                 ZStack {
                     Chart {
-                        ForEach(healthController.zone2ByDay.sorted { $0.key < $1.key }, id: \.key) { date, zone2 in
+                        ForEach(healthController.zone2ByDay.sorted { $0.key < $1.key }, id: \.key) { date, minutes in
                             BarMark(
                                 x: .value("Day", date),
-                                y: .value(heartUnits, zone2)
+                                y: .value("Minutes", minutes)
                             )
                             .foregroundStyle(.sweat)
                         }

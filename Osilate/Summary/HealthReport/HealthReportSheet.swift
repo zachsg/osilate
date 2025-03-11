@@ -129,8 +129,8 @@ struct HealthReportSheet: View {
             }
         }
         .onAppear {
-            healthController.loadBodyTempToday()
-            healthController.loadBodyTempTwoWeeks()
+            healthController.getBodyTempToday()
+            healthController.getBodyTempTwoWeeks()
         }
     }
 }

@@ -107,13 +107,13 @@ struct SummaryView: View {
     }
     
     private func refresh() {
-        healthController.getStepCountToday()
-        healthController.getZone2Today()
-        healthController.getMindfulMinutesToday()
+        healthController.getStepCountFor(.day)
+        healthController.getZone2For(.day)
+        healthController.getMindfulMinutesFor(.day)
         
-        healthController.getStepCountWeek()
-        healthController.getZone2Week()
-        healthController.getMindfulMinutesWeek()
+        healthController.getStepCountFor(.week)
+        healthController.getZone2For(.week)
+        healthController.getMindfulMinutesFor(.week)
         
         if showToday {
             healthController.getStepCountDayByHour()

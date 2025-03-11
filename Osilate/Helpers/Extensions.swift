@@ -145,6 +145,12 @@ extension Date {
         return calendar.date(from: newComponents)!
     }
     
+    func topOfTheHour() -> Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour], from: self)
+        return calendar.date(from: components) ?? self
+    }
+    
     func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
         return calendar.dateComponents(Set(components), from: self)
     }

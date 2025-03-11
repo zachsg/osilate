@@ -14,10 +14,8 @@ struct MoveView: View {
     @AppStorage(showTodayKey) var showToday = showTodayDefault
     @AppStorage(dailyMoveGoalKey) var dailyMoveGoal: Int = dailyMoveGoalDefault
     
+    @State private var tab: OTimePeriod = .day
     @State private var animationAmount = 0.0
-    @State private var dayExpanded = true
-    @State private var weekExpanded = false
-    @State private var monthExpanded = false
     
     var movePercent: Double {
         if showToday {
@@ -102,9 +100,28 @@ struct MoveView: View {
                 }
                 
                 Section {
-                    StepsCardView(completed: completedMonth, timeFrame: .month, isExpanded: $monthExpanded)
-                    StepsCardView(completed: completedWeek, timeFrame: .week, isExpanded: $weekExpanded)
-                    StepsCardView(completed: completedDay, timeFrame: .day, isExpanded: $dayExpanded)
+                    Picker("Period", selection: $tab) {
+                        ForEach(OTimePeriod.allCases, id: \.self) { period in
+                            Text(period.rawValue.capitalized)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    
+                    TabView(selection: $tab) {
+                        Tab("Day", systemImage: "", value: .day) {
+                            StepsCardView(completed: completedDay, timeFrame: .day)
+                        }
+                        
+                        Tab("Week", systemImage: "", value: .week) {
+                            StepsCardView(completed: completedWeek, timeFrame: .week)
+                        }
+                        
+                        Tab("Month", systemImage: "", value: .month) {
+                            StepsCardView(completed: completedMonth, timeFrame: .month)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(height: 280)
                 }
             }
             .refreshable {
@@ -112,33 +129,12 @@ struct MoveView: View {
             }
             .navigationTitle(moveString)
         }
+        .onAppear {
+            refresh()
+        }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
                 refresh()
-            }
-        }
-        .onChange(of: dayExpanded) { old, new in
-            if new {
-                withAnimation {
-                    weekExpanded = false
-                    monthExpanded = false
-                }
-            }
-        }
-        .onChange(of: weekExpanded) { old, new in
-            if new {
-                withAnimation {
-                    dayExpanded = false
-                    monthExpanded = false
-                }
-            }
-        }
-        .onChange(of: monthExpanded) { old, new in
-            if new {
-                withAnimation {
-                    dayExpanded = false
-                    weekExpanded = false
-                }
             }
         }
     }
