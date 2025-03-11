@@ -12,6 +12,8 @@ struct OverallReport: View {
     
     @Binding var bodyTempStatus: BodyMetricStatus?
     @Binding var respirationStatus: BodyMetricStatus?
+    @Binding var oxygenStatus: BodyMetricStatus?
+    @Binding var rhrStatus: BodyMetricStatus?
 
     var body: some View {
         Section {
@@ -52,6 +54,42 @@ struct OverallReport: View {
                                 .foregroundStyle(respirationStatus == .normal ? .green : .red)
                         }
                     }
+                    
+                    VStack {
+                        if healthController.oxygenByDayLoading {
+                            ProgressView()
+                        } else {
+                            Image(systemName: oxygenSystemImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 32, height: 32)
+                                .foregroundStyle(.accent)
+                            
+                            Image(systemName: oxygenStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 16, height: 16)
+                                .foregroundStyle(oxygenStatus == .normal ? .green : .red)
+                        }
+                    }
+                    
+                    VStack {
+                        if healthController.rhrLoading {
+                            ProgressView()
+                        } else {
+                            Image(systemName: rhrSystemImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 32, height: 32)
+                                .foregroundStyle(.accent)
+                            
+                            Image(systemName: rhrStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 16, height: 16)
+                                .foregroundStyle(rhrStatus == .normal ? .green : .red)
+                        }
+                    }
                 }
             }
         } header: {
@@ -63,6 +101,6 @@ struct OverallReport: View {
 #Preview {
     let healthController = HealthController()
     
-    return OverallReport(bodyTempStatus: .constant(.normal), respirationStatus: .constant(.normal))
+    return OverallReport(bodyTempStatus: .constant(.normal), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.normal))
         .environment(healthController)
 }

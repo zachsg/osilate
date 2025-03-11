@@ -600,7 +600,6 @@ class HealthController {
             }
             
             var checking: Date = calendar.startOfDay(for: .now)
-            let dayInSeconds: TimeInterval = 86400
             for _ in 1...7 {
                 if zone2WeekByDayTemp[checking] != nil {
                     let value = zone2WeekByDayTemp[checking] ?? 0
@@ -608,7 +607,7 @@ class HealthController {
                 } else {
                     zone2WeekByDayTemp[checking] = 0
                 }
-                checking = checking.addingTimeInterval(-dayInSeconds)
+                checking = checking.addingTimeInterval(-hourInSeconds * 24)
             }
             
             DispatchQueue.main.async {
@@ -806,7 +805,7 @@ class HealthController {
             fatalError("*** Unable to create a heart rate type ***")
         }
 
-        let startDate = Calendar.current.startOfDay(for: .now.addingTimeInterval(-5148000))
+        let startDate = Calendar.current.startOfDay(for: .now.addingTimeInterval(-hourInSeconds * 24 * 60))
         let predicate = HKQuery.predicateForSamples(
             withStart: startDate,
             end: .now,
@@ -827,7 +826,7 @@ class HealthController {
 
             let heartRateUnit: HKUnit = HKUnit(from: "count/min")
 
-            let twoWeeksAgo = Calendar.current.startOfDay(for: .now.addingTimeInterval(-1209600))
+            let twoWeeksAgo = Calendar.current.startOfDay(for: .now.addingTimeInterval(-hourInSeconds * 24 * 14))
 
             for sample in samples {
                 if sample.endDate > latest {
@@ -871,7 +870,7 @@ class HealthController {
             fatalError("*** Unable to create a heart rate type ***")
         }
 
-        let startDate = Calendar.current.startOfDay(for: .now.addingTimeInterval(-5148000))
+        let startDate = Calendar.current.startOfDay(for: .now.addingTimeInterval(-hourInSeconds * 24 * 60))
         let predicate = HKQuery.predicateForSamples(
             withStart: startDate,
             end: .now,
@@ -892,7 +891,7 @@ class HealthController {
 
             let heartRateUnit: HKUnit = HKUnit(from: "count/min")
 
-            let twoWeeksAgo = Calendar.current.startOfDay(for: .now.addingTimeInterval(-1209600))
+            let twoWeeksAgo = Calendar.current.startOfDay(for: .now.addingTimeInterval(-hourInSeconds * 24 * 14))
 
             for sample in samples {
                 if sample.endDate > latest {
@@ -973,7 +972,7 @@ class HealthController {
                 options: .strictStartDate
             )
         case .month:
-            let monthAgo = calendar.startOfDay(for: .now.addingTimeInterval(-86400 * 30))
+            let monthAgo = calendar.startOfDay(for: .now.addingTimeInterval(-hourInSeconds * 24 * 30))
             
             predicate = HKQuery.predicateForSamples(
                 withStart: monthAgo,
@@ -1018,7 +1017,7 @@ class HealthController {
             fatalError("*** Unable to create a vo2max type ***")
         }
         
-        let startDate = Calendar.current.startOfDay(for: .now.addingTimeInterval(-5148000))
+        let startDate = Calendar.current.startOfDay(for: .now.addingTimeInterval(-hourInSeconds * 24 * 60))
         let predicate = HKQuery.predicateForSamples(
             withStart: startDate,
             end: .now,
@@ -1041,7 +1040,7 @@ class HealthController {
             let mL = HKUnit.literUnit(with: .milli)
             let vo2Unit = mL.unitDivided(by: kgmin)
 
-            let twoWeeksAgo = Calendar.current.startOfDay(for: .now.addingTimeInterval(-1209600))
+            let twoWeeksAgo = Calendar.current.startOfDay(for: .now.addingTimeInterval(-hourInSeconds * 24 * 14))
 
             for sample in samples {
                 if sample.endDate > latest {
@@ -1273,8 +1272,8 @@ class HealthController {
         
         let calendar = Calendar.current
         
-        // Begin looking for body temp 6 hours before midnight of today
-        let start = calendar.startOfDay(for: .now).addingTimeInterval(-21600)
+        // Begin looking 3 hours before midnight of today
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 3)
         
         let predicate = HKQuery.predicateForSamples(withStart: start, end: .now, options: .strictStartDate)
         
@@ -1319,8 +1318,8 @@ class HealthController {
         
         let calendar = Calendar.current
         
-        // Begin looking for body temp 6 hours before midnight of 14 days ago
-        let start = calendar.startOfDay(for: .now).addingTimeInterval(-1036800)
+        // Begin looking 3 hours before midnight of 14 days ago
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 339)
         
         let interval = DateComponents(day: 1)
         
@@ -1393,8 +1392,8 @@ class HealthController {
         
         let calendar = Calendar.current
         
-        // Begin looking for body temp 6 hours before midnight of today
-        let start = calendar.startOfDay(for: .now).addingTimeInterval(-21600)
+        // Begin looking 3 hours before midnight of today
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 3)
         
         let predicate = HKQuery.predicateForSamples(withStart: start, end: .now, options: .strictStartDate)
         
@@ -1436,8 +1435,8 @@ class HealthController {
         
         let calendar = Calendar.current
         
-        // Begin looking for body temp 6 hours before midnight of 14 days ago
-        let start = calendar.startOfDay(for: .now).addingTimeInterval(-1036800)
+        // Begin looking 3 hours before midnight of 14 days ago
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 339)
         
         let interval = DateComponents(day: 1)
         
@@ -1506,8 +1505,8 @@ class HealthController {
         
         let calendar = Calendar.current
         
-        // Begin looking for body temp 6 hours before midnight of today
-        let start = calendar.startOfDay(for: .now).addingTimeInterval(-21600)
+        // Begin looking 3 hours before midnight of today
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 3)
         var end = calendar.startOfDay(for: .now).addingTimeInterval(28800)
         if end.compare(Date.now) == .orderedDescending {
             end = .now
@@ -1525,14 +1524,16 @@ class HealthController {
                 return
             }
             
-            let averageRespiration = result.averageQuantity()
+            let averageOxygen = result.averageQuantity()
             
-            let respirationTemp = averageRespiration?.doubleValue(for: HKUnit.percent())
+            let oxygenTemp = averageOxygen?.doubleValue(for: HKUnit.percent())
             let lastUpdated = result.endDate
             
             DispatchQueue.main.async {
                 if lastUpdated.isToday() {
-                    self.oxygenToday = respirationTemp ?? 0
+                    if let oxygenTemp {
+                        self.oxygenToday = (oxygenTemp * 100).rounded(toPlaces: 1)
+                    }
                     self.oxygenLastUpdated = lastUpdated
                     self.hasOxygenToday = true
                 } else {
@@ -1553,8 +1554,8 @@ class HealthController {
         
         let calendar = Calendar.current
         
-        // Begin looking for body temp 6 hours before midnight of 14 days ago
-        let start = calendar.startOfDay(for: .now).addingTimeInterval(-1036800)
+        // Begin looking 3 hours before midnight of 14 days ago
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 339)
         
         let interval = DateComponents(day: 1)
         
@@ -1591,7 +1592,7 @@ class HealthController {
                     let oxygen = quantity.doubleValue(for: HKUnit.percent())
                     let date = statistics.endDate
                     
-                    oxygenByDayTemp[date] = oxygen
+                    oxygenByDayTemp[date] = (oxygen * 100).rounded(toPlaces: 1)
                 }
             }
             

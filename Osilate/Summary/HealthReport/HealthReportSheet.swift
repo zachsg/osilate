@@ -19,17 +19,14 @@ struct HealthReportSheet: View {
     
     @State private var bodyTempHigh = 0.0
     @State private var bodyTempLow = 0.0
-    @State private var bodyTemp = 0.0
     @State private var bodyTempStatus: BodyMetricStatus?
     
     @State private var respirationHigh = 0.0
     @State private var respirationLow = 0.0
-    @State private var respiration = 0.0
     @State private var respirationStatus: BodyMetricStatus?
     
     @State private var oxygenHigh = 0.0
     @State private var oxygenLow = 0.0
-    @State private var oxygen = 0.0
     @State private var oxygenStatus: BodyMetricStatus?
     
     @State private var rhrHigh = 0
@@ -40,28 +37,15 @@ struct HealthReportSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus)
+                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus)
                 
-                BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTemp: $bodyTemp, bodyTempStatus: $bodyTempStatus)
+                BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTempStatus: $bodyTempStatus)
                 
-                RespirationReport(respirationHigh: $respirationHigh, respirationLow: $respirationLow, respiration: $respiration, respirationStatus: $respirationStatus)
+                RespirationReport(respirationHigh: $respirationHigh, respirationLow: $respirationLow, respirationStatus: $respirationStatus)
+               
+                OxygenReport(oxygenHigh: $oxygenHigh, oxygenLow: $oxygenLow, oxygenStatus: $oxygenStatus)
                 
-                Section {
-                    HStack(spacing: 2) {
-                        Text(healthController.rhrMostRecent, format: .number)
-                        Text("BPM")
-                    }
-                } header: {
-                    HeaderLabel(title: "Resting Heart Rate", systemImage: "heart.fill")
-                } footer: {
-                    Text("Units: Beats per minute.")
-                }
-                
-                Section {
-                    Text(Int((healthController.oxygenToday * 100).rounded()), format: .percent)
-                } header: {
-                    HeaderLabel(title: "Blood Oxygen", systemImage: "drop.degreesign.fill")
-                }
+                RHRReport(rhrHigh: $rhrHigh, rhrLow: $rhrLow, rhrStatus: $rhrStatus)
                 
                 Section {
                     Text("Coming soon...")
@@ -86,8 +70,6 @@ struct HealthReportSheet: View {
             }
         }
         .onAppear {
-            healthController.getRhrRecent()
-            
             healthController.getBodyTempToday()
             healthController.getBodyTempTwoWeeks()
             
@@ -96,6 +78,8 @@ struct HealthReportSheet: View {
             
             healthController.getOxygenToday()
             healthController.getOxygenTwoWeeks()
+            
+            healthController.getRhrRecent()
         }
     }
 }
@@ -104,6 +88,7 @@ struct HealthReportSheet: View {
     let healthController = HealthController()
     healthController.bodyTempToday = 98
     healthController.respirationToday = 14
+    healthController.oxygenToday = 97.6
     
     let calendar = Calendar.current
     for i in 0...13 {
@@ -111,6 +96,7 @@ struct HealthReportSheet: View {
         if let date {
             healthController.bodyTempByDay[date] = Double(Int.random(in: 94...101))
             healthController.respirationByDay[date] = Double(Int.random(in: 13...18))
+            healthController.oxygenByDay[date] = Double(Int.random(in: 95...98))
         }
     }
     

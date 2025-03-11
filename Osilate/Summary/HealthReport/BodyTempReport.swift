@@ -13,7 +13,6 @@ struct BodyTempReport: View {
     
     @Binding var bodyTempHigh: Double
     @Binding var bodyTempLow: Double
-    @Binding var bodyTemp: Double
     @Binding var bodyTempStatus: BodyMetricStatus?
     
     @State private var lowestTemp = 200.0
@@ -127,6 +126,6 @@ struct BodyTempReport: View {
         }
     }
     
-    return BodyTempReport(bodyTempHigh: .constant(101), bodyTempLow: .constant(95), bodyTemp: .constant(98), bodyTempStatus: .constant(.normal))
+    return BodyTempReport(bodyTempHigh: .constant(101), bodyTempLow: .constant(95), bodyTempStatus: .constant(.normal))
         .environment(healthController)
 }

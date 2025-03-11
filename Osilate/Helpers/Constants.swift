@@ -9,6 +9,7 @@ import Foundation
 
 let showTodayKey = "showToday"
 let showTodayDefault = false
+let hourInSeconds = 60.0 * 60.0
 
 // MARK: Summary
 let summaryString = "Summary"
@@ -30,6 +31,13 @@ let bodyTempHighSystemImage = "thermometer.high"
 // Respiration
 let respirationTitle = "Respiration Rate"
 let respirationSystemImage = "lungs.fill"
+// Oxygen / SpO2
+let oxygenTitle = "Blood Oxygen"
+let oxygenSystemImage = "drop.degreesign.fill"
+// Resting Heart Rate
+let rhrTitle = "Resting Heart Rate"
+let rhrSystemImage = "heart.fill"
+
 
 // MARK: Move
 let moveString = "Move"

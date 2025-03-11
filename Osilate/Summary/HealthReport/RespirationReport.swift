@@ -13,7 +13,6 @@ struct RespirationReport: View {
     
     @Binding var respirationHigh: Double
     @Binding var respirationLow: Double
-    @Binding var respiration: Double
     @Binding var respirationStatus: BodyMetricStatus?
     
     @State private var lowestRespiration = 50.0
@@ -37,13 +36,11 @@ struct RespirationReport: View {
             } else {
                 Chart {
                     ForEach(healthController.respirationByDay.sorted { $0.key < $1.key }, id: \.key) { date, resp in
-                        if Date.now.compare(date) == .orderedDescending {
-                            LineMark(
-                                x: .value("Day", date.day()),
-                                y: .value("Respiration", resp)
-                            )
-                            .lineStyle(.init(lineWidth: 6, lineCap: .round))
-                        }
+                        LineMark(
+                            x: .value("Day", date.day()),
+                            y: .value("Respiration", resp)
+                        )
+                        .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
                     RuleMark(y: .value("Top", respirationHigh))
@@ -124,6 +121,6 @@ struct RespirationReport: View {
         }
     }
     
-    return RespirationReport(respirationHigh: .constant(17), respirationLow: .constant(14), respiration: .constant(15), respirationStatus: .constant(.normal))
+    return RespirationReport(respirationHigh: .constant(17), respirationLow: .constant(14), respirationStatus: .constant(.normal))
         .environment(healthController)
 }
