@@ -56,7 +56,7 @@ struct ContentView: View {
 #Preview {
     let healthController = HealthController()
     healthController.stepCountToday = 3500
-    healthController.stepCountWeek = 50000
+    healthController.stepCountWeek = 0
     healthController.zone2Today = 5
     healthController.zone2Week = 60
     healthController.mindfulMinutesToday = 5

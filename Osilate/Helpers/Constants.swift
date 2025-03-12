@@ -17,7 +17,7 @@ let summarySystemImage = "house.circle"
 
 // MARK: Health report
 let healthReportTitle = "Health Report"
-let healthReportSystemImage = "stethoscope"
+let healthReportSystemImage = "heart.text.clipboard.fill"
 let inRangeSystemImage = "checkmark.square.fill"
 let outRangeSystemImage = "exclamationmark.triangle.fill"
 // Overall
@@ -57,11 +57,13 @@ let zone2MinKey = "zone2Threshold"
 let zone2MinDefault = 136
 
 // VO2 max
-let vO2SystemImage = "heart"
+let vO2SystemImage = "stethoscope"
 let vO2Units = "VO₂max"
 
 // Heart
 let heartUnits = "bpm"
+let heartSystemImage = "heart"
+let cardioRecoverySystemImage = "timer"
 
 // MARK: Breathe
 let breatheString = "Breathe"

@@ -48,43 +48,41 @@ struct SummaryView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack {
+                ZStack {
                     ZStack {
-                        ZStack {
-                            ActivityRing(percent: movePercent, color: .move, strokeWidth: 28, height: 300)
-                            
-                            ActivityRing(percent: sweatPercent, color: .sweat, strokeWidth: 28, height: 240)
-                            
-                            ActivityRing(percent: breathePercent, color: .breathe, strokeWidth: 28, height: 180)
-                            
-                            SummaryDisplay(movePercent: movePercent, sweatPercent: sweatPercent, breathePercent: breathePercent)
-                        }
-                        .rotation3DEffect(.degrees(animationAmount), axis: (x: 0, y: 1, z: 0))
+                        ActivityRing(percent: movePercent, color: .move, strokeWidth: 28, height: 280)
+                        
+                        ActivityRing(percent: sweatPercent, color: .sweat, strokeWidth: 28, height: 220)
+                        
+                        ActivityRing(percent: breathePercent, color: .breathe, strokeWidth: 28, height: 160)
+                        
+                        SummaryDisplay(movePercent: movePercent, sweatPercent: sweatPercent, breathePercent: breathePercent)
                     }
-                    .padding(.top, 8)
-                    .padding(.bottom, 20)
                     .rotation3DEffect(.degrees(animationAmount), axis: (x: 0, y: 1, z: 0))
-                    .onTapGesture {
-                        withAnimation {
-                            animationAmount = animationAmount == 0 ? 180 : 0
-                            showToday.toggle()
-                        }
-                    }
-                    
-                    VStack(spacing: 12) {
-                        MoveCard(tabSelected: $tabSelected, movePercent: movePercent)
-                        
-                        SweatCard(tabSelected: $tabSelected, sweatPercent: sweatPercent)
-                        
-                        BreatheCard(tabSelected: $tabSelected, breathePercent: breathePercent)
+                }
+                .padding(.top, 20)
+                .padding(.bottom, 20)
+                .rotation3DEffect(.degrees(animationAmount), axis: (x: 0, y: 1, z: 0))
+                .onTapGesture {
+                    withAnimation {
+                        animationAmount = animationAmount == 0 ? 180 : 0
+                        showToday.toggle()
                     }
                 }
-                .padding()
+                .padding(.vertical, 8)
+                    
+                VStack(spacing: 12) {
+                    MoveCard(tabSelected: $tabSelected, movePercent: movePercent)
+                    SweatCard(tabSelected: $tabSelected, sweatPercent: sweatPercent)
+                    BreatheCard(tabSelected: $tabSelected, breathePercent: breathePercent)
+                }
+                .padding(.horizontal)
             }
             .refreshable {
                 refresh()
             }
             .navigationTitle(summaryString)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem {
                     Button(healthReportTitle, systemImage: healthReportSystemImage) {
@@ -127,12 +125,12 @@ struct SummaryView: View {
 
 #Preview {
     let healthController = HealthController()
-        healthController.stepCountToday = 3000
-        healthController.stepCountWeek = 50000
-        healthController.zone2Today = 5
-        healthController.zone2Week = 60
-        healthController.mindfulMinutesToday = 10
-        healthController.mindfulMinutesWeek = 45
+    healthController.stepCountToday = 3000
+    healthController.stepCountWeek = 50000
+    healthController.zone2Today = 5
+    healthController.zone2Week = 60
+    healthController.mindfulMinutesToday = 10
+    healthController.mindfulMinutesWeek = 45
     
     return SummaryView(tabSelected: .constant(.summary))
         .environment(healthController)

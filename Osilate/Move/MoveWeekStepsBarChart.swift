@@ -49,7 +49,6 @@ struct MoveWeekStepsBarChart: View {
                     RuleMark(y: .value("Goal", dailyMoveGoal))
                         .foregroundStyle(.move)
                 }
-                .frame(height: 100)
             }
             
             if healthController.stepsWeekByDayLoading {

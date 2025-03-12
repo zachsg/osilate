@@ -103,8 +103,7 @@ struct StepsCardView: View {
                         .rotationEffect(.degrees(180))
                 )
         )
-        .padding(.horizontal)
-        .frame(height: 290)
+        .padding()
     }
 }
 

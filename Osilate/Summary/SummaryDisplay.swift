@@ -36,10 +36,11 @@ struct SummaryDisplay: View {
                     Text("Breathe")
                         .foregroundStyle(.breathe)
                 }
-                .font(.subheadline.bold())
+                .font(.footnote.bold())
                 
                 Divider()
-                    .frame(height: 60)
+                    .frame(width: 1, height: 60)
+                    .background(.secondary)
                 
                 VStack(alignment: .leading) {
                     Text(movePercent, format: .percent)
@@ -49,7 +50,7 @@ struct SummaryDisplay: View {
                     Text(breathePercent, format: .percent)
                         .foregroundStyle(.breathe)
                 }
-                .font(.subheadline)
+                .font(.footnote)
                 .fontWeight(.heavy)
             }
         }

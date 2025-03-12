@@ -68,7 +68,7 @@ struct MoveView: View {
     
     var body: some View {
         NavigationStack {
-            List {
+            VStack {
                 ActivityRingAndStats(percent: movePercent, color: .move) {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Steps")
@@ -98,36 +98,36 @@ struct MoveView: View {
                             .foregroundStyle(.move)
                     }
                 }
+                .padding(.vertical)
                 
-                Section {
-                    Picker("Period", selection: $tab) {
-                        ForEach(OTimePeriod.allCases, id: \.self) { period in
-                            Text(period.rawValue.capitalized)
-                        }
+                Picker("Period", selection: $tab) {
+                    ForEach(OTimePeriod.allCases, id: \.self) { period in
+                        Text(period.rawValue.capitalized)
                     }
-                    .pickerStyle(.segmented)
-                    
-                    TabView(selection: $tab) {
-                        Tab("Day", systemImage: "", value: .day) {
-                            StepsCardView(completed: completedDay, timeFrame: .day)
-                        }
-                        
-                        Tab("Week", systemImage: "", value: .week) {
-                            StepsCardView(completed: completedWeek, timeFrame: .week)
-                        }
-                        
-                        Tab("Month", systemImage: "", value: .month) {
-                            StepsCardView(completed: completedMonth, timeFrame: .month)
-                        }
-                    }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: 280)
                 }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                
+                TabView(selection: $tab) {
+                    Tab("Day", systemImage: "", value: .day) {
+                        StepsCardView(completed: completedDay, timeFrame: .day)
+                    }
+                    
+                    Tab("Week", systemImage: "", value: .week) {
+                        StepsCardView(completed: completedWeek, timeFrame: .week)
+                    }
+                    
+                    Tab("Month", systemImage: "", value: .month) {
+                        StepsCardView(completed: completedMonth, timeFrame: .month)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
             }
             .refreshable {
                 refresh()
             }
             .navigationTitle(moveString)
+            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             refresh()
@@ -161,6 +161,15 @@ struct MoveView: View {
     healthController.stepCountMonth = 250000
     healthController.distanceToday = 5
     healthController.distanceWeek = 25
+    
+    let calendar = Calendar.current
+    let currentHour = calendar.dateComponents([.hour], from: .now)
+    for i in 0...currentHour.hour! {
+        let date = calendar.date(byAdding: .hour, value: -i, to: .now)
+        if let date {
+            healthController.stepCountDayByHour[date] = Int.random(in: 0...2000)
+        }
+    }
     
     return MoveView()
         .environment(healthController)

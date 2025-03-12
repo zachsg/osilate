@@ -52,7 +52,7 @@ struct BreatheView: View {
         NavigationStack {
             VStack {
                 if activities.isEmpty {
-                    List {
+                    VStack {
                         ActivityRingAndStats(percent: breathePercent, color: .breathe) {
                             VStack(alignment: .leading, spacing: 0) {
                                 Text("Minutes")
@@ -71,18 +71,21 @@ struct BreatheView: View {
                                 }
                             }
                         }
+                        .padding(.vertical)
                         
-                        StatsSection()
-                        
-                        Label("No time like the present. Let's take action!", systemImage: arrowSystemImage)
-                            .font(.title2)
-                            .multilineTextAlignment(.center)
-                    }
-                    .refreshable {
-                        refresh()
+                        List {
+                            StatsSection()
+                            
+                            Label("No time like the present. Let's take action!", systemImage: arrowSystemImage)
+                                .font(.title2)
+                                .multilineTextAlignment(.center)
+                        }
+                        .refreshable {
+                            refresh()
+                        }
                     }
                 } else {
-                    List {
+                    VStack {
                         ActivityRingAndStats(percent: breathePercent, color: .breathe) {
                             VStack(alignment: .leading, spacing: 0) {
                                 Text("Minutes")
@@ -102,20 +105,23 @@ struct BreatheView: View {
                                 }
                             }
                         }
+                        .padding(.vertical)
                         
-                        StatsSection()
-                               
-                        Section {
-                            ForEach(activities, id: \.id) { activity in
-                                ActivityCard(activity: activity)
+                        List {
+                            StatsSection()
+                            
+                            Section {
+                                ForEach(activities, id: \.id) { activity in
+                                    ActivityCard(activity: activity)
+                                }
+                                .onDelete(perform: deleteActivities)
+                            } header: {
+                                HeaderLabel(title: "Actions", systemImage: actionsSystemImage)
                             }
-                            .onDelete(perform: deleteActivities)
-                        } header: {
-                            HeaderLabel(title: "Actions", systemImage: actionsSystemImage)
                         }
-                    }
-                    .refreshable {
-                        refresh()
+                        .refreshable {
+                            refresh()
+                        }
                     }
                 }
             }
@@ -149,6 +155,7 @@ struct BreatheView: View {
                 }
             }
             .navigationTitle(breatheString)
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $statsSheetIsShowing) {
                 StatsSheet(showingSheet: $statsSheetIsShowing)
             }

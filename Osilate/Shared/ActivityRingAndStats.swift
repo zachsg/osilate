@@ -18,7 +18,7 @@ struct ActivityRingAndStats<Content: View>: View {
     @State private var animationAmount = 0.0
     
     var body: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: 32) {
             Spacer()
             
             ZStack {
@@ -44,7 +44,6 @@ struct ActivityRingAndStats<Content: View>: View {
             
             Spacer()
         }
-        .padding(.vertical)
         .onTapGesture {
             withAnimation {
                 animationAmount = animationAmount == 0 ? 180 : 0

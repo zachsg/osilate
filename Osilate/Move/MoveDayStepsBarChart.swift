@@ -44,7 +44,6 @@ struct MoveDayStepsBarChart: View {
                         .cornerRadius(50)
                     }
                 }
-                .frame(height: 100)
             }
             
             if healthController.stepsDayByHourLoading {

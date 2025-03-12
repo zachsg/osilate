@@ -17,81 +17,118 @@ struct OverallReport: View {
 
     var body: some View {
         Section {
-            ScrollView(.horizontal) {
-                HStack(spacing: 32) {
-                    VStack {
-                        if healthController.bodyTempByDayLoading {
-                            ProgressView()
-                        } else {
+            HStack {
+                Spacer()
+                
+                VStack {
+                    if healthController.bodyTempByDayLoading {
+                        ProgressView()
+                    } else {
+                        ZStack {
+                            Circle()
+                                .frame(width: 36, height: 36)
+                                .foregroundStyle(.regularMaterial)
+                            
                             Image(systemName: bodyTempStatus == .normal ? bodyTempNormalSystemImage : bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 32, height: 32)
+                                .frame(width: 22, height: 22)
                                 .foregroundStyle(.accent)
-                            
-                            Image(systemName: bodyTempStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 16, height: 16)
-                                .foregroundStyle(bodyTempStatus == .normal ? .green : .red)
                         }
+                        .shadow(radius: 1)
+                        
+                        Image(systemName: bodyTempStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 16, height: 16)
+                            .foregroundStyle(bodyTempStatus == .normal ? .green : .red)
                     }
-                    
-                    VStack {
-                        if healthController.respirationByDayLoading {
-                            ProgressView()
-                        } else {
+                }
+                
+                Spacer()
+                
+                VStack {
+                    if healthController.respirationByDayLoading {
+                        ProgressView()
+                    } else {
+                        ZStack {
+                            Circle()
+                                .frame(width: 36, height: 36)
+                                .foregroundStyle(.regularMaterial)
+                            
                             Image(systemName: respirationSystemImage)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 32, height: 32)
+                                .frame(width: 22, height: 22)
                                 .foregroundStyle(.accent)
-                            
-                            Image(systemName: respirationStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 16, height: 16)
-                                .foregroundStyle(respirationStatus == .normal ? .green : .red)
                         }
+                        .shadow(radius: 1)
+                        
+                        Image(systemName: respirationStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 16, height: 16)
+                            .foregroundStyle(respirationStatus == .normal ? .green : .red)
                     }
-                    
-                    VStack {
-                        if healthController.oxygenByDayLoading {
-                            ProgressView()
-                        } else {
+                }
+                
+                Spacer()
+                
+                VStack {
+                    if healthController.oxygenByDayLoading {
+                        ProgressView()
+                    } else {
+                        ZStack {
+                            Circle()
+                                .frame(width: 36, height: 36)
+                                .foregroundStyle(.regularMaterial)
+                            
                             Image(systemName: oxygenSystemImage)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 32, height: 32)
+                                .frame(width: 22, height: 22)
                                 .foregroundStyle(.accent)
-                            
-                            Image(systemName: oxygenStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 16, height: 16)
-                                .foregroundStyle(oxygenStatus == .normal ? .green : .red)
                         }
+                        .shadow(radius: 1)
+                        
+                        Image(systemName: oxygenStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 16, height: 16)
+                            .foregroundStyle(oxygenStatus == .normal ? .green : .red)
                     }
-                    
-                    VStack {
-                        if healthController.rhrLoading {
-                            ProgressView()
-                        } else {
+                }
+                
+                Spacer()
+                
+                VStack {
+                    if healthController.rhrLoading {
+                        ProgressView()
+                    } else {
+                        ZStack {
+                            Circle()
+                                .frame(width: 36, height: 36)
+                                .foregroundStyle(.regularMaterial)
+                            
                             Image(systemName: rhrSystemImage)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 32, height: 32)
+                                .frame(width: 22, height: 22)
                                 .foregroundStyle(.accent)
-                            
-                            Image(systemName: rhrStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 16, height: 16)
-                                .foregroundStyle(rhrStatus == .normal ? .green : .red)
                         }
+                        .shadow(radius: 1)
+
+                        Image(systemName: rhrStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 16, height: 16)
+                            .foregroundStyle(rhrStatus == .normal ? .green : .red)
                     }
                 }
+                
+                Spacer()
             }
+            .padding(2)
         } header: {
             HeaderLabel(title: overallTitle, systemImage: overallSystemImage)
         }
