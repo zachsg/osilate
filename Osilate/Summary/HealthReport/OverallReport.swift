@@ -14,11 +14,13 @@ struct OverallReport: View {
     @AppStorage(hasRespirationKey) var hasRespiration = hasRespirationDefault
     @AppStorage(hasOxygenKey) var hasOxygen = hasOxygenDefault
     @AppStorage(hasRhrKey) var hasRhr = hasRhrDefault
-    
+    @AppStorage(hasHrvKey) var hasHrv = hasHrvDefault
+
     @Binding var bodyTempStatus: BodyMetricStatus?
     @Binding var respirationStatus: BodyMetricStatus?
     @Binding var oxygenStatus: BodyMetricStatus?
     @Binding var rhrStatus: BodyMetricStatus?
+    @Binding var hrvStatus: BodyMetricStatus?
 
     var body: some View {
         Section {
@@ -55,8 +57,15 @@ struct OverallReport: View {
                             MetricStatus(title: "RHR", status: rhrStatus, systemImageName: rhrSystemImage)
                         }
                     }
+                    
+                    if hasHrv {
+                        if healthController.hrvLoading {
+                            ProgressView()
+                        } else {
+                            MetricStatus(title: "HRV", status: hrvStatus, systemImageName: hrvSystemImage)
+                        }
+                    }
                 }
-                .padding(2)
             }
         } header: {
             HeaderLabel(title: overallTitle, systemImage: overallSystemImage)
@@ -67,6 +76,6 @@ struct OverallReport: View {
 #Preview {
     let healthController = HealthController()
     
-    return OverallReport(bodyTempStatus: .constant(.normal), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.normal))
+    return OverallReport(bodyTempStatus: .constant(.normal), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.normal), hrvStatus: .constant(.normal))
         .environment(healthController)
 }

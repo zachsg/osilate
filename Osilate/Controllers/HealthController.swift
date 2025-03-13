@@ -51,15 +51,13 @@ class HealthController {
     var cardioFitnessAverage = 0.0
     var cardioFitnessByDay: [Date: Double] = [:]
     var latestCardioFitness: Date = .now
-    
     var cardioFitnessLoading = false
-
+    
     // Resting heart rate
     var rhrMostRecent = 0
     var rhrAverage = 0
     var rhrByDay: [Date: Int] = [:]
     var latestRhr: Date = .now
-    
     var rhrLoading = false
 
     // Cardio recovery
@@ -67,7 +65,6 @@ class HealthController {
     var recoveryAverage = 0
     var recoveryByDay: [Date: Int] = [:]
     var latestRecovery: Date = .now
-    
     var recoveryLoading = false
     
     // Mindful Minutes
@@ -100,6 +97,14 @@ class HealthController {
     var hasOxygenToday = false
     var oxygenLastUpdated: Date = .now
     
+    // Heart rate variability
+    var hrvLoading = false
+    var hrvToday = 0.0
+    var hrvByDayLoading = false
+    var hrvByDay: [Date: Double] = [:]
+    var hasHrvToday = false
+    var hrvLastUpdated: Date = .now
+    
     init() {
         requestAuthorization()
     }
@@ -116,7 +121,8 @@ class HealthController {
             HKObjectType.categoryType(forIdentifier: .mindfulSession)!,
             HKQuantityType(.appleSleepingWristTemperature),
             HKQuantityType(.respiratoryRate),
-            HKQuantityType(.oxygenSaturation)
+            HKQuantityType(.oxygenSaturation),
+            HKQuantityType(.heartRateVariabilitySDNN),
         ])
         let toShare = Set([
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
@@ -1374,7 +1380,7 @@ class HealthController {
                     }
                 }
                 
-                self.hasBodyTempToday = hasBodyTempToday ? true : false
+                self.hasBodyTempToday = hasBodyTempToday
                 
                 self.bodyTempByDayLoading = false
             }
@@ -1488,7 +1494,7 @@ class HealthController {
                     }
                 }
                 
-                self.hasRespirationToday = hasRespirationToday ? true : false
+                self.hasRespirationToday = hasRespirationToday
                 
                 self.respirationByDayLoading = false
             }
@@ -1507,7 +1513,7 @@ class HealthController {
         
         // Begin looking 3 hours before midnight of today
         let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 3)
-        var end = calendar.startOfDay(for: .now).addingTimeInterval(28800)
+        var end = calendar.startOfDay(for: .now).addingTimeInterval(hourInSeconds * 8)
         if end.compare(Date.now) == .orderedDescending {
             end = .now
         }
@@ -1607,9 +1613,128 @@ class HealthController {
                     }
                 }
                 
-                self.hasOxygenToday = hasOxygenToday ? true : false
+                self.hasOxygenToday = hasOxygenToday
                 
                 self.oxygenByDayLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    // MARK: - Heart rate variability
+    func getHrvToday() {
+        hrvLoading = true
+        
+        let quantityType = HKQuantityType(.heartRateVariabilitySDNN)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking 2 hours before midnight of today
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 2)
+        var end = calendar.startOfDay(for: .now).addingTimeInterval(hourInSeconds * 8)
+        if end.compare(Date.now) == .orderedDescending {
+            end = .now
+        }
+        
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        
+        let query = HKStatisticsQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: predicate,
+            options: .discreteAverage
+        ) { _, result, error in
+            guard let result = result else {
+                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                return
+            }
+            
+            let averageHrv = result.averageQuantity()
+            
+            let hrv = averageHrv?.doubleValue(for: HKUnit.second())
+            let lastUpdated = result.endDate
+            
+            DispatchQueue.main.async {
+                if lastUpdated.isToday() {
+                    if let hrv {
+                        self.hrvToday = hrv
+                    }
+                    self.hrvLastUpdated = lastUpdated
+                    self.hasHrvToday = true
+                } else {
+                    self.hasHrvToday = false
+                }
+                
+                self.hrvLoading = false
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    func getHrvTwoWeeks() {
+        hrvByDayLoading = true
+        
+        let quantityType = HKQuantityType(.heartRateVariabilitySDNN)
+        
+        let calendar = Calendar.current
+        
+        // Begin looking 2 hours before midnight of 14 days ago
+        let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 338)
+        
+        let interval = DateComponents(day: 1)
+        
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .discreteAverage,
+            anchorDate: start,
+            intervalComponents: interval
+        )
+        
+        query.initialResultsHandler = { query, results, error in
+            if let error = error as? HKError {
+                switch (error.code) {
+                case .errorDatabaseInaccessible:
+                    // HealthKit couldn't access the database because the device is locked.
+                    return
+                default:
+                    // Handle other HealthKit errors here.
+                    return
+                }
+            }
+            
+            guard let statsCollection = results else {
+                assertionFailure("")
+                return
+            }
+            
+            let end = Date.now
+            
+            var hrvByDayTemp: [Date: Double] = [:]
+            statsCollection.enumerateStatistics(from: start, to: end) { (statistics, stop) in
+                if let quantity = statistics.averageQuantity() {
+                    let hrv = quantity.doubleValue(for: HKUnit.second())
+                    let date = statistics.endDate
+                    
+                    hrvByDayTemp[date] = hrv
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.hrvByDay = hrvByDayTemp
+                
+                var hasHrvToday = false
+                for (date, _) in hrvByDayTemp {
+                    if date.isToday() {
+                        hasHrvToday = true
+                        break
+                    }
+                }
+                
+                self.hasHrvToday = hasHrvToday
+                
+                self.hrvByDayLoading = false
             }
         }
         

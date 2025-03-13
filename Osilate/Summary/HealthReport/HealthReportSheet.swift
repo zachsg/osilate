@@ -19,6 +19,7 @@ struct HealthReportSheet: View {
     @AppStorage(hasRespirationKey) var hasRespiration = hasRespirationDefault
     @AppStorage(hasOxygenKey) var hasOxygen = hasOxygenDefault
     @AppStorage(hasRhrKey) var hasRhr = hasRhrDefault
+    @AppStorage(hasHrvKey) var hasHrv = hasHrvDefault
 
     @Binding var sheetIsShowing: Bool
     
@@ -41,10 +42,15 @@ struct HealthReportSheet: View {
     @State private var rhr = 0
     @State private var rhrStatus: BodyMetricStatus?
     
+    @State private var hrvHigh = 0.0
+    @State private var hrvLow = 0.0
+    @State private var hrv = 0.0
+    @State private var hrvStatus: BodyMetricStatus?
+    
     var body: some View {
         NavigationStack {
             Form {
-                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus)
+                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus, hrvStatus: $hrvStatus)
                 
                 if hasBodyTemp {
                     BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTempStatus: $bodyTempStatus)
@@ -60,6 +66,10 @@ struct HealthReportSheet: View {
                 
                 if hasRhr {
                     RHRReport(rhrHigh: $rhrHigh, rhrLow: $rhrLow, rhrStatus: $rhrStatus)
+                }
+                
+                if hasHrv {
+                    HRVReport(hrvHigh: $hrvHigh, hrvLow: $hrvLow, hrvStatus: $hrvStatus)
                 }
                 
                 Section {
@@ -117,6 +127,11 @@ struct HealthReportSheet: View {
             
             if hasRhr {
                 healthController.getRhrRecent()
+            }
+            
+            if hasHrv {
+                healthController.getHrvToday()
+                healthController.getHrvTwoWeeks()
             }
         }
     }

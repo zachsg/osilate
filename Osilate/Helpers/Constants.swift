@@ -45,6 +45,11 @@ let hasRhrKey = "hasRhr"
 let hasRhrDefault = true
 let rhrTitle = "Resting Heart Rate"
 let rhrSystemImage = "heart.fill"
+// Heart rate variability
+let hasHrvKey = "hasHrv"
+let hasHrvDefault = true
+let hrvTitle = "Heart Rate Variability"
+let hrvSystemImage = "waveform.path.ecg"
 
 // MARK: Move
 let moveString = "Move"
