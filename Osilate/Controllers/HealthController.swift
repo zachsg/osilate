@@ -122,7 +122,10 @@ class HealthController {
             HKQuantityType(.appleSleepingWristTemperature),
             HKQuantityType(.respiratoryRate),
             HKQuantityType(.oxygenSaturation),
-            HKQuantityType(.heartRateVariabilitySDNN),
+            HKQuantityType(.heartRateVariabilitySDNN)
+//            HKQuantityType(.physicalEffort),
+//            HKQuantityType(.appleStandTime),
+//            HKQuantityType(.flightsClimbed),
         ])
         let toShare = Set([
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
@@ -1657,7 +1660,7 @@ class HealthController {
             DispatchQueue.main.async {
                 if lastUpdated.isToday() {
                     if let hrv {
-                        self.hrvToday = hrv
+                        self.hrvToday = hrv * 1000
                     }
                     self.hrvLastUpdated = lastUpdated
                     self.hasHrvToday = true
@@ -1717,7 +1720,7 @@ class HealthController {
                     let hrv = quantity.doubleValue(for: HKUnit.second())
                     let date = statistics.endDate
                     
-                    hrvByDayTemp[date] = hrv
+                    hrvByDayTemp[date] = hrv * 1000
                 }
             }
             
