@@ -13,7 +13,8 @@ struct ReportOptionsSheet: View {
     @AppStorage(hasOxygenKey) var hasOxygen = hasOxygenDefault
     @AppStorage(hasRhrKey) var hasRhr = hasRhrDefault
     @AppStorage(hasHrvKey) var hasHrv = hasHrvDefault
-    
+    @AppStorage(hasSleepKey) var hasSleep = hasSleepDefault
+
     @Binding var sheetIsShowing: Bool
     
     var body: some View {
@@ -47,6 +48,12 @@ struct ReportOptionsSheet: View {
                     Toggle("Use heart rate variability", isOn: $hasHrv)
                 } header: {
                     HeaderLabel(title: hrvTitle, systemImage: hrvSystemImage)
+                }
+                
+                Section {
+                    Toggle("Use sleep duration", isOn: $hasSleep)
+                } header: {
+                    HeaderLabel(title: sleepTitle, systemImage: sleepSystemImage)
                 }
             }
             .navigationTitle("Metrics Options")

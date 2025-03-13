@@ -1,58 +1,58 @@
 //
-//  HRVReport.swift
+//  SleepReport.swift
 //  Osilate
 //
-//  Created by Zach Gottlieb on 3/12/25.
+//  Created by Zach Gottlieb on 3/13/25.
 //
 
 import Charts
 import SwiftUI
 
-struct HRVReport: View {
+struct SleepReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var hrvHigh: Double
-    @Binding var hrvLow: Double
-    @Binding var hrvStatus: BodyMetricStatus?
+    @Binding var sleepHigh: Double
+    @Binding var sleepLow: Double
+    @Binding var sleepStatus: BodyMetricStatus?
     
-    @State private var lowestHrv = 400.0
-    @State private var highestHrv = 0.0
+    @State private var lowestSleep = 24.0
+    @State private var highestSleep = 0.0
     @State private var isExpanded = false
     
     var bottomRange: Double {
-        let bottom = lowestHrv > hrvLow ? hrvLow : lowestHrv
+        let bottom = lowestSleep > sleepLow ? sleepLow : lowestSleep
         return bottom - 1
     }
     
     var topRange: Double {
-        let top = highestHrv > hrvHigh ? highestHrv : hrvHigh
+        let top = highestSleep > sleepHigh ? highestSleep : sleepHigh
         return top + 1
     }
     
     var body: some View {
         Section {
-            if healthController.hrvByDayLoading {
+            if healthController.sleepByDayLoading {
                 ProgressView()
                     .padding(.horizontal)
             } else {
                 Chart {
-                    ForEach(healthController.hrvByDay.sorted { $0.key < $1.key }, id: \.key) { date, hrv in
+                    ForEach(healthController.sleepByDay.sorted { $0.key < $1.key }, id: \.key) { date, hours in
                         LineMark(
                             x: .value("Day", date.day()),
-                            y: .value("HRV", hrv)
+                            y: .value("Hours", hours)
                         )
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", hrvHigh))
+                    RuleMark(y: .value("Top", sleepHigh))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", hrvLow))
+                    RuleMark(y: .value("Bottom", sleepLow))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: hrvLow < hrvHigh ? bottomRange...topRange : 20...150)
+                .chartYScale(domain: sleepLow < sleepHigh ? bottomRange...topRange : 20...150)
                 .frame(height: isExpanded ? 256 : 40)
                 .padding(.horizontal, 4)
                 .padding(.vertical, isExpanded ? 4 : 0)
@@ -63,9 +63,9 @@ struct HRVReport: View {
                 }
             }
         } header: {
-            HeaderLabel(title: "\(hrvTitle) (HRV)", systemImage: hrvSystemImage)
+            HeaderLabel(title: "\(sleepTitle)", systemImage: sleepSystemImage)
         } footer: {
-            isExpanded ? Text("Units: Measured in ms using SDNN method.") : nil
+            isExpanded ? Text("Units: Measured in hours.") : nil
         }
         .task {
             await tryAgain()
@@ -74,39 +74,39 @@ struct HRVReport: View {
     
     @MainActor
     func tryAgain() async {
-        while healthController.hrvByDayLoading {
+        while healthController.sleepByDayLoading {
             try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
         }
         
-        calculateHrvRange()
-        calculateHrvStatus()
+        calculateSleepRange()
+        calculateSleepStatus()
     }
     
-    private func calculateHrvRange() {
+    private func calculateSleepRange() {
         var average = 0.0
         
-        for (_, hrv) in healthController.hrvByDay {
-            average += hrv
+        for (_, hours) in healthController.sleepByDay {
+            average += hours
             
-            if hrv < lowestHrv {
-                lowestHrv = hrv
+            if hours < lowestSleep {
+                lowestSleep = hours
             }
             
-            if hrv > highestHrv {
-                highestHrv = hrv
+            if hours > highestSleep {
+                highestSleep = hours
             }
         }
         
-        average /= Double(healthController.hrvByDay.count)
+        average /= Double(healthController.sleepByDay.count)
         
-        hrvLow = average - 10
-        hrvHigh = average + 10
+        sleepLow = average - 1
+        sleepHigh = average + 1
     }
     
-    private func calculateHrvStatus() {
-        hrvStatus = if healthController.hrvToday < hrvLow {
+    private func calculateSleepStatus() {
+        sleepStatus = if healthController.sleepToday < sleepLow {
             .low
-        } else if healthController.hrvToday > hrvHigh {
+        } else if healthController.sleepToday > sleepHigh {
             .optimal
         } else {
             .normal
@@ -116,16 +116,16 @@ struct HRVReport: View {
 
 #Preview {
     let healthController = HealthController()
-    healthController.hrvToday = 52
+    healthController.sleepToday = 8
     
     let calendar = Calendar.current
     for i in 0...13 {
         let date = calendar.date(byAdding: .day, value: -i, to: Date.now)
         if let date {
-            healthController.hrvByDay[date] = Double(Int.random(in: 30...71))
+            healthController.sleepByDay[date] = Double(Int.random(in: 5...9))
         }
     }
     
-    return HRVReport(hrvHigh: .constant(65), hrvLow: .constant(49), hrvStatus: .constant(.normal))
+    return SleepReport(sleepHigh: .constant(8.5), sleepLow: .constant(6.5), sleepStatus: .constant(.normal))
         .environment(healthController)
 }

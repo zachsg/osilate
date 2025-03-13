@@ -8,5 +8,5 @@
 import Foundation
 
 enum BodyMetricStatus: String, Codable, CaseIterable {
-    case low, normal, high, optimal
+    case low, normal, high, optimal, missing
 }

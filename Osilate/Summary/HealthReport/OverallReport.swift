@@ -15,17 +15,19 @@ struct OverallReport: View {
     @AppStorage(hasOxygenKey) var hasOxygen = hasOxygenDefault
     @AppStorage(hasRhrKey) var hasRhr = hasRhrDefault
     @AppStorage(hasHrvKey) var hasHrv = hasHrvDefault
+    @AppStorage(hasSleepKey) var hasSleep = hasSleepDefault
 
     @Binding var bodyTempStatus: BodyMetricStatus?
     @Binding var respirationStatus: BodyMetricStatus?
     @Binding var oxygenStatus: BodyMetricStatus?
     @Binding var rhrStatus: BodyMetricStatus?
     @Binding var hrvStatus: BodyMetricStatus?
+    @Binding var sleepStatus: BodyMetricStatus?
 
     var body: some View {
         Section {
             ScrollView(.horizontal) {
-                HStack(spacing: 24) {
+                HStack(spacing: 16) {
                     if hasBodyTemp {
                         if healthController.bodyTempByDayLoading {
                             ProgressView()
@@ -65,6 +67,14 @@ struct OverallReport: View {
                             MetricStatus(title: "HRV", status: hrvStatus, systemImageName: hrvSystemImage)
                         }
                     }
+                    
+                    if hasSleep {
+                        if healthController.sleepLoading {
+                            ProgressView()
+                        } else {
+                            MetricStatus(title: "Sleep", status: sleepStatus, systemImageName: sleepSystemImage)
+                        }
+                    }
                 }
             }
         } header: {
@@ -72,12 +82,10 @@ struct OverallReport: View {
         } footer: {
             ScrollView(.horizontal) {
                 HStack {
-                    Text("Legend:")
-                        .font(.caption2.bold())
-                        .foregroundStyle(.secondary)
                     MetricStatusTag(title: "Optimal", systemName: optimalRangeSystemImage, color: .yellow)
                     MetricStatusTag(title: "Normal", systemName: inRangeSystemImage, color: .green)
                     MetricStatusTag(title: "Unusual", systemName: outRangeSystemImage, color: .red)
+                    MetricStatusTag(title: "Missing", systemName: missingRangeSystemImage, color: .secondary)
                 }
             }
         }
@@ -87,6 +95,6 @@ struct OverallReport: View {
 #Preview {
     let healthController = HealthController()
     
-    return OverallReport(bodyTempStatus: .constant(.high), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.optimal), hrvStatus: .constant(.optimal))
+    return OverallReport(bodyTempStatus: .constant(.high), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.optimal), hrvStatus: .constant(.optimal), sleepStatus: .constant(.missing))
         .environment(healthController)
 }

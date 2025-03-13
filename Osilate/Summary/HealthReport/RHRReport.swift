@@ -33,6 +33,7 @@ struct RHRReport: View {
         Section {
             if healthController.rhrLoading {
                 ProgressView()
+                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.rhrByDay.sorted { $0.key < $1.key }, id: \.key) { date, rhr in
@@ -46,13 +47,17 @@ struct RHRReport: View {
                     }
                     
                     RuleMark(y: .value("Top", rhrHigh))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                     
                     RuleMark(y: .value("Bottom", rhrLow))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                 }
+                .chartXAxis(isExpanded ? .automatic : .hidden)
+                .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: rhrLow < rhrHigh ? bottomRange...topRange : 65...80)
-                .frame(height: isExpanded ? 320 : 128)
+                .frame(height: isExpanded ? 256 : 40)
+                .padding(.horizontal, 4)
+                .padding(.vertical, isExpanded ? 4 : 0)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -62,7 +67,7 @@ struct RHRReport: View {
         } header: {
             HeaderLabel(title: "\(rhrTitle) (RHR)", systemImage: rhrSystemImage)
         } footer: {
-            Text("Units: Beats per minute (BPM).")
+            isExpanded ? Text("Units: Beats per minute (BPM).") : nil
         }
         .task {
             await tryAgain()

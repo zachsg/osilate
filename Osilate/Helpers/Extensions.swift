@@ -151,6 +151,18 @@ extension Date {
         return calendar.date(from: components) ?? self
     }
     
+    func isBetween(start: Date, end: Date) -> Bool {
+        (start...end).contains(self)
+    }
+    
+    func isPartOf(day: Date) -> Bool {
+        let startOfDay = Calendar.current.startOfDay(for: day)
+        let start = startOfDay.addingTimeInterval(-hourInSeconds * 7)
+        let end = startOfDay.addingTimeInterval(hourInSeconds * 10)
+        
+        return (start...end).contains(self)
+    }
+    
     func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
         return calendar.dateComponents(Set(components), from: self)
     }

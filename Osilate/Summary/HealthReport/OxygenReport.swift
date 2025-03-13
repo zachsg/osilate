@@ -33,6 +33,7 @@ struct OxygenReport: View {
         Section {
             if healthController.oxygenByDayLoading {
                 ProgressView()
+                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.oxygenByDay.sorted { $0.key < $1.key }, id: \.key) { date, ox in
@@ -44,13 +45,17 @@ struct OxygenReport: View {
                     }
                     
                     RuleMark(y: .value("Top", oxygenHigh))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                     
                     RuleMark(y: .value("Bottom", oxygenLow))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                 }
+                .chartXAxis(isExpanded ? .automatic : .hidden)
+                .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: oxygenLow < oxygenHigh ? bottomRange...topRange : 95...100)
-                .frame(height: isExpanded ? 320 : 128)
+                .frame(height: isExpanded ? 256 : 40)
+                .padding(.horizontal, 4)
+                .padding(.vertical, isExpanded ? 4 : 0)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -60,7 +65,7 @@ struct OxygenReport: View {
         } header: {
             HeaderLabel(title: "\(oxygenTitle) (O2)", systemImage: oxygenSystemImage)
         } footer: {
-            Text("Units: Percentage oxygen in blood (SpO2).")
+            isExpanded ? Text("Units: Percentage oxygen in blood (SpO2).") : nil
         }
         .task {
             await tryAgain()

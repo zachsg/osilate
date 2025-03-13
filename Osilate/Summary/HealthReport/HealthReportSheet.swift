@@ -16,6 +16,7 @@ struct HealthReportSheet: View {
     @AppStorage(hasOxygenKey) var hasOxygen = hasOxygenDefault
     @AppStorage(hasRhrKey) var hasRhr = hasRhrDefault
     @AppStorage(hasHrvKey) var hasHrv = hasHrvDefault
+    @AppStorage(hasSleepKey) var hasSleep = hasSleepDefault
 
     @Binding var sheetIsShowing: Bool
     
@@ -43,35 +44,44 @@ struct HealthReportSheet: View {
     @State private var hrv = 0.0
     @State private var hrvStatus: BodyMetricStatus?
     
+    @State private var sleepHigh = 0.0
+    @State private var sleepLow = 0.0
+    @State private var sleep = 0.0
+    @State private var sleepStatus: BodyMetricStatus?
+    
     var body: some View {
         NavigationStack {
-            Form {
-                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus, hrvStatus: $hrvStatus)
+            List {
+                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus, hrvStatus: $hrvStatus, sleepStatus: $sleepStatus)
                 
                 if hasBodyTemp {
                     BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTempStatus: $bodyTempStatus)
+                        .listRowInsets(EdgeInsets())
                 }
                 
                 if hasRespiration {
                     RespirationReport(respirationHigh: $respirationHigh, respirationLow: $respirationLow, respirationStatus: $respirationStatus)
+                        .listRowInsets(EdgeInsets())
                 }
-               
+                
                 if hasOxygen {
                     OxygenReport(oxygenHigh: $oxygenHigh, oxygenLow: $oxygenLow, oxygenStatus: $oxygenStatus)
+                        .listRowInsets(EdgeInsets())
                 }
                 
                 if hasRhr {
                     RHRReport(rhrHigh: $rhrHigh, rhrLow: $rhrLow, rhrStatus: $rhrStatus)
+                        .listRowInsets(EdgeInsets())
                 }
                 
                 if hasHrv {
                     HRVReport(hrvHigh: $hrvHigh, hrvLow: $hrvLow, hrvStatus: $hrvStatus)
+                        .listRowInsets(EdgeInsets())
                 }
                 
-                Section {
-                    Text("Coming soon...")
-                } header: {
-                    HeaderLabel(title: "Sleep Duration", systemImage: "bed.double.fill")
+                if hasSleep {
+                    SleepReport(sleepHigh: $sleepHigh, sleepLow: $sleepLow, sleepStatus: $sleepStatus)
+                        .listRowInsets(EdgeInsets())
                 }
             }
             .navigationTitle(healthReportTitle)
@@ -128,6 +138,11 @@ struct HealthReportSheet: View {
             if hasHrv {
                 healthController.getHrvToday()
                 healthController.getHrvTwoWeeks()
+            }
+            
+            if hasSleep {
+                healthController.getSleepToday()
+                healthController.getSleepTwoWeeks()
             }
         }
     }

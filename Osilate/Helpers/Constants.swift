@@ -21,6 +21,7 @@ let healthReportSystemImage = "heart.text.clipboard.fill"
 let inRangeSystemImage = "checkmark.square.fill"
 let outRangeSystemImage = "exclamationmark.triangle.fill"
 let optimalRangeSystemImage = "star.circle.fill"
+let missingRangeSystemImage = "questionmark.diamond.fill"
 // Overall
 let overallTitle = "Overall Today"
 let overallSystemImage = "target"
@@ -51,6 +52,11 @@ let hasHrvKey = "hasHrv"
 let hasHrvDefault = true
 let hrvTitle = "Heart Rate Variability"
 let hrvSystemImage = "waveform.path"
+// Sleep duration
+let hasSleepKey = "hasSleep"
+let hasSleepDefault = true
+let sleepTitle = "Sleep Duration"
+let sleepSystemImage = "bed.double.fill"
 
 // MARK: Move
 let moveString = "Move"

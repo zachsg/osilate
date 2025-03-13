@@ -105,6 +105,14 @@ class HealthController {
     var hasHrvToday = false
     var hrvLastUpdated: Date = .now
     
+    // Sleep
+    var sleepLoading = false
+    var sleepToday = 0.0
+    var sleepByDayLoading = false
+    var sleepByDay: [Date: Double] = [:]
+    var hasSleepToday = false
+    var sleepLastUpdated: Date = .now
+    
     init() {
         requestAuthorization()
     }
@@ -119,6 +127,7 @@ class HealthController {
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
             HKObjectType.quantityType(forIdentifier: .vo2Max)!,
             HKObjectType.categoryType(forIdentifier: .mindfulSession)!,
+            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
             HKQuantityType(.appleSleepingWristTemperature),
             HKQuantityType(.respiratoryRate),
             HKQuantityType(.oxygenSaturation),
@@ -1607,17 +1616,6 @@ class HealthController {
             
             DispatchQueue.main.async {
                 self.oxygenByDay = oxygenByDayTemp
-                
-                var hasOxygenToday = false
-                for (date, _) in oxygenByDayTemp {
-                    if date.isToday() {
-                        hasOxygenToday = true
-                        break
-                    }
-                }
-                
-                self.hasOxygenToday = hasOxygenToday
-                
                 self.oxygenByDayLoading = false
             }
         }
@@ -1726,21 +1724,138 @@ class HealthController {
             
             DispatchQueue.main.async {
                 self.hrvByDay = hrvByDayTemp
-                
-                var hasHrvToday = false
-                for (date, _) in hrvByDayTemp {
-                    if date.isToday() {
-                        hasHrvToday = true
-                        break
-                    }
-                }
-                
-                self.hasHrvToday = hasHrvToday
-                
                 self.hrvByDayLoading = false
             }
         }
         
         healthStore.execute(query)
+    }
+    
+    // MARK: - Sleep
+    func getSleepToday() {
+        sleepLoading = true
+        
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfDay = calendar.startOfDay(for: now)
+        let start = startOfDay.addingTimeInterval(-hourInSeconds * 7)
+        let end = now.compare(startOfDay.addingTimeInterval(hourInSeconds * 10)) == .orderedDescending ? now : startOfDay.addingTimeInterval(hourInSeconds * 10)
+
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+
+        let query = HKSampleQuery(sampleType: HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
+            predicate: predicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: [sortDescriptor]) { (query, samples, error) in
+            if let error = error {
+                print("Error fetching sleep data: \(error.localizedDescription)")
+                return
+            }
+
+            var duration = 0.0
+            if let sleepSamples = samples as? [HKCategorySample] {
+                duration = self.sleepDurationHoursForSamples(sleepSamples)
+            }
+            
+            DispatchQueue.main.async {
+                self.sleepToday = duration
+                self.hasSleepToday = duration != 0
+                self.sleepLoading = false
+            }
+        }
+
+        healthStore.execute(query)
+    }
+    
+    func getSleepTwoWeeks() {
+        sleepByDayLoading = true
+        
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfDay = calendar.startOfDay(for: now)
+        let start = startOfDay.addingTimeInterval(-hourInSeconds * 31 * 14)
+        let end = startOfDay.addingTimeInterval(-hourInSeconds * 7)
+
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+
+        let query = HKSampleQuery(sampleType: HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
+            predicate: predicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: [sortDescriptor]) { (query, samples, error) in
+            if let error = error {
+                print("Error fetching sleep data: \(error.localizedDescription)")
+                return
+            }
+
+            var duration = 0.0
+            var samplesAndDays: [Date: [HKCategorySample]] = [:]
+            var sleepByDayTemp: [Date: Double] = [:]
+            
+            for day in 1...14 {
+                let date = calendar.startOfDay(for: now).addingTimeInterval(-hourInSeconds * 24 * Double(day))
+                samplesAndDays[date] = []
+            }
+            
+            if let sleepSamples = samples as? [HKCategorySample] {
+                for sample in sleepSamples {
+                    for (d, _) in samplesAndDays {
+                        if sample.startDate.isPartOf(day: d) {
+                            samplesAndDays[d]?.append(sample)
+                        }
+                    }
+                }
+                
+                for (d, samples) in samplesAndDays {
+                    duration = self.sleepDurationHoursForSamples(samples)
+                    sleepByDayTemp[d] = duration
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.sleepByDay = sleepByDayTemp
+                self.sleepByDayLoading = false
+            }
+        }
+
+        healthStore.execute(query)
+    }
+    
+    private func sleepDurationHoursForSamples(_ samples: [HKCategorySample]) -> Double {
+        let sources = Set(samples.map { $0.sourceRevision.productType ?? "" })
+        var watchOnly = false
+        for source in sources {
+            if source.lowercased().contains("watch") {
+                watchOnly = true
+                break
+            }
+        }
+        
+        var duration = 0.0
+        for sample in samples {
+            if watchOnly {
+                if !(sample.sourceRevision.productType?.lowercased().contains("watch") ?? false) {
+                    continue
+                }
+            }
+            
+            if let sleepValue = HKCategoryValueSleepAnalysis(rawValue: sample.value) {
+                let startDate = sample.startDate
+                let endDate = sample.endDate
+
+                switch sleepValue {
+                case .awake, .inBed:
+                    // Do nothing
+                    break
+                case .asleepCore, .asleepDeep, .asleepREM:
+                    duration += (endDate.timeIntervalSince(startDate) / 60 / 60)
+                default:
+                    duration += (endDate.timeIntervalSince(startDate) / 60 / 60)
+                }
+            }
+        }
+        
+        return duration
     }
 }

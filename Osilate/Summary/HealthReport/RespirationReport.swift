@@ -33,6 +33,7 @@ struct RespirationReport: View {
         Section {
             if healthController.respirationByDayLoading {
                 ProgressView()
+                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.respirationByDay.sorted { $0.key < $1.key }, id: \.key) { date, resp in
@@ -44,13 +45,17 @@ struct RespirationReport: View {
                     }
                     
                     RuleMark(y: .value("Top", respirationHigh))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                     
                     RuleMark(y: .value("Bottom", respirationLow))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                 }
+                .chartXAxis(isExpanded ? .automatic : .hidden)
+                .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: respirationLow < respirationHigh ? bottomRange...topRange : 10...30)
-                .frame(height: isExpanded ? 320 : 128)
+                .frame(height: isExpanded ? 256 : 40)
+                .padding(.horizontal, 4)
+                .padding(.vertical, isExpanded ? 4 : 0)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -60,7 +65,7 @@ struct RespirationReport: View {
         } header: {
             HeaderLabel(title: respirationTitle, systemImage: respirationSystemImage)
         } footer: {
-            Text("Units: Breaths per minute (BrPM).")
+            isExpanded ? Text("Units: Breaths per minute (BrPM).") : nil
         }
         .task {
             await tryAgain()

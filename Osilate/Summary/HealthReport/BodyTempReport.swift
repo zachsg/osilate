@@ -38,6 +38,7 @@ struct BodyTempReport: View {
         Section {
             if healthController.bodyTempByDayLoading {
                 ProgressView()
+                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.bodyTempByDay.sorted { $0.key < $1.key }, id: \.key) { date, temp in
@@ -49,13 +50,17 @@ struct BodyTempReport: View {
                     }
                     
                     RuleMark(y: .value("Top", bodyTempHigh))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                     
                     RuleMark(y: .value("Bottom", bodyTempLow))
-                        .foregroundStyle(.accent.opacity(0.7))
+                        .foregroundStyle(.accent.opacity(0.5))
                 }
+                .chartXAxis(isExpanded ? .automatic : .hidden)
+                .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: bodyTempLow < bodyTempHigh ? bottomRange...topRange : 95...98)
-                .frame(height: isExpanded ? 320 : 128)
+                .frame(height: isExpanded ? 256 : 40)
+                .padding(.horizontal, 4)
+                .padding(.vertical, isExpanded ? 4 : 0)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -65,7 +70,7 @@ struct BodyTempReport: View {
         } header: {
             HeaderLabel(title: bodyTempTitle, systemImage: bodyTempStatus == .normal ? bodyTempNormalSystemImage : bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
         } footer: {
-            Text("Units: Degrees \(units).")
+            isExpanded ? Text("Units: Degrees \(units).") : nil
         }
         .task {
             await tryAgain()
