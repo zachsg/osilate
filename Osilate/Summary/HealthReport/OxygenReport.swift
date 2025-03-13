@@ -58,7 +58,7 @@ struct OxygenReport: View {
                 }
             }
         } header: {
-            HeaderLabel(title: oxygenTitle, systemImage: oxygenSystemImage)
+            HeaderLabel(title: "\(oxygenTitle) (O2)", systemImage: oxygenSystemImage)
         } footer: {
             Text("Units: Percentage oxygen in blood (SpO2).")
         }

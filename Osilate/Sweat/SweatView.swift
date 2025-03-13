@@ -35,7 +35,7 @@ struct SweatView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
+            List {
                 ActivityRingAndStats(percent: sweatPercent, color: .sweat) {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Minutes")
@@ -55,51 +55,52 @@ struct SweatView: View {
                         }
                     }
                 }
-                .padding(.vertical)
+                .padding(.vertical, 10)
+                .listRowBackground(Color.clear)
+                .listRowSpacing(0)
+                .listRowInsets(EdgeInsets())
                 
-                List {
-                    Section {
-                        StatRow(headerImage: vO2SystemImage, headerTitle: "Cardio fitness", date: healthController.latestCardioFitness, loading: healthController.cardioFitnessLoading, stat: healthController.cardioFitnessMostRecent, color: .sweat, units: vO2Units) {
-                            VO2Chart()
-                                .task {
-                                    healthController.getCardioFitnessRecent()
-                                    healthController.getZone2Recent()
-                                }
-                        } badge: {
-                            VO2Badge()
-                        }
-                        
-                        StatRow(headerImage: heartSystemImage, headerTitle: "Resting heart rate", date: healthController.latestRhr, loading: healthController.rhrLoading, stat: Double(healthController.rhrMostRecent), color: .sweat, units: heartUnits) {
-                            RHRChart()
-                                .task {
-                                    healthController.getRhrRecent()
-                                }
-                        } badge: {
-                            RHRBadge()
-                        }
-                        
-                        StatRow(headerImage: cardioRecoverySystemImage, headerTitle: "Cardio recovery", date: healthController.latestRecovery, loading: healthController.recoveryLoading, stat: Double(healthController.recoveryMostRecent), color: .sweat, units: heartUnits) {
-                            RecoveryChart()
-                                .task {
-                                    healthController.getRecoveryRecent()
-                                }
-                        } badge: {
-                            RecoveryBadge()
-                        }
-                    } header: {
-                        HeaderLabel(title: "Progress", systemImage: streaksSystemImage)
+                Section {
+                    StatRow(headerImage: vO2SystemImage, headerTitle: "Cardio fitness", date: healthController.latestCardioFitness, loading: healthController.cardioFitnessLoading, stat: healthController.cardioFitnessMostRecent, color: .sweat, units: vO2Units) {
+                        VO2Chart()
+                            .task {
+                                healthController.getCardioFitnessRecent()
+                                healthController.getZone2Recent()
+                            }
+                    } badge: {
+                        VO2Badge()
                     }
-                }
-                .navigationTitle(sweatString)
-                .navigationBarTitleDisplayMode(.inline)
-                .onChange(of: scenePhase) { oldPhase, newPhase in
-                    if newPhase == .active {
-                        refresh()
+                    
+                    StatRow(headerImage: heartSystemImage, headerTitle: "Resting heart rate", date: healthController.latestRhr, loading: healthController.rhrLoading, stat: Double(healthController.rhrMostRecent), color: .sweat, units: heartUnits) {
+                        RHRChart()
+                            .task {
+                                healthController.getRhrRecent()
+                            }
+                    } badge: {
+                        RHRBadge()
                     }
+                    
+                    StatRow(headerImage: cardioRecoverySystemImage, headerTitle: "Cardio recovery", date: healthController.latestRecovery, loading: healthController.recoveryLoading, stat: Double(healthController.recoveryMostRecent), color: .sweat, units: heartUnits) {
+                        RecoveryChart()
+                            .task {
+                                healthController.getRecoveryRecent()
+                            }
+                    } badge: {
+                        RecoveryBadge()
+                    }
+                } header: {
+                    HeaderLabel(title: "Progress", systemImage: streaksSystemImage, color: .accent)
                 }
-                .refreshable {
+            }
+            .navigationTitle(sweatString)
+            .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: scenePhase) { oldPhase, newPhase in
+                if newPhase == .active {
                     refresh()
                 }
+            }
+            .refreshable {
+                refresh()
             }
         }
         .onAppear {
@@ -116,6 +117,8 @@ struct SweatView: View {
 
 #Preview {
     let healthController = HealthController()
+    
+    healthController.zone2Today = 10
 
     let today: Date = .now
 

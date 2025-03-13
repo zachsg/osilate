@@ -98,7 +98,8 @@ struct MoveView: View {
                             .foregroundStyle(.move)
                     }
                 }
-                .padding(.vertical)
+                .padding(.top, 42)
+                .padding(.bottom, 22)
                 
                 Picker("Period", selection: $tab) {
                     ForEach(OTimePeriod.allCases, id: \.self) { period in

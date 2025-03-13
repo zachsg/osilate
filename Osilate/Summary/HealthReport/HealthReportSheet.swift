@@ -15,7 +15,14 @@ enum BodyMetricStatus {
 struct HealthReportSheet: View {
     @Environment(HealthController.self) private var healthController
     
+    @AppStorage(hasBodyTempKey) var hasBodyTemp = hasBodyTempDefault
+    @AppStorage(hasRespirationKey) var hasRespiration = hasRespirationDefault
+    @AppStorage(hasOxygenKey) var hasOxygen = hasOxygenDefault
+    @AppStorage(hasRhrKey) var hasRhr = hasRhrDefault
+
     @Binding var sheetIsShowing: Bool
+    
+    @State private var optionsSheetIsShowing = false
     
     @State private var bodyTempHigh = 0.0
     @State private var bodyTempLow = 0.0
@@ -39,13 +46,21 @@ struct HealthReportSheet: View {
             Form {
                 OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus)
                 
-                BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTempStatus: $bodyTempStatus)
+                if hasBodyTemp {
+                    BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTempStatus: $bodyTempStatus)
+                }
                 
-                RespirationReport(respirationHigh: $respirationHigh, respirationLow: $respirationLow, respirationStatus: $respirationStatus)
+                if hasRespiration {
+                    RespirationReport(respirationHigh: $respirationHigh, respirationLow: $respirationLow, respirationStatus: $respirationStatus)
+                }
                
-                OxygenReport(oxygenHigh: $oxygenHigh, oxygenLow: $oxygenLow, oxygenStatus: $oxygenStatus)
+                if hasOxygen {
+                    OxygenReport(oxygenHigh: $oxygenHigh, oxygenLow: $oxygenLow, oxygenStatus: $oxygenStatus)
+                }
                 
-                RHRReport(rhrHigh: $rhrHigh, rhrLow: $rhrLow, rhrStatus: $rhrStatus)
+                if hasRhr {
+                    RHRReport(rhrHigh: $rhrHigh, rhrLow: $rhrLow, rhrStatus: $rhrStatus)
+                }
                 
                 Section {
                     Text("Coming soon...")
@@ -56,6 +71,18 @@ struct HealthReportSheet: View {
             .navigationTitle(healthReportTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        optionsSheetIsShowing.toggle()
+                    } label: {
+                        Label {
+                            Text("Metric Options")
+                        } icon: {
+                            Image(systemName: optionsSystemImage)
+                        }
+                    }
+                }
+                
                 ToolbarItem {
                     Button {
                         sheetIsShowing.toggle()
@@ -68,18 +95,29 @@ struct HealthReportSheet: View {
                     }
                 }
             }
+            .sheet(isPresented: $optionsSheetIsShowing) {
+                ReportOptionsSheet(sheetIsShowing: $optionsSheetIsShowing)
+            }
         }
         .onAppear {
-            healthController.getBodyTempToday()
-            healthController.getBodyTempTwoWeeks()
+            if hasBodyTemp {
+                healthController.getBodyTempToday()
+                healthController.getBodyTempTwoWeeks()
+            }
+           
+            if hasRespiration {
+                healthController.getRespirationToday()
+                healthController.getRespirationTwoWeeks()
+            }
             
-            healthController.getRespirationToday()
-            healthController.getRespirationTwoWeeks()
+            if hasOxygen {
+                healthController.getOxygenToday()
+                healthController.getOxygenTwoWeeks()
+            }
             
-            healthController.getOxygenToday()
-            healthController.getOxygenTwoWeeks()
-            
-            healthController.getRhrRecent()
+            if hasRhr {
+                healthController.getRhrRecent()
+            }
         }
     }
 }

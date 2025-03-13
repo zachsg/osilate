@@ -30,7 +30,7 @@ struct MoveWeekStepsBarChart: View {
                 HStack(spacing: 4) {
                     Text("Daily average:")
                     Text(averageStepsPerDay, format: .number)
-                        .foregroundStyle(.accent)
+                        .foregroundStyle(.move)
                     Text("steps")
                 }
                 .font(.subheadline.bold())

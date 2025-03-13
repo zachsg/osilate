@@ -52,7 +52,7 @@ struct BreatheView: View {
         NavigationStack {
             VStack {
                 if activities.isEmpty {
-                    VStack {
+                    List {
                         ActivityRingAndStats(percent: breathePercent, color: .breathe) {
                             VStack(alignment: .leading, spacing: 0) {
                                 Text("Minutes")
@@ -71,21 +71,22 @@ struct BreatheView: View {
                                 }
                             }
                         }
-                        .padding(.vertical)
+                        .padding(.vertical, 10)
+                        .listRowBackground(Color.clear)
+                        .listRowSpacing(0)
+                        .listRowInsets(EdgeInsets())
                         
-                        List {
-                            StatsSection()
-                            
-                            Label("No time like the present. Let's take action!", systemImage: arrowSystemImage)
-                                .font(.title2)
-                                .multilineTextAlignment(.center)
-                        }
-                        .refreshable {
-                            refresh()
-                        }
+                        StatsSection()
+                        
+                        Label("No time like the present. Let's take action!", systemImage: arrowSystemImage)
+                            .font(.title2)
+                            .multilineTextAlignment(.center)
+                    }
+                    .refreshable {
+                        refresh()
                     }
                 } else {
-                    VStack {
+                    List {
                         ActivityRingAndStats(percent: breathePercent, color: .breathe) {
                             VStack(alignment: .leading, spacing: 0) {
                                 Text("Minutes")
@@ -105,23 +106,24 @@ struct BreatheView: View {
                                 }
                             }
                         }
-                        .padding(.vertical)
+                        .padding(.vertical, 12)
+                        .listRowBackground(Color.clear)
+                        .listRowSpacing(0)
+                        .listRowInsets(EdgeInsets())
                         
-                        List {
-                            StatsSection()
-                            
-                            Section {
-                                ForEach(activities, id: \.id) { activity in
-                                    ActivityCard(activity: activity)
-                                }
-                                .onDelete(perform: deleteActivities)
-                            } header: {
-                                HeaderLabel(title: "Actions", systemImage: actionsSystemImage)
+                        StatsSection()
+                        
+                        Section {
+                            ForEach(activities, id: \.id) { activity in
+                                ActivityCard(activity: activity)
                             }
+                            .onDelete(perform: deleteActivities)
+                        } header: {
+                            HeaderLabel(title: "Actions", systemImage: actionsSystemImage, color: .accent)
                         }
-                        .refreshable {
-                            refresh()
-                        }
+                    }
+                    .refreshable {
+                        refresh()
                     }
                 }
             }
@@ -132,6 +134,7 @@ struct BreatheView: View {
                     } label: {
                         Image(systemName: statsSystemImage)
                     }
+                    .tint(.breathe)
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
@@ -140,18 +143,21 @@ struct BreatheView: View {
                     } label: {
                         Image(systemName: historySystemImage)
                     }
+                    .tint(.breathe)
                 }
                 
                 ToolbarItem {
                     Button(breatheString, systemImage: breathSystemImage) {
                         breathSheetIsShowing.toggle()
                     }
+                    .tint(.breathe)
                 }
                 
                 ToolbarItem {
                     Button(meditateTitle, systemImage: meditateSystemImage) {
                         meditateSheetIsShowing.toggle()
                     }
+                    .tint(.breathe)
                 }
             }
             .navigationTitle(breatheString)

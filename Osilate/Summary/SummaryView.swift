@@ -77,6 +77,7 @@ struct SummaryView: View {
                     BreatheCard(tabSelected: $tabSelected, breathePercent: breathePercent)
                 }
                 .padding(.horizontal)
+                .padding(.bottom)
             }
             .refreshable {
                 refresh()

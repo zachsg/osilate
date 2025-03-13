@@ -28,7 +28,7 @@ struct StreakItem: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 2)
-            .background(.accent)
+            .background(.breathe)
             .clipShape(RoundedRectangle(cornerSize: CGSize(width: 6, height: 6)))
             .padding(.horizontal, 2)
             .foregroundStyle(colorScheme == .dark ? .black : .white)

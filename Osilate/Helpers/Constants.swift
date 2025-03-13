@@ -24,20 +24,27 @@ let outRangeSystemImage = "exclamationmark.triangle.fill"
 let overallTitle = "Overall"
 let overallSystemImage = "target"
 // Body temp
+let hasBodyTempKey = "hasBodyTemp"
+let hasBodyTempDefault = true
 let bodyTempTitle = "Body Temp"
 let bodyTempLowSystemImage = "thermometer.low"
 let bodyTempNormalSystemImage = "thermometer.medium"
 let bodyTempHighSystemImage = "thermometer.high"
 // Respiration
+let hasRespirationKey = "hasRespiration"
+let hasRespirationDefault = true
 let respirationTitle = "Respiration Rate"
 let respirationSystemImage = "lungs.fill"
 // Oxygen / SpO2
+let hasOxygenKey = "hasOxygen"
+let hasOxygenDefault = true
 let oxygenTitle = "Blood Oxygen"
 let oxygenSystemImage = "drop.degreesign.fill"
 // Resting Heart Rate
+let hasRhrKey = "hasRhr"
+let hasRhrDefault = true
 let rhrTitle = "Resting Heart Rate"
 let rhrSystemImage = "heart.fill"
-
 
 // MARK: Move
 let moveString = "Move"
@@ -108,6 +115,8 @@ let boxRoundsDefault = 40
 // MARK: Settings
 let settingsString = "Settings"
 let settingsSystemImage = "gearshape"
+
+let optionsSystemImage = "slider.horizontal.2.square"
 
 let userAgeKey = "userAge"
 let userAgeDefault = 30

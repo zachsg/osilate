@@ -10,6 +10,11 @@ import SwiftUI
 struct OverallReport: View {
     @Environment(HealthController.self) private var healthController
     
+    @AppStorage(hasBodyTempKey) var hasBodyTemp = hasBodyTempDefault
+    @AppStorage(hasRespirationKey) var hasRespiration = hasRespirationDefault
+    @AppStorage(hasOxygenKey) var hasOxygen = hasOxygenDefault
+    @AppStorage(hasRhrKey) var hasRhr = hasRhrDefault
+    
     @Binding var bodyTempStatus: BodyMetricStatus?
     @Binding var respirationStatus: BodyMetricStatus?
     @Binding var oxygenStatus: BodyMetricStatus?
@@ -17,118 +22,42 @@ struct OverallReport: View {
 
     var body: some View {
         Section {
-            HStack {
-                Spacer()
-                
-                VStack {
-                    if healthController.bodyTempByDayLoading {
-                        ProgressView()
-                    } else {
-                        ZStack {
-                            Circle()
-                                .frame(width: 36, height: 36)
-                                .foregroundStyle(.regularMaterial)
-                            
-                            Image(systemName: bodyTempStatus == .normal ? bodyTempNormalSystemImage : bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 22, height: 22)
-                                .foregroundStyle(.accent)
+            ScrollView(.horizontal) {
+                HStack(spacing: 24) {
+                    if hasBodyTemp {
+                        if healthController.bodyTempByDayLoading {
+                            ProgressView()
+                        } else {
+                            MetricStatus(title: "Temp", status: bodyTempStatus, systemImageName: bodyTempNormalSystemImage, systemImageNameLow: bodyTempLowSystemImage, systemImageNameHigh: bodyTempHighSystemImage)
                         }
-                        .shadow(radius: 1)
-                        
-                        Image(systemName: bodyTempStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 16, height: 16)
-                            .foregroundStyle(bodyTempStatus == .normal ? .green : .red)
+                    }
+                    
+                    if hasRespiration {
+                        if healthController.respirationByDayLoading {
+                            ProgressView()
+                        } else {
+                            MetricStatus(title: "Resp", status: respirationStatus, systemImageName: respirationSystemImage)
+                        }
+                    }
+                
+                    if hasOxygen {
+                        if healthController.oxygenByDayLoading {
+                            ProgressView()
+                        } else {
+                            MetricStatus(title: "O2", status: oxygenStatus, systemImageName: oxygenSystemImage)
+                        }
+                    }
+                
+                    if hasRhr {
+                        if healthController.rhrLoading {
+                            ProgressView()
+                        } else {
+                            MetricStatus(title: "RHR", status: rhrStatus, systemImageName: rhrSystemImage)
+                        }
                     }
                 }
-                
-                Spacer()
-                
-                VStack {
-                    if healthController.respirationByDayLoading {
-                        ProgressView()
-                    } else {
-                        ZStack {
-                            Circle()
-                                .frame(width: 36, height: 36)
-                                .foregroundStyle(.regularMaterial)
-                            
-                            Image(systemName: respirationSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 22, height: 22)
-                                .foregroundStyle(.accent)
-                        }
-                        .shadow(radius: 1)
-                        
-                        Image(systemName: respirationStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 16, height: 16)
-                            .foregroundStyle(respirationStatus == .normal ? .green : .red)
-                    }
-                }
-                
-                Spacer()
-                
-                VStack {
-                    if healthController.oxygenByDayLoading {
-                        ProgressView()
-                    } else {
-                        ZStack {
-                            Circle()
-                                .frame(width: 36, height: 36)
-                                .foregroundStyle(.regularMaterial)
-                            
-                            Image(systemName: oxygenSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 22, height: 22)
-                                .foregroundStyle(.accent)
-                        }
-                        .shadow(radius: 1)
-                        
-                        Image(systemName: oxygenStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 16, height: 16)
-                            .foregroundStyle(oxygenStatus == .normal ? .green : .red)
-                    }
-                }
-                
-                Spacer()
-                
-                VStack {
-                    if healthController.rhrLoading {
-                        ProgressView()
-                    } else {
-                        ZStack {
-                            Circle()
-                                .frame(width: 36, height: 36)
-                                .foregroundStyle(.regularMaterial)
-                            
-                            Image(systemName: rhrSystemImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 22, height: 22)
-                                .foregroundStyle(.accent)
-                        }
-                        .shadow(radius: 1)
-
-                        Image(systemName: rhrStatus == .normal ? inRangeSystemImage : outRangeSystemImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 16, height: 16)
-                            .foregroundStyle(rhrStatus == .normal ? .green : .red)
-                    }
-                }
-                
-                Spacer()
+                .padding(2)
             }
-            .padding(2)
         } header: {
             HeaderLabel(title: overallTitle, systemImage: overallSystemImage)
         }

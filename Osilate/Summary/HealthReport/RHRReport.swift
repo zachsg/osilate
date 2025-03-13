@@ -60,7 +60,7 @@ struct RHRReport: View {
                 }
             }
         } header: {
-            HeaderLabel(title: rhrTitle, systemImage: rhrSystemImage)
+            HeaderLabel(title: "\(rhrTitle) (RHR)", systemImage: rhrSystemImage)
         } footer: {
             Text("Units: Beats per minute (BPM).")
         }

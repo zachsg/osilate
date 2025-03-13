@@ -71,25 +71,26 @@ struct StepsCardView: View {
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
                         Text(steps, format: .number)
                             .font(.title.bold())
+                            .foregroundStyle(.move)
                         
                         Text("steps")
                             .font(.caption)
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(.secondary)
                     }
                     
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
                         Text(distance, format: .number)
                             .font(.headline.bold())
-                    
+                            .foregroundStyle(.move)
+
                         Text(distanceUnit)
                             .font(.caption)
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 
                 Spacer()
             }
-            .foregroundStyle(.move)
         }
         .padding()
         .background(.regularMaterial)

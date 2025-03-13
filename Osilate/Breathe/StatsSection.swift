@@ -13,7 +13,7 @@ struct StatsSection: View {
         Section {
             StreaksSection()
         } header: {
-            HeaderLabel(title: "Progress", systemImage: streaksSystemImage)
+            HeaderLabel(title: "Progress", systemImage: streaksSystemImage, color: .accent)
         }
     }
 }

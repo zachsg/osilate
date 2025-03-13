@@ -71,7 +71,7 @@ struct ActivityCard: View {
                     Image(systemName: activityCategory.systemImage)
                     Text(activityCategory.title)
                 }
-                .foregroundStyle(.accent)
+                .foregroundStyle(.breathe)
                 
                 Spacer()
                 
