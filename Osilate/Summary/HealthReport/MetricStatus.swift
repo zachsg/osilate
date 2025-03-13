@@ -33,11 +33,11 @@ struct MetricStatus: View {
             }
             .shadow(radius: 1)
             
-            Image(systemName: status == .normal ? inRangeSystemImage : outRangeSystemImage)
+            Image(systemName: status == .normal ? inRangeSystemImage : status == .optimal ? optimalRangeSystemImage : outRangeSystemImage)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 16, height: 16)
-                .foregroundStyle(status == .normal ? .green : .red)
+                .foregroundStyle(status == .normal ? .green : status == .optimal ? .yellow : .red)
         }
     }
     
@@ -45,12 +45,10 @@ struct MetricStatus: View {
         let systemName = switch status {
         case .low:
             systemImageNameLow
-        case .normal:
+        case .normal, .optimal, nil:
             systemImageName
         case .high:
             systemImageNameHigh
-        case nil:
-            systemImageName
         }
         
         return systemName.isEmpty ? systemImageName : systemName

@@ -20,8 +20,9 @@ let healthReportTitle = "Health Report"
 let healthReportSystemImage = "heart.text.clipboard.fill"
 let inRangeSystemImage = "checkmark.square.fill"
 let outRangeSystemImage = "exclamationmark.triangle.fill"
+let optimalRangeSystemImage = "star.circle.fill"
 // Overall
-let overallTitle = "Overall"
+let overallTitle = "Overall Today"
 let overallSystemImage = "target"
 // Body temp
 let hasBodyTempKey = "hasBodyTemp"
@@ -49,7 +50,7 @@ let rhrSystemImage = "heart.fill"
 let hasHrvKey = "hasHrv"
 let hasHrvDefault = true
 let hrvTitle = "Heart Rate Variability"
-let hrvSystemImage = "waveform.path.ecg"
+let hrvSystemImage = "waveform.path"
 
 // MARK: Move
 let moveString = "Move"
@@ -106,7 +107,7 @@ let mouthSystemImage = "mouth"
 let historyTitle = "Historical"
 let historySystemImage = "clock"
 let statsTitle = "Stats"
-let statsSystemImage = "chart.pie"
+let statsSystemImage = "chart.bar"
 
 let dailyBreatheGoalKey = "mindfulnessGoal"
 let dailyBreatheGoalDefault = 1200 // 20 minutes

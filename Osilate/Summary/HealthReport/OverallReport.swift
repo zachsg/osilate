@@ -69,6 +69,17 @@ struct OverallReport: View {
             }
         } header: {
             HeaderLabel(title: overallTitle, systemImage: overallSystemImage)
+        } footer: {
+            ScrollView(.horizontal) {
+                HStack {
+                    Text("Legend:")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.secondary)
+                    MetricStatusTag(title: "Optimal", systemName: optimalRangeSystemImage, color: .yellow)
+                    MetricStatusTag(title: "Normal", systemName: inRangeSystemImage, color: .green)
+                    MetricStatusTag(title: "Unusual", systemName: outRangeSystemImage, color: .red)
+                }
+            }
         }
     }
 }
@@ -76,6 +87,6 @@ struct OverallReport: View {
 #Preview {
     let healthController = HealthController()
     
-    return OverallReport(bodyTempStatus: .constant(.normal), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.normal), hrvStatus: .constant(.normal))
+    return OverallReport(bodyTempStatus: .constant(.high), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.optimal), hrvStatus: .constant(.optimal))
         .environment(healthController)
 }

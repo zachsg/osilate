@@ -100,7 +100,7 @@ struct RespirationReport: View {
     
     private func calculateRespirationStatus() {
         respirationStatus = if healthController.respirationToday < respirationLow {
-            .low
+            .optimal
         } else if healthController.respirationToday > respirationHigh {
             .high
         } else {

@@ -102,7 +102,7 @@ struct RHRReport: View {
     
     private func calculateRhrStatus() {
         rhrStatus = if healthController.rhrMostRecent < rhrLow {
-            .low
+            .optimal
         } else if healthController.rhrMostRecent > rhrHigh {
             .high
         } else {

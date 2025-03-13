@@ -102,7 +102,7 @@ struct OxygenReport: View {
         oxygenStatus = if healthController.oxygenToday < oxygenLow {
             .low
         } else if healthController.oxygenToday > oxygenHigh {
-            .high
+            .optimal
         } else {
             .normal
         }

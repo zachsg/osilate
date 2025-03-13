@@ -60,7 +60,7 @@ struct HRVReport: View {
         } header: {
             HeaderLabel(title: "\(hrvTitle) (HRV)", systemImage: hrvSystemImage)
         } footer: {
-            Text("Units: Measured in seconds using SDNN method.")
+            Text("Units: Measured in ms using SDNN method.")
         }
         .task {
             await tryAgain()
@@ -69,7 +69,7 @@ struct HRVReport: View {
     
     @MainActor
     func tryAgain() async {
-        while healthController.oxygenByDayLoading {
+        while healthController.hrvByDayLoading {
             try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
         }
         
@@ -102,7 +102,7 @@ struct HRVReport: View {
         hrvStatus = if healthController.hrvToday < hrvLow {
             .low
         } else if healthController.hrvToday > hrvHigh {
-            .high
+            .optimal
         } else {
             .normal
         }

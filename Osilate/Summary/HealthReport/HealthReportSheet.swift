@@ -8,10 +8,6 @@
 import Charts
 import SwiftUI
 
-enum BodyMetricStatus {
-    case low, normal, high
-}
-
 struct HealthReportSheet: View {
     @Environment(HealthController.self) private var healthController
     
