@@ -11,29 +11,30 @@ import SwiftUI
 struct SleepReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var sleepHigh: Double
-    @Binding var sleepLow: Double
-    @Binding var sleepStatus: BodyMetricStatus?
+    @Binding var rangeTop: Double
+    @Binding var rangeBottom: Double
+    @Binding var measuredTop: Double
+    @Binding var measuredBottom: Double
+    @Binding var status: BodyMetricStatus?
     
-    @State private var lowestSleep = 24.0
-    @State private var highestSleep = 0.0
     @State private var isExpanded = false
     
-    var bottomRange: Double {
-        let bottom = lowestSleep > sleepLow ? sleepLow : lowestSleep
-        return bottom - 1
+    var top: Double {
+        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        
+        return top + 1
     }
     
-    var topRange: Double {
-        let top = highestSleep > sleepHigh ? highestSleep : sleepHigh
-        return top + 1
+    var bottom: Double {
+        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        
+        return bottom - 1
     }
     
     var body: some View {
         Section {
             if healthController.sleepByDayLoading {
                 ProgressView()
-                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.sleepByDay.sorted { $0.key < $1.key }, id: \.key) { date, hours in
@@ -44,18 +45,16 @@ struct SleepReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", sleepHigh))
+                    RuleMark(y: .value("Top", rangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", sleepLow))
+                    RuleMark(y: .value("Bottom", rangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: sleepLow < sleepHigh ? bottomRange...topRange : 20...150)
-                .frame(height: isExpanded ? 256 : 40)
-                .padding(.horizontal, 4)
-                .padding(.vertical, isExpanded ? 4 : 0)
+                .chartYScale(domain: bottom...top)
+                .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -66,50 +65,6 @@ struct SleepReport: View {
             HeaderLabel(title: "\(sleepTitle)", systemImage: sleepSystemImage)
         } footer: {
             isExpanded ? Text("Units: Measured in hours.") : nil
-        }
-        .task {
-            await tryAgain()
-        }
-    }
-    
-    @MainActor
-    func tryAgain() async {
-        while healthController.sleepByDayLoading {
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-        }
-        
-        calculateSleepRange()
-        calculateSleepStatus()
-    }
-    
-    private func calculateSleepRange() {
-        var average = 0.0
-        
-        for (_, hours) in healthController.sleepByDay {
-            average += hours
-            
-            if hours < lowestSleep {
-                lowestSleep = hours
-            }
-            
-            if hours > highestSleep {
-                highestSleep = hours
-            }
-        }
-        
-        average /= Double(healthController.sleepByDay.count)
-        
-        sleepLow = average - 1
-        sleepHigh = average + 1
-    }
-    
-    private func calculateSleepStatus() {
-        sleepStatus = if healthController.sleepToday < sleepLow {
-            .low
-        } else if healthController.sleepToday > sleepHigh {
-            .optimal
-        } else {
-            .normal
         }
     }
 }
@@ -126,6 +81,6 @@ struct SleepReport: View {
         }
     }
     
-    return SleepReport(sleepHigh: .constant(8.5), sleepLow: .constant(6.5), sleepStatus: .constant(.normal))
+    return SleepReport(rangeTop: .constant(9), rangeBottom: .constant(7), measuredTop: .constant(8.5), measuredBottom: .constant(7.5), status: .constant(.normal))
         .environment(healthController)
 }

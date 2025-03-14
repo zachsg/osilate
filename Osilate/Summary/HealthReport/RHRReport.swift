@@ -11,29 +11,30 @@ import SwiftUI
 struct RHRReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var rhrHigh: Int
-    @Binding var rhrLow: Int
-    @Binding var rhrStatus: BodyMetricStatus?
+    @Binding var rangeTop: Int
+    @Binding var rangeBottom: Int
+    @Binding var measuredTop: Int
+    @Binding var measuredBottom: Int
+    @Binding var status: BodyMetricStatus?
     
-    @State private var lowestRhr = 200
-    @State private var highestRhr = 0
     @State private var isExpanded = false
     
-    var bottomRange: Int {
-        let bottom = lowestRhr > rhrLow ? rhrLow : lowestRhr
-        return bottom - 1
+    var top: Int {
+        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        
+        return top + 1
     }
     
-    var topRange: Int {
-        let top = highestRhr > rhrHigh ? highestRhr : rhrHigh
-        return top + 1
+    var bottom: Int {
+        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        
+        return bottom - 1
     }
     
     var body: some View {
         Section {
             if healthController.rhrLoading {
                 ProgressView()
-                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.rhrByDay.sorted { $0.key < $1.key }, id: \.key) { date, rhr in
@@ -46,18 +47,16 @@ struct RHRReport: View {
                         }
                     }
                     
-                    RuleMark(y: .value("Top", rhrHigh))
+                    RuleMark(y: .value("Top", rangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", rhrLow))
+                    RuleMark(y: .value("Bottom", rangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: rhrLow < rhrHigh ? bottomRange...topRange : 65...80)
-                .frame(height: isExpanded ? 256 : 40)
-                .padding(.horizontal, 4)
-                .padding(.vertical, isExpanded ? 4 : 0)
+                .chartYScale(domain: bottom...top)
+                .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -68,50 +67,6 @@ struct RHRReport: View {
             HeaderLabel(title: "\(rhrTitle) (RHR)", systemImage: rhrSystemImage)
         } footer: {
             isExpanded ? Text("Units: Beats per minute (BPM).") : nil
-        }
-        .task {
-            await tryAgain()
-        }
-    }
-    
-    @MainActor
-    func tryAgain() async {
-        while healthController.rhrLoading {
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-        }
-        
-        calculateRhrRange()
-        calculateRhrStatus()
-    }
-    
-    private func calculateRhrRange() {
-        var average = 0
-        
-        for (_, rhr) in healthController.rhrByDay {
-            average += rhr
-            
-            if rhr < lowestRhr {
-                lowestRhr = rhr
-            }
-            
-            if rhr > highestRhr {
-                highestRhr = rhr
-            }
-        }
-        
-        average = Int((Double(average) / Double(healthController.rhrByDay.count)).rounded(toPlaces: 0))
-        
-        rhrLow = average - 3
-        rhrHigh = average + 3
-    }
-    
-    private func calculateRhrStatus() {
-        rhrStatus = if healthController.rhrMostRecent < rhrLow {
-            .optimal
-        } else if healthController.rhrMostRecent > rhrHigh {
-            .high
-        } else {
-            .normal
         }
     }
 }
@@ -128,6 +83,6 @@ struct RHRReport: View {
         }
     }
     
-    return RHRReport(rhrHigh: .constant(78), rhrLow: .constant(60), rhrStatus: .constant(.normal))
+    return RHRReport(rangeTop: .constant(70), rangeBottom: .constant(60), measuredTop: .constant(63), measuredBottom: .constant(60), status: .constant(.normal))
         .environment(healthController)
 }

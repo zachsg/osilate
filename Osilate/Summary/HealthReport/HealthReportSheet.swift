@@ -22,65 +22,74 @@ struct HealthReportSheet: View {
     
     @State private var optionsSheetIsShowing = false
     
-    @State private var bodyTempHigh = 0.0
-    @State private var bodyTempLow = 0.0
-    @State private var bodyTempStatus: BodyMetricStatus?
+    @State private var tempRangeTop = 0.1
+    @State private var tempRangeBottom = -0.1
+    @State private var tempMeasuredTop = 0.0
+    @State private var tempMeasuredBottom = 0.0
+    @State private var tempStatus: BodyMetricStatus?
     
-    @State private var respirationHigh = 0.0
-    @State private var respirationLow = 0.0
+    @State private var respirationRangeTop = 0.1
+    @State private var respirationRangeBottom = -0.1
+    @State private var respirationMeasuredTop = 0.0
+    @State private var respirationMeasuredBottom = -0.0
     @State private var respirationStatus: BodyMetricStatus?
     
-    @State private var oxygenHigh = 0.0
-    @State private var oxygenLow = 0.0
+    @State private var oxygenRangeTop = 0.1
+    @State private var oxygenRangeBottom = -0.1
+    @State private var oxygenMeasuredTop = 0.0
+    @State private var oxygenMeasuredBottom = 0.0
     @State private var oxygenStatus: BodyMetricStatus?
     
-    @State private var rhrHigh = 0
-    @State private var rhrLow = 0
-    @State private var rhr = 0
+    @State private var rhrRangeTop = 1
+    @State private var rhrRangeBottom = -1
+    @State private var rhrMeasuredTop = 0
+    @State private var rhrMeasuredBottom = 0
     @State private var rhrStatus: BodyMetricStatus?
     
-    @State private var hrvHigh = 0.0
-    @State private var hrvLow = 0.0
+    @State private var hrvRangeTop = 0.1
+    @State private var hrvRangeBottom = -0.1
+    @State private var hrvMeasuredTop = 0.0
+    @State private var hrvMeasuredBottom = 0.0
     @State private var hrv = 0.0
     @State private var hrvStatus: BodyMetricStatus?
     
-    @State private var sleepHigh = 0.0
-    @State private var sleepLow = 0.0
-    @State private var sleep = 0.0
+    @State private var sleepRangeTop = 0.1
+    @State private var sleepRangeBottom = -0.1
+    @State private var sleepMeasuredTop = 0.0
+    @State private var sleepMeasuredBottom = 0.0
     @State private var sleepStatus: BodyMetricStatus?
     
     var body: some View {
         NavigationStack {
             List {
-                OverallReport(bodyTempStatus: $bodyTempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus, hrvStatus: $hrvStatus, sleepStatus: $sleepStatus)
+                OverallReport(bodyTempStatus: $tempStatus, respirationStatus: $respirationStatus, oxygenStatus: $oxygenStatus, rhrStatus: $rhrStatus, hrvStatus: $hrvStatus, sleepStatus: $sleepStatus)
                 
                 if hasBodyTemp {
-                    BodyTempReport(bodyTempHigh: $bodyTempHigh, bodyTempLow: $bodyTempLow, bodyTempStatus: $bodyTempStatus)
-                        .listRowInsets(EdgeInsets())
+                    BodyTempReport(rangeTop: $tempRangeTop, rangeBottom: $tempRangeBottom, measuredTop: $tempMeasuredTop, measuredBottom: $tempMeasuredBottom, status: $tempStatus)
                 }
                 
                 if hasRespiration {
-                    RespirationReport(respirationHigh: $respirationHigh, respirationLow: $respirationLow, respirationStatus: $respirationStatus)
+                    RespirationReport(rangeTop: $respirationRangeTop, rangeBottom: $respirationRangeBottom, measuredTop: $respirationMeasuredTop, measuredBottom: $respirationMeasuredBottom, status: $respirationStatus)
                         .listRowInsets(EdgeInsets())
                 }
                 
                 if hasOxygen {
-                    OxygenReport(oxygenHigh: $oxygenHigh, oxygenLow: $oxygenLow, oxygenStatus: $oxygenStatus)
+                    OxygenReport(rangeTop: $oxygenRangeTop, rangeBottom: $oxygenRangeBottom, measuredTop: $oxygenMeasuredTop, measuredBottom: $oxygenMeasuredBottom, status: $oxygenStatus)
                         .listRowInsets(EdgeInsets())
                 }
                 
                 if hasRhr {
-                    RHRReport(rhrHigh: $rhrHigh, rhrLow: $rhrLow, rhrStatus: $rhrStatus)
+                    RHRReport(rangeTop: $rhrRangeTop, rangeBottom: $rhrRangeBottom, measuredTop: $rhrMeasuredTop, measuredBottom: $rhrMeasuredBottom, status: $rhrStatus)
                         .listRowInsets(EdgeInsets())
                 }
                 
                 if hasHrv {
-                    HRVReport(hrvHigh: $hrvHigh, hrvLow: $hrvLow, hrvStatus: $hrvStatus)
+                    HRVReport(rangeTop: $hrvRangeTop, rangeBottom: $hrvRangeBottom, measuredTop: $hrvMeasuredTop, measuredBottom: $hrvMeasuredBottom, status: $hrvStatus)
                         .listRowInsets(EdgeInsets())
                 }
                 
                 if hasSleep {
-                    SleepReport(sleepHigh: $sleepHigh, sleepLow: $sleepLow, sleepStatus: $sleepStatus)
+                    SleepReport(rangeTop: $sleepRangeTop, rangeBottom: $sleepRangeBottom, measuredTop: $sleepMeasuredTop, measuredBottom: $sleepMeasuredBottom, status: $sleepStatus)
                         .listRowInsets(EdgeInsets())
                 }
             }
@@ -119,32 +128,140 @@ struct HealthReportSheet: View {
             if hasBodyTemp {
                 healthController.getBodyTempToday()
                 healthController.getBodyTempTwoWeeks()
+                
+                Task {
+                    await tempStats()
+                }
             }
            
             if hasRespiration {
                 healthController.getRespirationToday()
                 healthController.getRespirationTwoWeeks()
+                
+                Task {
+                    await respirationStats()
+                }
             }
             
             if hasOxygen {
                 healthController.getOxygenToday()
                 healthController.getOxygenTwoWeeks()
+                
+                Task {
+                    await oxygenStats()
+                }
             }
             
             if hasRhr {
                 healthController.getRhrRecent()
+                
+                Task {
+                    await rhrStats()
+                }
             }
             
             if hasHrv {
                 healthController.getHrvToday()
                 healthController.getHrvTwoWeeks()
+                
+                Task {
+                    await hrvStats()
+                }
             }
             
             if hasSleep {
                 healthController.getSleepToday()
                 healthController.getSleepTwoWeeks()
+                
+                Task {
+                    await sleepStats()
+                }
             }
         }
+    }
+    
+    @MainActor
+    func tempStats() async {
+        while healthController.bodyTempByDayLoading {
+            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+        }
+        
+        let stats = BodyMetricCalculations.tempStats(controller: healthController)
+        tempRangeTop = stats.rangeTop
+        tempRangeBottom = stats.rangeBottom
+        tempMeasuredTop = stats.measuredTop
+        tempMeasuredBottom = stats.measuredBottom
+        tempStatus = stats.status
+    }
+    
+    @MainActor
+    func respirationStats() async {
+        while healthController.respirationByDayLoading {
+            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+        }
+        
+        let stats = BodyMetricCalculations.respirationStats(controller: healthController)
+        respirationRangeTop = stats.rangeTop
+        respirationRangeBottom = stats.rangeBottom
+        respirationMeasuredTop = stats.measuredTop
+        respirationMeasuredBottom = stats.measuredBottom
+        respirationStatus = stats.status
+    }
+    
+    @MainActor
+    func oxygenStats() async {
+        while healthController.oxygenByDayLoading {
+            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+        }
+        
+        let stats = BodyMetricCalculations.oxygenStats(controller: healthController)
+        oxygenRangeTop = stats.rangeTop
+        oxygenRangeBottom = stats.rangeBottom
+        oxygenMeasuredTop = stats.measuredTop
+        oxygenMeasuredBottom = stats.measuredBottom
+        oxygenStatus = stats.status
+    }
+    
+    @MainActor
+    func rhrStats() async {
+        while healthController.rhrLoading {
+            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+        }
+        
+        let stats = BodyMetricCalculations.rhrStats(controller: healthController)
+        rhrRangeTop = stats.rangeTop
+        rhrRangeBottom = stats.rangeBottom
+        rhrMeasuredTop = stats.measuredTop
+        rhrMeasuredBottom = stats.measuredBottom
+        rhrStatus = stats.status
+    }
+    
+    @MainActor
+    func hrvStats() async {
+        while healthController.hrvByDayLoading {
+            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+        }
+        
+        let stats = BodyMetricCalculations.hrvStats(controller: healthController)
+        hrvRangeTop = stats.rangeTop
+        hrvRangeBottom = stats.rangeBottom
+        hrvMeasuredTop = stats.measuredTop
+        hrvMeasuredBottom = stats.measuredBottom
+        hrvStatus = stats.status
+    }
+    
+    @MainActor
+    func sleepStats() async {
+        while healthController.sleepByDayLoading {
+            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+        }
+        
+        let stats = BodyMetricCalculations.sleepStats(controller: healthController)
+        sleepRangeTop = stats.rangeTop
+        sleepRangeBottom = stats.rangeBottom
+        sleepMeasuredTop = stats.measuredTop
+        sleepMeasuredBottom = stats.measuredBottom
+        sleepStatus = stats.status
     }
 }
 

@@ -11,29 +11,30 @@ import SwiftUI
 struct HRVReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var hrvHigh: Double
-    @Binding var hrvLow: Double
-    @Binding var hrvStatus: BodyMetricStatus?
+    @Binding var rangeTop: Double
+    @Binding var rangeBottom: Double
+    @Binding var measuredTop: Double
+    @Binding var measuredBottom: Double
+    @Binding var status: BodyMetricStatus?
     
-    @State private var lowestHrv = 400.0
-    @State private var highestHrv = 0.0
     @State private var isExpanded = false
     
-    var bottomRange: Double {
-        let bottom = lowestHrv > hrvLow ? hrvLow : lowestHrv
-        return bottom - 1
+    var top: Double {
+        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        
+        return top + 1
     }
     
-    var topRange: Double {
-        let top = highestHrv > hrvHigh ? highestHrv : hrvHigh
-        return top + 1
+    var bottom: Double {
+        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        
+        return bottom - 1
     }
     
     var body: some View {
         Section {
             if healthController.hrvByDayLoading {
                 ProgressView()
-                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.hrvByDay.sorted { $0.key < $1.key }, id: \.key) { date, hrv in
@@ -44,18 +45,16 @@ struct HRVReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", hrvHigh))
+                    RuleMark(y: .value("Top", rangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", hrvLow))
+                    RuleMark(y: .value("Bottom", rangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: hrvLow < hrvHigh ? bottomRange...topRange : 20...150)
-                .frame(height: isExpanded ? 256 : 40)
-                .padding(.horizontal, 4)
-                .padding(.vertical, isExpanded ? 4 : 0)
+                .chartYScale(domain: bottom...top)
+                .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -66,50 +65,6 @@ struct HRVReport: View {
             HeaderLabel(title: "\(hrvTitle) (HRV)", systemImage: hrvSystemImage)
         } footer: {
             isExpanded ? Text("Units: Measured in ms using SDNN method.") : nil
-        }
-        .task {
-            await tryAgain()
-        }
-    }
-    
-    @MainActor
-    func tryAgain() async {
-        while healthController.hrvByDayLoading {
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-        }
-        
-        calculateHrvRange()
-        calculateHrvStatus()
-    }
-    
-    private func calculateHrvRange() {
-        var average = 0.0
-        
-        for (_, hrv) in healthController.hrvByDay {
-            average += hrv
-            
-            if hrv < lowestHrv {
-                lowestHrv = hrv
-            }
-            
-            if hrv > highestHrv {
-                highestHrv = hrv
-            }
-        }
-        
-        average /= Double(healthController.hrvByDay.count)
-        
-        hrvLow = average - 10
-        hrvHigh = average + 10
-    }
-    
-    private func calculateHrvStatus() {
-        hrvStatus = if healthController.hrvToday < hrvLow {
-            .low
-        } else if healthController.hrvToday > hrvHigh {
-            .optimal
-        } else {
-            .normal
         }
     }
 }
@@ -126,6 +81,6 @@ struct HRVReport: View {
         }
     }
     
-    return HRVReport(hrvHigh: .constant(65), hrvLow: .constant(49), hrvStatus: .constant(.normal))
+    return HRVReport(rangeTop: .constant(99), rangeBottom: .constant(97), measuredTop: .constant(100), measuredBottom: .constant(97.5), status: .constant(.normal))
         .environment(healthController)
 }

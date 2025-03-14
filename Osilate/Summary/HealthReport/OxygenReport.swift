@@ -11,29 +11,30 @@ import SwiftUI
 struct OxygenReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var oxygenHigh: Double
-    @Binding var oxygenLow: Double
-    @Binding var oxygenStatus: BodyMetricStatus?
+    @Binding var rangeTop: Double
+    @Binding var rangeBottom: Double
+    @Binding var measuredTop: Double
+    @Binding var measuredBottom: Double
+    @Binding var status: BodyMetricStatus?
     
-    @State private var lowestOxygen = 110.0
-    @State private var highestOxygen = 0.0
     @State private var isExpanded = false
     
-    var bottomRange: Double {
-        let bottom = lowestOxygen > oxygenLow ? oxygenLow : lowestOxygen
-        return bottom - 0.2
+    var top: Double {
+        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        
+        return top + 1
     }
     
-    var topRange: Double {
-        let top = highestOxygen > oxygenHigh ? highestOxygen : oxygenHigh
-        return top + 0.2
+    var bottom: Double {
+        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        
+        return bottom - 1
     }
     
     var body: some View {
         Section {
             if healthController.oxygenByDayLoading {
                 ProgressView()
-                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.oxygenByDay.sorted { $0.key < $1.key }, id: \.key) { date, ox in
@@ -44,18 +45,16 @@ struct OxygenReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", oxygenHigh))
+                    RuleMark(y: .value("Top", rangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", oxygenLow))
+                    RuleMark(y: .value("Bottom", rangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: oxygenLow < oxygenHigh ? bottomRange...topRange : 95...100)
-                .frame(height: isExpanded ? 256 : 40)
-                .padding(.horizontal, 4)
-                .padding(.vertical, isExpanded ? 4 : 0)
+                .chartYScale(domain: bottom...top)
+                .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -66,50 +65,6 @@ struct OxygenReport: View {
             HeaderLabel(title: "\(oxygenTitle) (O2)", systemImage: oxygenSystemImage)
         } footer: {
             isExpanded ? Text("Units: Percentage oxygen in blood (SpO2).") : nil
-        }
-        .task {
-            await tryAgain()
-        }
-    }
-    
-    @MainActor
-    func tryAgain() async {
-        while healthController.oxygenByDayLoading {
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-        }
-        
-        calculateOxygenRange()
-        calculateOxygenStatus()
-    }
-    
-    private func calculateOxygenRange() {
-        var average = 0.0
-        
-        for (_, ox) in healthController.oxygenByDay {
-            average += ox
-            
-            if ox < lowestOxygen {
-                lowestOxygen = ox
-            }
-            
-            if ox > highestOxygen {
-                highestOxygen = ox
-            }
-        }
-        
-        average /= Double(healthController.oxygenByDay.count)
-        
-        oxygenLow = average - 1
-        oxygenHigh = average + 1
-    }
-    
-    private func calculateOxygenStatus() {
-        oxygenStatus = if healthController.oxygenToday < oxygenLow {
-            .low
-        } else if healthController.oxygenToday > oxygenHigh {
-            .optimal
-        } else {
-            .normal
         }
     }
 }
@@ -126,6 +81,6 @@ struct OxygenReport: View {
         }
     }
     
-    return OxygenReport(oxygenHigh: .constant(99), oxygenLow: .constant(96), oxygenStatus: .constant(.normal))
+    return OxygenReport(rangeTop: .constant(99), rangeBottom: .constant(97), measuredTop: .constant(98.5), measuredBottom: .constant(96.5), status: .constant(.normal))
         .environment(healthController)
 }

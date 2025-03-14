@@ -11,29 +11,30 @@ import SwiftUI
 struct RespirationReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var respirationHigh: Double
-    @Binding var respirationLow: Double
-    @Binding var respirationStatus: BodyMetricStatus?
+    @Binding var rangeTop: Double
+    @Binding var rangeBottom: Double
+    @Binding var measuredTop: Double
+    @Binding var measuredBottom: Double
+    @Binding var status: BodyMetricStatus?
     
-    @State private var lowestRespiration = 50.0
-    @State private var highestRespiration = 0.0
     @State private var isExpanded = false
     
-    var bottomRange: Double {
-        let bottom = lowestRespiration > respirationLow ? respirationLow : lowestRespiration
-        return bottom - 1
+    var top: Double {
+        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        
+        return top + 1
     }
     
-    var topRange: Double {
-        let top = highestRespiration > respirationHigh ? highestRespiration : respirationHigh
-        return top + 1
+    var bottom: Double {
+        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        
+        return bottom - 1
     }
     
     var body: some View {
         Section {
             if healthController.respirationByDayLoading {
                 ProgressView()
-                    .padding(.horizontal)
             } else {
                 Chart {
                     ForEach(healthController.respirationByDay.sorted { $0.key < $1.key }, id: \.key) { date, resp in
@@ -44,18 +45,16 @@ struct RespirationReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", respirationHigh))
+                    RuleMark(y: .value("Top", rangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", respirationLow))
+                    RuleMark(y: .value("Bottom", rangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: respirationLow < respirationHigh ? bottomRange...topRange : 10...30)
-                .frame(height: isExpanded ? 256 : 40)
-                .padding(.horizontal, 4)
-                .padding(.vertical, isExpanded ? 4 : 0)
+                .chartYScale(domain: bottom...top)
+                .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
@@ -66,50 +65,6 @@ struct RespirationReport: View {
             HeaderLabel(title: respirationTitle, systemImage: respirationSystemImage)
         } footer: {
             isExpanded ? Text("Units: Breaths per minute (BrPM).") : nil
-        }
-        .task {
-            await tryAgain()
-        }
-    }
-    
-    @MainActor
-    func tryAgain() async {
-        while healthController.respirationByDayLoading {
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-        }
-        
-        calculateRespirationRange()
-        calculateRespirationStatus()
-    }
-    
-    private func calculateRespirationRange() {
-        var average = 0.0
-        
-        for (_, temp) in healthController.respirationByDay {
-            average += temp
-            
-            if temp < lowestRespiration {
-                lowestRespiration = temp
-            }
-            
-            if temp > highestRespiration {
-                highestRespiration = temp
-            }
-        }
-        
-        average /= Double(healthController.respirationByDay.count)
-        
-        respirationLow = average - 1
-        respirationHigh = average + 1
-    }
-    
-    private func calculateRespirationStatus() {
-        respirationStatus = if healthController.respirationToday < respirationLow {
-            .optimal
-        } else if healthController.respirationToday > respirationHigh {
-            .high
-        } else {
-            .normal
         }
     }
 }
@@ -126,6 +81,6 @@ struct RespirationReport: View {
         }
     }
     
-    return RespirationReport(respirationHigh: .constant(17), respirationLow: .constant(14), respirationStatus: .constant(.normal))
+    return RespirationReport(rangeTop: .constant(15), rangeBottom: .constant(13), measuredTop: .constant(16), measuredBottom: .constant(14.5), status: .constant(.normal))
         .environment(healthController)
 }

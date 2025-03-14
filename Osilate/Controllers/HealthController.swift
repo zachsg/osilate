@@ -58,6 +58,7 @@ class HealthController {
     var rhrAverage = 0
     var rhrByDay: [Date: Int] = [:]
     var latestRhr: Date = .now
+    var hasRhrToday = false
     var rhrLoading = false
 
     // Cardio recovery
@@ -871,7 +872,8 @@ class HealthController {
                     self.rhrMostRecent = Int(bestSample.quantity.doubleValue(for: heartRateUnit).rounded())
                     self.rhrAverage = Int((Double(sum) / Double(count)).rounded())
                     self.rhrByDay = byDay
-                    self.latestRhr = bestSample.endDate
+                    self.latestRhr = latest
+                    self.hasRhrToday = latest.isToday()
                     self.rhrLoading = false
                 }
             }
