@@ -11,22 +11,16 @@ import SwiftUI
 struct OxygenReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var rangeTop: Double
-    @Binding var rangeBottom: Double
-    @Binding var measuredTop: Double
-    @Binding var measuredBottom: Double
-    @Binding var status: BodyMetricStatus?
-    
     @State private var isExpanded = false
     
     var top: Double {
-        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        let top = healthController.oxygenRangeTop > healthController.oxygenMeasuredTop ? healthController.oxygenRangeTop : healthController.oxygenMeasuredTop
         
         return top + 1
     }
     
     var bottom: Double {
-        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        let bottom = healthController.oxygenRangeBottom < healthController.oxygenMeasuredBottom ? healthController.oxygenRangeBottom : healthController.oxygenMeasuredBottom
         
         return bottom - 1
     }
@@ -45,15 +39,15 @@ struct OxygenReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", rangeTop))
+                    RuleMark(y: .value("Top", healthController.oxygenRangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", rangeBottom))
+                    RuleMark(y: .value("Bottom", healthController.oxygenRangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: bottom...top)
+                .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
@@ -81,6 +75,6 @@ struct OxygenReport: View {
         }
     }
     
-    return OxygenReport(rangeTop: .constant(99), rangeBottom: .constant(97), measuredTop: .constant(98.5), measuredBottom: .constant(96.5), status: .constant(.normal))
+    return OxygenReport()
         .environment(healthController)
 }

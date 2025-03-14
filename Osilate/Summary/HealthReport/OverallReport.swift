@@ -17,13 +17,6 @@ struct OverallReport: View {
     @AppStorage(hasHrvKey) var hasHrv = hasHrvDefault
     @AppStorage(hasSleepKey) var hasSleep = hasSleepDefault
 
-    @Binding var bodyTempStatus: BodyMetricStatus?
-    @Binding var respirationStatus: BodyMetricStatus?
-    @Binding var oxygenStatus: BodyMetricStatus?
-    @Binding var rhrStatus: BodyMetricStatus?
-    @Binding var hrvStatus: BodyMetricStatus?
-    @Binding var sleepStatus: BodyMetricStatus?
-
     var body: some View {
         Section {
             ScrollView(.horizontal) {
@@ -32,7 +25,7 @@ struct OverallReport: View {
                         if healthController.bodyTempByDayLoading {
                             ProgressView()
                         } else {
-                            MetricStatus(title: "Temp", status: bodyTempStatus, systemImageName: bodyTempNormalSystemImage, systemImageNameLow: bodyTempLowSystemImage, systemImageNameHigh: bodyTempHighSystemImage)
+                            MetricStatus(title: "Temp", status: healthController.bodyTempStatus, systemImageName: bodyTempNormalSystemImage, systemImageNameLow: bodyTempLowSystemImage, systemImageNameHigh: bodyTempHighSystemImage)
                         }
                     }
                     
@@ -40,7 +33,7 @@ struct OverallReport: View {
                         if healthController.respirationByDayLoading {
                             ProgressView()
                         } else {
-                            MetricStatus(title: "Resp", status: respirationStatus, systemImageName: respirationSystemImage)
+                            MetricStatus(title: "Resp", status: healthController.respirationStatus, systemImageName: respirationSystemImage)
                         }
                     }
                 
@@ -48,7 +41,7 @@ struct OverallReport: View {
                         if healthController.oxygenByDayLoading {
                             ProgressView()
                         } else {
-                            MetricStatus(title: "O2", status: oxygenStatus, systemImageName: oxygenSystemImage)
+                            MetricStatus(title: "O2", status: healthController.oxygenStatus, systemImageName: oxygenSystemImage)
                         }
                     }
                 
@@ -56,7 +49,7 @@ struct OverallReport: View {
                         if healthController.rhrLoading {
                             ProgressView()
                         } else {
-                            MetricStatus(title: "RHR", status: rhrStatus, systemImageName: rhrSystemImage)
+                            MetricStatus(title: "RHR", status: healthController.rhrStatus, systemImageName: rhrSystemImage)
                         }
                     }
                     
@@ -64,7 +57,7 @@ struct OverallReport: View {
                         if healthController.hrvLoading {
                             ProgressView()
                         } else {
-                            MetricStatus(title: "HRV", status: hrvStatus, systemImageName: hrvSystemImage)
+                            MetricStatus(title: "HRV", status: healthController.hrvStatus, systemImageName: hrvSystemImage)
                         }
                     }
                     
@@ -72,7 +65,7 @@ struct OverallReport: View {
                         if healthController.sleepLoading {
                             ProgressView()
                         } else {
-                            MetricStatus(title: "Sleep", status: sleepStatus, systemImageName: sleepSystemImage)
+                            MetricStatus(title: "Sleep", status: healthController.sleepStatus, systemImageName: sleepSystemImage)
                         }
                     }
                 }
@@ -95,6 +88,6 @@ struct OverallReport: View {
 #Preview {
     let healthController = HealthController()
     
-    return OverallReport(bodyTempStatus: .constant(.high), respirationStatus: .constant(.normal), oxygenStatus: .constant(.normal), rhrStatus: .constant(.optimal), hrvStatus: .constant(.optimal), sleepStatus: .constant(.missing))
+    return OverallReport()
         .environment(healthController)
 }

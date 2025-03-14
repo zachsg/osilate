@@ -11,22 +11,16 @@ import SwiftUI
 struct RespirationReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var rangeTop: Double
-    @Binding var rangeBottom: Double
-    @Binding var measuredTop: Double
-    @Binding var measuredBottom: Double
-    @Binding var status: BodyMetricStatus?
-    
     @State private var isExpanded = false
     
     var top: Double {
-        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        let top = healthController.respirationRangeTop > healthController.respirationMeasuredTop ? healthController.respirationRangeTop : healthController.respirationMeasuredTop
         
         return top + 1
     }
     
     var bottom: Double {
-        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        let bottom = healthController.respirationRangeBottom < healthController.respirationMeasuredBottom ? healthController.respirationRangeBottom : healthController.respirationMeasuredBottom
         
         return bottom - 1
     }
@@ -45,15 +39,15 @@ struct RespirationReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", rangeTop))
+                    RuleMark(y: .value("Top", healthController.respirationRangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", rangeBottom))
+                    RuleMark(y: .value("Bottom", healthController.respirationRangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: bottom...top)
+                .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
@@ -81,6 +75,6 @@ struct RespirationReport: View {
         }
     }
     
-    return RespirationReport(rangeTop: .constant(15), rangeBottom: .constant(13), measuredTop: .constant(16), measuredBottom: .constant(14.5), status: .constant(.normal))
+    return RespirationReport()
         .environment(healthController)
 }

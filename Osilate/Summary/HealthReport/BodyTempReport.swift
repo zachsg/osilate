@@ -11,12 +11,6 @@ import SwiftUI
 struct BodyTempReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var rangeTop: Double
-    @Binding var rangeBottom: Double
-    @Binding var measuredTop: Double
-    @Binding var measuredBottom: Double
-    @Binding var status: BodyMetricStatus?
-    
     @State private var isExpanded = false
     
     var units: String {
@@ -25,13 +19,13 @@ struct BodyTempReport: View {
     }
     
     var top: Double {
-        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        let top = healthController.bodyTempRangeTop > healthController.bodyTempMeasuredTop ? healthController.bodyTempRangeTop : healthController.bodyTempMeasuredTop
         
         return top + 1
     }
     
     var bottom: Double {
-        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        let bottom = healthController.bodyTempRangeBottom < healthController.bodyTempMeasuredBottom ? healthController.bodyTempRangeBottom : healthController.bodyTempMeasuredBottom
         
         return bottom - 1
     }
@@ -50,15 +44,15 @@ struct BodyTempReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", rangeTop))
+                    RuleMark(y: .value("Top", healthController.bodyTempRangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", rangeBottom))
+                    RuleMark(y: .value("Bottom", healthController.bodyTempRangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: bottom...top)
+                .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
@@ -67,7 +61,7 @@ struct BodyTempReport: View {
                 }
             }
         } header: {
-            HeaderLabel(title: bodyTempTitle, systemImage: status == .normal ? bodyTempNormalSystemImage : status == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
+            HeaderLabel(title: bodyTempTitle, systemImage: healthController.bodyTempStatus == .normal ? bodyTempNormalSystemImage : healthController.bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
         } footer: {
             isExpanded ? Text("Units: Degrees \(units).") : nil
         }
@@ -76,7 +70,6 @@ struct BodyTempReport: View {
 
 #Preview {
     let healthController = HealthController()
-    healthController.bodyTempToday = 98
     
     let calendar = Calendar.current
     for i in 0...13 {
@@ -86,6 +79,12 @@ struct BodyTempReport: View {
         }
     }
     
-    return BodyTempReport(rangeTop: .constant(99), rangeBottom: .constant(97), measuredTop: .constant(100), measuredBottom: .constant(97.5), status: .constant(.normal))
+    healthController.bodyTempToday = 98
+    healthController.bodyTempRangeTop = 101
+    healthController.bodyTempRangeBottom = 94
+    healthController.bodyTempMeasuredTop = 100
+    healthController.bodyTempMeasuredBottom = 95
+    
+    return BodyTempReport()
         .environment(healthController)
 }

@@ -11,22 +11,16 @@ import SwiftUI
 struct RHRReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var rangeTop: Int
-    @Binding var rangeBottom: Int
-    @Binding var measuredTop: Int
-    @Binding var measuredBottom: Int
-    @Binding var status: BodyMetricStatus?
-    
     @State private var isExpanded = false
     
     var top: Int {
-        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        let top = healthController.rhrRangeTop > healthController.rhrMeasuredTop ? healthController.rhrRangeTop : healthController.rhrMeasuredTop
         
         return top + 1
     }
     
     var bottom: Int {
-        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        let bottom = healthController.rhrRangeBottom < healthController.rhrMeasuredBottom ? healthController.rhrRangeBottom : healthController.rhrMeasuredBottom
         
         return bottom - 1
     }
@@ -47,15 +41,15 @@ struct RHRReport: View {
                         }
                     }
                     
-                    RuleMark(y: .value("Top", rangeTop))
+                    RuleMark(y: .value("Top", healthController.rhrRangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", rangeBottom))
+                    RuleMark(y: .value("Bottom", healthController.rhrRangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: bottom...top)
+                .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
@@ -83,6 +77,6 @@ struct RHRReport: View {
         }
     }
     
-    return RHRReport(rangeTop: .constant(70), rangeBottom: .constant(60), measuredTop: .constant(63), measuredBottom: .constant(60), status: .constant(.normal))
+    return RHRReport()
         .environment(healthController)
 }

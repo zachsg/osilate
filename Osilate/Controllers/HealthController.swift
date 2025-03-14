@@ -60,6 +60,12 @@ class HealthController {
     var latestRhr: Date = .now
     var hasRhrToday = false
     var rhrLoading = false
+    
+    var rhrRangeTop: Int = 0
+    var rhrRangeBottom: Int = 0
+    var rhrMeasuredTop: Int = 0
+    var rhrMeasuredBottom: Int = 0
+    var rhrStatus: BodyMetricStatus = .normal
 
     // Cardio recovery
     var recoveryMostRecent = 0
@@ -82,6 +88,12 @@ class HealthController {
     var hasBodyTempToday = false
     var bodyTempLastUpdated: Date = .now
     
+    var bodyTempRangeTop: Double = 0.0
+    var bodyTempRangeBottom: Double = 0.0
+    var bodyTempMeasuredTop: Double = 0.0
+    var bodyTempMeasuredBottom: Double = 0.0
+    var bodyTempStatus: BodyMetricStatus = .normal
+
     // Respiration
     var respirationLoading = false
     var respirationToday = 0.0
@@ -89,6 +101,12 @@ class HealthController {
     var respirationByDay: [Date: Double] = [:]
     var hasRespirationToday = false
     var respirationLastUpdated: Date = .now
+    
+    var respirationRangeTop: Double = 0.0
+    var respirationRangeBottom: Double = 0.0
+    var respirationMeasuredTop: Double = 0.0
+    var respirationMeasuredBottom: Double = 0.0
+    var respirationStatus: BodyMetricStatus = .normal
     
     // Blood oxygen
     var oxygenLoading = false
@@ -98,6 +116,12 @@ class HealthController {
     var hasOxygenToday = false
     var oxygenLastUpdated: Date = .now
     
+    var oxygenRangeTop: Double = 0.0
+    var oxygenRangeBottom: Double = 0.0
+    var oxygenMeasuredTop: Double = 0.0
+    var oxygenMeasuredBottom: Double = 0.0
+    var oxygenStatus: BodyMetricStatus = .normal
+    
     // Heart rate variability
     var hrvLoading = false
     var hrvToday = 0.0
@@ -106,6 +130,12 @@ class HealthController {
     var hasHrvToday = false
     var hrvLastUpdated: Date = .now
     
+    var hrvRangeTop: Double = 0.0
+    var hrvRangeBottom: Double = 0.0
+    var hrvMeasuredTop: Double = 0.0
+    var hrvMeasuredBottom: Double = 0.0
+    var hrvStatus: BodyMetricStatus = .normal
+    
     // Sleep
     var sleepLoading = false
     var sleepToday = 0.0
@@ -113,6 +143,12 @@ class HealthController {
     var sleepByDay: [Date: Double] = [:]
     var hasSleepToday = false
     var sleepLastUpdated: Date = .now
+    
+    var sleepRangeTop: Double = 0.0
+    var sleepRangeBottom: Double = 0.0
+    var sleepMeasuredTop: Double = 0.0
+    var sleepMeasuredBottom: Double = 0.0
+    var sleepStatus: BodyMetricStatus = .normal
     
     init() {
         requestAuthorization()
@@ -874,6 +910,14 @@ class HealthController {
                     self.rhrByDay = byDay
                     self.latestRhr = latest
                     self.hasRhrToday = latest.isToday()
+                    
+                    let stats = self.rhrStats()
+                    self.rhrRangeTop = stats.rangeTop
+                    self.rhrRangeBottom = stats.rangeBottom
+                    self.rhrMeasuredTop = stats.measuredTop
+                    self.rhrMeasuredBottom = stats.measuredBottom
+                    self.rhrStatus = stats.status
+                    
                     self.rhrLoading = false
                 }
             }
@@ -1386,15 +1430,12 @@ class HealthController {
             DispatchQueue.main.async {
                 self.bodyTempByDay = bodyTempByDayTemp
                 
-                var hasBodyTempToday = false
-                for (date, _) in bodyTempByDayTemp {
-                    if date.isToday() {
-                        hasBodyTempToday = true
-                        break
-                    }
-                }
-                
-                self.hasBodyTempToday = hasBodyTempToday
+                let stats = self.tempStats()
+                self.bodyTempRangeTop = stats.rangeTop
+                self.bodyTempRangeBottom = stats.rangeBottom
+                self.bodyTempMeasuredTop = stats.measuredTop
+                self.bodyTempMeasuredBottom = stats.measuredBottom
+                self.bodyTempStatus = stats.status
                 
                 self.bodyTempByDayLoading = false
             }
@@ -1500,15 +1541,12 @@ class HealthController {
             DispatchQueue.main.async {
                 self.respirationByDay = respirationByDayTemp
                 
-                var hasRespirationToday = false
-                for (date, _) in respirationByDayTemp {
-                    if date.isToday() {
-                        hasRespirationToday = true
-                        break
-                    }
-                }
-                
-                self.hasRespirationToday = hasRespirationToday
+                let stats = self.respirationStats()
+                self.respirationRangeTop = stats.rangeTop
+                self.respirationRangeBottom = stats.rangeBottom
+                self.respirationMeasuredTop = stats.measuredTop
+                self.respirationMeasuredBottom = stats.measuredBottom
+                self.respirationStatus = stats.status
                 
                 self.respirationByDayLoading = false
             }
@@ -1618,6 +1656,14 @@ class HealthController {
             
             DispatchQueue.main.async {
                 self.oxygenByDay = oxygenByDayTemp
+                
+                let stats = self.oxygenStats()
+                self.oxygenRangeTop = stats.rangeTop
+                self.oxygenRangeBottom = stats.rangeBottom
+                self.oxygenMeasuredTop = stats.measuredTop
+                self.oxygenMeasuredBottom = stats.measuredBottom
+                self.oxygenStatus = stats.status
+                
                 self.oxygenByDayLoading = false
             }
         }
@@ -1726,6 +1772,14 @@ class HealthController {
             
             DispatchQueue.main.async {
                 self.hrvByDay = hrvByDayTemp
+                
+                let stats = self.hrvStats()
+                self.hrvRangeTop = stats.rangeTop
+                self.hrvRangeBottom = stats.rangeBottom
+                self.hrvMeasuredTop = stats.measuredTop
+                self.hrvMeasuredBottom = stats.measuredBottom
+                self.hrvStatus = stats.status
+                
                 self.hrvByDayLoading = false
             }
         }
@@ -1817,6 +1871,14 @@ class HealthController {
             
             DispatchQueue.main.async {
                 self.sleepByDay = sleepByDayTemp
+                
+                let stats = self.sleepStats()
+                self.sleepRangeTop = stats.rangeTop
+                self.sleepRangeBottom = stats.rangeBottom
+                self.sleepMeasuredTop = stats.measuredTop
+                self.sleepMeasuredBottom = stats.measuredBottom
+                self.sleepStatus = stats.status
+                
                 self.sleepByDayLoading = false
             }
         }
@@ -1859,5 +1921,240 @@ class HealthController {
         }
         
         return duration
+    }
+    
+    // MARK: - Helpers
+    private func tempStats() -> (rangeTop: Double, rangeBottom: Double, measuredTop: Double, measuredBottom: Double, status: BodyMetricStatus) {
+        var rangeTop: Double = 0
+        var rangeBottom: Double = 0
+        var measuredTop: Double = 0
+        var measuredBottom: Double = 150.0
+        
+        var average = 0.0
+        for (_, temp) in self.bodyTempByDay {
+            average += temp
+            
+            if temp < measuredBottom {
+                measuredBottom = temp
+            }
+            
+            if temp > measuredTop {
+                measuredTop = temp
+            }
+        }
+        
+        average /= Double(self.bodyTempByDay.count)
+        
+        rangeBottom = average - 1
+        rangeTop = average + 1
+        
+        var status: BodyMetricStatus = if self.bodyTempToday < measuredBottom {
+            .low
+        } else if self.bodyTempToday > measuredTop {
+            .high
+        } else {
+            .normal
+        }
+        
+        if !self.hasBodyTempToday {
+            status = .missing
+        }
+        
+        return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
+    }
+    
+    private func hrvStats() -> (rangeTop: Double, rangeBottom: Double, measuredTop: Double, measuredBottom: Double, status: BodyMetricStatus) {
+        var rangeTop: Double = 0
+        var rangeBottom: Double = 0
+        var measuredTop: Double = 0
+        var measuredBottom: Double = 250.0
+        
+        var average = 0.0
+        for (_, hrv) in self.hrvByDay {
+            average += hrv
+            
+            if hrv < measuredBottom {
+                measuredBottom = hrv
+            }
+            
+            if hrv > measuredTop {
+                measuredTop = hrv
+            }
+        }
+        
+        average /= Double(self.hrvByDay.count)
+        
+        rangeBottom = average - 10
+        rangeTop = average + 10
+        
+        var status: BodyMetricStatus = if self.hrvToday < measuredBottom {
+            .low
+        } else if self.hrvToday > measuredTop {
+            .high
+        } else {
+            .normal
+        }
+        
+        if !self.hasHrvToday {
+            status = .missing
+        }
+        
+        return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
+    }
+        
+    private func oxygenStats() -> (rangeTop: Double, rangeBottom: Double, measuredTop: Double, measuredBottom: Double, status: BodyMetricStatus) {
+        var rangeTop: Double = 0
+        var rangeBottom: Double = 0
+        var measuredTop: Double = 0
+        var measuredBottom: Double = 110.0
+        
+        var average = 0.0
+        for (_, oxygen) in self.oxygenByDay {
+            average += oxygen
+            
+            if oxygen < measuredBottom {
+                measuredBottom = oxygen
+            }
+            
+            if oxygen > measuredTop {
+                measuredTop = oxygen
+            }
+        }
+        
+        average /= Double(self.oxygenByDay.count)
+        
+        rangeBottom = average - 1
+        rangeTop = average + 1
+        
+        var status: BodyMetricStatus = if self.oxygenToday < measuredBottom {
+            .low
+        } else if self.oxygenToday > measuredTop {
+            .high
+        } else {
+            .normal
+        }
+        
+        if !self.hasOxygenToday {
+            status = .missing
+        }
+        
+        return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
+    }
+    
+    private func respirationStats() -> (rangeTop: Double, rangeBottom: Double, measuredTop: Double, measuredBottom: Double, status: BodyMetricStatus) {
+        var rangeTop: Double = 0
+        var rangeBottom: Double = 0
+        var measuredTop: Double = 0
+        var measuredBottom: Double = 110.0
+        
+        var average = 0.0
+        for (_, respiration) in self.respirationByDay {
+            average += respiration
+            
+            if respiration < measuredBottom {
+                measuredBottom = respiration
+            }
+            
+            if respiration > measuredTop {
+                measuredTop = respiration
+            }
+        }
+        
+        average /= Double(self.respirationByDay.count)
+        
+        rangeBottom = average - 1
+        rangeTop = average + 1
+        
+        var status: BodyMetricStatus = if self.respirationToday < measuredBottom {
+            .low
+        } else if self.respirationToday > measuredTop {
+            .high
+        } else {
+            .normal
+        }
+        
+        if !self.hasRespirationToday {
+            status = .missing
+        }
+        
+        return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
+    }
+    
+    private func rhrStats() -> (rangeTop: Int, rangeBottom: Int, measuredTop: Int, measuredBottom: Int, status: BodyMetricStatus) {
+        var rangeTop: Int = 0
+        var rangeBottom: Int = 0
+        var measuredTop: Int = 0
+        var measuredBottom: Int = 200
+        
+        var average = 0
+        for (_, rhr) in self.rhrByDay {
+            average += rhr
+            
+            if rhr < measuredBottom {
+                measuredBottom = rhr
+            }
+            
+            if rhr > measuredTop {
+                measuredTop = rhr
+            }
+        }
+        
+        average = Int((Double(average) / Double(self.rhrByDay.count)).rounded(toPlaces: 0))
+        
+        rangeBottom = average - 3
+        rangeTop = average + 3
+        
+        var status: BodyMetricStatus = if self.rhrMostRecent < measuredBottom {
+            .low
+        } else if self.rhrMostRecent > measuredTop {
+            .high
+        } else {
+            .normal
+        }
+        
+        if !self.hasRhrToday {
+            status = .missing
+        }
+        
+        return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
+    }
+    
+    private func sleepStats() -> (rangeTop: Double, rangeBottom: Double, measuredTop: Double, measuredBottom: Double, status: BodyMetricStatus) {
+        var rangeTop: Double = 0
+        var rangeBottom: Double = 0
+        var measuredTop: Double = 0
+        var measuredBottom: Double = 24
+        
+        var average = 0.0
+        for (_, sleep) in self.sleepByDay {
+            average += sleep
+            
+            if sleep < measuredBottom {
+                measuredBottom = sleep
+            }
+            
+            if sleep > measuredTop {
+                measuredTop = sleep
+            }
+        }
+        
+        average /= Double(self.sleepByDay.count)
+        
+        rangeBottom = average - 1
+        rangeTop = average + 1
+        
+        var status: BodyMetricStatus = if self.sleepToday < measuredBottom {
+            .low
+        } else if self.sleepToday > measuredTop {
+            .high
+        } else {
+            .normal
+        }
+        
+        if !self.hasSleepToday {
+            status = .missing
+        }
+        
+        return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
     }
 }

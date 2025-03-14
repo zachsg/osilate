@@ -11,22 +11,16 @@ import SwiftUI
 struct SleepReport: View {
     @Environment(HealthController.self) private var healthController
     
-    @Binding var rangeTop: Double
-    @Binding var rangeBottom: Double
-    @Binding var measuredTop: Double
-    @Binding var measuredBottom: Double
-    @Binding var status: BodyMetricStatus?
-    
     @State private var isExpanded = false
     
     var top: Double {
-        let top = rangeTop > measuredTop ? rangeTop : measuredTop
+        let top = healthController.sleepRangeTop > healthController.sleepMeasuredTop ? healthController.sleepRangeTop : healthController.sleepMeasuredTop
         
         return top + 1
     }
     
     var bottom: Double {
-        let bottom = rangeBottom < measuredBottom ? rangeBottom : measuredBottom
+        let bottom = healthController.sleepRangeBottom < healthController.sleepMeasuredBottom ? healthController.sleepRangeBottom : healthController.sleepMeasuredBottom
         
         return bottom - 1
     }
@@ -45,15 +39,15 @@ struct SleepReport: View {
                         .lineStyle(.init(lineWidth: 6, lineCap: .round))
                     }
                     
-                    RuleMark(y: .value("Top", rangeTop))
+                    RuleMark(y: .value("Top", healthController.sleepRangeTop))
                         .foregroundStyle(.accent.opacity(0.5))
                     
-                    RuleMark(y: .value("Bottom", rangeBottom))
+                    RuleMark(y: .value("Bottom", healthController.sleepRangeBottom))
                         .foregroundStyle(.accent.opacity(0.5))
                 }
                 .chartXAxis(isExpanded ? .automatic : .hidden)
                 .chartYAxis(isExpanded ? .automatic : .hidden)
-                .chartYScale(domain: bottom...top)
+                .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
                 .onTapGesture {
                     withAnimation {
@@ -81,6 +75,6 @@ struct SleepReport: View {
         }
     }
     
-    return SleepReport(rangeTop: .constant(9), rangeBottom: .constant(7), measuredTop: .constant(8.5), measuredBottom: .constant(7.5), status: .constant(.normal))
+    return SleepReport()
         .environment(healthController)
 }
