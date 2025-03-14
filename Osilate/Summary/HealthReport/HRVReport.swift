@@ -26,10 +26,13 @@ struct HRVReport: View {
     }
     
     var body: some View {
-        Section {
-            if healthController.hrvByDayLoading {
-                ProgressView()
-            } else {
+        if healthController.hrvByDayLoading {
+            ProgressView()
+        } else {
+            VStack(alignment: .leading) {
+                Label("\(hrvTitle) (HRV)", systemImage: hrvSystemImage)
+                    .font(.footnote.bold())
+                
                 Chart {
                     ForEach(healthController.hrvByDay.sorted { $0.key < $1.key }, id: \.key) { date, hrv in
                         LineMark(
@@ -49,16 +52,22 @@ struct HRVReport: View {
                 .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
+                .padding(8)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 8, height: 8)))
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
                     }
                 }
+                
+                if isExpanded {
+                    Text("Units: Measured in ms using SDNN method.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading)
+                }
             }
-        } header: {
-            HeaderLabel(title: "\(hrvTitle) (HRV)", systemImage: hrvSystemImage)
-        } footer: {
-            isExpanded ? Text("Units: Measured in ms using SDNN method.") : nil
         }
     }
 }

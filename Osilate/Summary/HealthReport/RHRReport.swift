@@ -26,10 +26,13 @@ struct RHRReport: View {
     }
     
     var body: some View {
-        Section {
-            if healthController.rhrLoading {
-                ProgressView()
-            } else {
+        if healthController.rhrLoading {
+            ProgressView()
+        } else {
+            VStack(alignment: .leading) {
+                Label("\(rhrTitle) (RHR)", systemImage: rhrSystemImage)
+                    .font(.footnote.bold())
+                
                 Chart {
                     ForEach(healthController.rhrByDay.sorted { $0.key < $1.key }, id: \.key) { date, rhr in
                         if date.compare(Date.now.addingTimeInterval(-hourInSeconds * 24 * 14)) == .orderedDescending {
@@ -51,16 +54,22 @@ struct RHRReport: View {
                 .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
+                .padding(8)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 8, height: 8)))
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
                     }
                 }
+                
+                if isExpanded {
+                    Text("Units: Beats per minute (BPM).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading)
+                }
             }
-        } header: {
-            HeaderLabel(title: "\(rhrTitle) (RHR)", systemImage: rhrSystemImage)
-        } footer: {
-            isExpanded ? Text("Units: Beats per minute (BPM).") : nil
         }
     }
 }

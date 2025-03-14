@@ -7,12 +7,13 @@
 
 import SwiftUI
 
-struct MetricStatus: View {
+struct MetricStatus<Content: View>: View {
     let title: String
     let status: BodyMetricStatus?
     let systemImageName: String
     var systemImageNameLow: String = ""
     var systemImageNameHigh: String = ""
+    @ViewBuilder let content: Content
     
     var body: some View {
         VStack {
@@ -22,14 +23,18 @@ struct MetricStatus: View {
             
             ZStack {
                 Circle()
-                    .frame(width: 36, height: 36)
+                    .frame(width: 54, height: 54)
                     .foregroundStyle(.regularMaterial)
                 
-                Image(systemName: systemName())
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22, height: 22)
-                    .foregroundStyle(.accent)
+                VStack {
+                    Image(systemName: systemName())
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22, height: 22)
+                        .foregroundStyle(.accent)
+                    
+                    content
+                }
             }
             .shadow(radius: 1)
             
@@ -56,5 +61,8 @@ struct MetricStatus: View {
 }
 
 #Preview {
-    MetricStatus(title: "Resp", status: .normal, systemImageName: bodyTempNormalSystemImage, systemImageNameLow: bodyTempLowSystemImage, systemImageNameHigh: bodyTempHighSystemImage)
+    MetricStatus(title: "O2", status: .normal, systemImageName: oxygenSystemImage) {
+        Text(0.97.rounded(toPlaces: 2), format: .percent)
+            .font(.caption2.bold())
+    }
 }

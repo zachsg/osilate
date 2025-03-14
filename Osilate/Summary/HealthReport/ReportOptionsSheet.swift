@@ -21,42 +21,34 @@ struct ReportOptionsSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Toggle("Use body temperature", isOn: $hasBodyTemp)
-                } header: {
-                    HeaderLabel(title: bodyTempTitle, systemImage: bodyTempNormalSystemImage)
-                }
-                
-                Section {
-                    Toggle("Use respiration rate", isOn: $hasRespiration)
-                } header: {
-                    HeaderLabel(title: respirationTitle, systemImage: respirationSystemImage)
-                }
-                
-                Section {
-                    Toggle("Use blood oxygen", isOn: $hasOxygen)
-                } header: {
-                    HeaderLabel(title: oxygenTitle, systemImage: oxygenSystemImage)
-                }
-                
-                Section {
-                    Toggle("Use resting heart rate", isOn: $hasRhr)
-                } header: {
-                    HeaderLabel(title: rhrTitle, systemImage: rhrSystemImage)
-                }
-                
-                Section {
-                    Toggle("Use heart rate variability", isOn: $hasHrv)
-                } header: {
-                    HeaderLabel(title: hrvTitle, systemImage: hrvSystemImage)
-                }
-                
-                Section {
-                    Toggle("Use sleep duration", isOn: $hasSleep)
-                } header: {
-                    HeaderLabel(title: sleepTitle, systemImage: sleepSystemImage)
+                    Toggle(isOn: $hasBodyTemp) {
+                        Label("Body temperature", systemImage: bodyTempNormalSystemImage)
+                    }
+                    
+                    Toggle(isOn: $hasRespiration) {
+                        Label("Respiration rate", systemImage: respirationSystemImage)
+                    }
+                    
+                    Toggle(isOn: $hasRespiration) {
+                        Label("Blood oxygen", systemImage: oxygenSystemImage)
+                    }
+                    
+                    Toggle(isOn: $hasRhr) {
+                        Label("Resting heart rate", systemImage: rhrSystemImage)
+                    }
+                    
+                    Toggle(isOn: $hasHrv) {
+                        Label("Heart rate variability", systemImage: hrvSystemImage)
+                    }
+                    
+                    Toggle(isOn: $hasSleep) {
+                        Label("Sleep duration", systemImage: sleepSystemImage)
+                    }
+                } footer: {
+                    Text("Disable any categories you don't want to use or your wearable doesn't support.")
                 }
             }
-            .navigationTitle("Metrics Options")
+            .navigationTitle("Metrics Available")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem {

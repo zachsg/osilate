@@ -26,10 +26,13 @@ struct OxygenReport: View {
     }
     
     var body: some View {
-        Section {
-            if healthController.oxygenByDayLoading {
-                ProgressView()
-            } else {
+        if healthController.oxygenByDayLoading {
+            ProgressView()
+        } else {
+            VStack(alignment: .leading) {
+                Label("\(oxygenTitle) (O2)", systemImage: oxygenSystemImage)
+                    .font(.footnote.bold())
+                
                 Chart {
                     ForEach(healthController.oxygenByDay.sorted { $0.key < $1.key }, id: \.key) { date, ox in
                         LineMark(
@@ -49,16 +52,22 @@ struct OxygenReport: View {
                 .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
+                .padding(8)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 8, height: 8)))
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
                     }
                 }
+                
+                if isExpanded {
+                    Text("Units: Percentage oxygen in blood (SpO2).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading)
+                }
             }
-        } header: {
-            HeaderLabel(title: "\(oxygenTitle) (O2)", systemImage: oxygenSystemImage)
-        } footer: {
-            isExpanded ? Text("Units: Percentage oxygen in blood (SpO2).") : nil
         }
     }
 }

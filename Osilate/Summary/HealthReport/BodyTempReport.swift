@@ -31,10 +31,13 @@ struct BodyTempReport: View {
     }
     
     var body: some View {
-        Section {
-            if healthController.bodyTempByDayLoading {
-                ProgressView()
-            } else {
+        if healthController.bodyTempByDayLoading {
+            ProgressView()
+        } else {
+            VStack(alignment: .leading) {
+                Label(bodyTempTitle, systemImage: healthController.bodyTempStatus == .normal ? bodyTempNormalSystemImage : healthController.bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
+                    .font(.footnote.bold())
+                
                 Chart {
                     ForEach(healthController.bodyTempByDay.sorted { $0.key < $1.key }, id: \.key) { date, temp in
                         LineMark(
@@ -54,16 +57,22 @@ struct BodyTempReport: View {
                 .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
+                .padding(8)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 8, height: 8)))
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
                     }
                 }
+                
+                if isExpanded {
+                    Text("Units: Degrees \(units).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading)
+                }
             }
-        } header: {
-            HeaderLabel(title: bodyTempTitle, systemImage: healthController.bodyTempStatus == .normal ? bodyTempNormalSystemImage : healthController.bodyTempStatus == .low ? bodyTempLowSystemImage : bodyTempHighSystemImage)
-        } footer: {
-            isExpanded ? Text("Units: Degrees \(units).") : nil
         }
     }
 }

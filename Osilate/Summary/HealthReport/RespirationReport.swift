@@ -26,10 +26,13 @@ struct RespirationReport: View {
     }
     
     var body: some View {
-        Section {
-            if healthController.respirationByDayLoading {
-                ProgressView()
-            } else {
+        if healthController.respirationByDayLoading {
+            ProgressView()
+        } else {
+            VStack(alignment: .leading) {
+                Label(respirationTitle, systemImage: respirationSystemImage)
+                    .font(.footnote.bold())
+                
                 Chart {
                     ForEach(healthController.respirationByDay.sorted { $0.key < $1.key }, id: \.key) { date, resp in
                         LineMark(
@@ -49,16 +52,22 @@ struct RespirationReport: View {
                 .chartYAxis(isExpanded ? .automatic : .hidden)
                 .chartYScale(domain: bottom >= top ? 0...1 : bottom...top)
                 .frame(height: isExpanded ? 256 : 48)
+                .padding(8)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 8, height: 8)))
                 .onTapGesture {
                     withAnimation {
                         isExpanded.toggle()
                     }
                 }
+                
+                if isExpanded {
+                    Text("Units: Breaths per minute (BrPM).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading)
+                }
             }
-        } header: {
-            HeaderLabel(title: respirationTitle, systemImage: respirationSystemImage)
-        } footer: {
-            isExpanded ? Text("Units: Breaths per minute (BrPM).") : nil
         }
     }
 }

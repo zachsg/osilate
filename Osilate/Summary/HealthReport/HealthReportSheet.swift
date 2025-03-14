@@ -27,28 +27,34 @@ struct HealthReportSheet: View {
             List {
                 OverallReport()
                 
-                if hasBodyTemp {
-                    BodyTempReport()
-                }
-                
-                if hasRespiration {
-                    RespirationReport()
-                }
-                
-                if hasOxygen {
-                    OxygenReport()
-                }
-                
-                if hasRhr {
-                    RHRReport()
-                }
-                
-                if hasHrv {
-                    HRVReport()
-                }
-                
-                if hasSleep {
-                    SleepReport()
+                Section {
+                    if hasBodyTemp {
+                        BodyTempReport()
+                    }
+                    
+                    if hasRespiration {
+                        RespirationReport()
+                    }
+                    
+                    if hasOxygen {
+                        OxygenReport()
+                    }
+                    
+                    if hasRhr {
+                        RHRReport()
+                    }
+                    
+                    if hasHrv {
+                        HRVReport()
+                    }
+                    
+                    if hasSleep {
+                        SleepReport()
+                    }
+                } header: {
+                    HeaderLabel(title: "Past 2 Weeks", systemImage: "calendar")
+                } footer: {
+                    Text("Tip: Tap on any graph for an expanded view.")
                 }
             }
             .navigationTitle(healthReportTitle)

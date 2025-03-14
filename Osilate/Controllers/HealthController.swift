@@ -1831,7 +1831,7 @@ class HealthController {
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
         let start = startOfDay.addingTimeInterval(-hourInSeconds * 31 * 14)
-        let end = startOfDay.addingTimeInterval(-hourInSeconds * 7)
+        let end = startOfDay.addingTimeInterval(hourInSeconds * 10)
 
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
@@ -1849,7 +1849,7 @@ class HealthController {
             var samplesAndDays: [Date: [HKCategorySample]] = [:]
             var sleepByDayTemp: [Date: Double] = [:]
             
-            for day in 1...14 {
+            for day in 0...14 {
                 let date = calendar.startOfDay(for: now).addingTimeInterval(-hourInSeconds * 24 * Double(day))
                 samplesAndDays[date] = []
             }
@@ -1948,9 +1948,9 @@ class HealthController {
         rangeBottom = average - 1
         rangeTop = average + 1
         
-        var status: BodyMetricStatus = if self.bodyTempToday < measuredBottom {
+        var status: BodyMetricStatus = if self.bodyTempToday < rangeBottom {
             .low
-        } else if self.bodyTempToday > measuredTop {
+        } else if self.bodyTempToday > rangeTop {
             .high
         } else {
             .normal
@@ -1987,9 +1987,11 @@ class HealthController {
         rangeBottom = average - 10
         rangeTop = average + 10
         
-        var status: BodyMetricStatus = if self.hrvToday < measuredBottom {
+        var status: BodyMetricStatus = if self.hrvToday < rangeBottom {
             .low
-        } else if self.hrvToday > measuredTop {
+        } else if self.hrvToday > rangeTop && self.hrvToday <= rangeTop + 10 {
+            .optimal
+        } else if self.hrvToday > rangeTop + 10 {
             .high
         } else {
             .normal
@@ -2026,9 +2028,11 @@ class HealthController {
         rangeBottom = average - 1
         rangeTop = average + 1
         
-        var status: BodyMetricStatus = if self.oxygenToday < measuredBottom {
+        var status: BodyMetricStatus = if self.oxygenToday < rangeBottom {
             .low
-        } else if self.oxygenToday > measuredTop {
+        } else if self.oxygenToday > rangeTop && self.oxygenToday <= rangeTop + 1 {
+            .optimal
+        } else if self.oxygenToday > rangeTop + 1 {
             .high
         } else {
             .normal
@@ -2065,9 +2069,11 @@ class HealthController {
         rangeBottom = average - 1
         rangeTop = average + 1
         
-        var status: BodyMetricStatus = if self.respirationToday < measuredBottom {
+        var status: BodyMetricStatus = if self.respirationToday < rangeBottom - 1 {
             .low
-        } else if self.respirationToday > measuredTop {
+        } else if self.respirationToday < rangeBottom && self.respirationToday >= rangeBottom - 1 {
+            .optimal
+        } else if self.respirationToday > rangeTop {
             .high
         } else {
             .normal
@@ -2104,9 +2110,11 @@ class HealthController {
         rangeBottom = average - 3
         rangeTop = average + 3
         
-        var status: BodyMetricStatus = if self.rhrMostRecent < measuredBottom {
+        var status: BodyMetricStatus = if self.rhrMostRecent < rangeBottom - 3 {
             .low
-        } else if self.rhrMostRecent > measuredTop {
+        } else if self.rhrMostRecent < rangeBottom && self.rhrMostRecent >= rangeBottom - 3 {
+            .optimal
+        } else if self.rhrMostRecent > rangeTop {
             .high
         } else {
             .normal
@@ -2143,9 +2151,11 @@ class HealthController {
         rangeBottom = average - 1
         rangeTop = average + 1
         
-        var status: BodyMetricStatus = if self.sleepToday < measuredBottom {
+        var status: BodyMetricStatus = if self.sleepToday < rangeBottom {
             .low
-        } else if self.sleepToday > measuredTop {
+        } else if self.sleepToday > rangeTop && self.sleepToday <= rangeTop + 1 {
+            .optimal
+        } else if self.sleepToday > rangeTop + 1 {
             .high
         } else {
             .normal
