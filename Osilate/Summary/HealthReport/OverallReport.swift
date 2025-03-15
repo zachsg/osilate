@@ -21,52 +21,64 @@ struct OverallReport: View {
         var total = 0
         var inRange = 0
         
-        switch healthController.bodyTempStatus {
-        case .normal, .optimal:
-            inRange += 1
-            total += 1
-        default:
-            total += 1
+        if hasBodyTemp {
+            switch healthController.bodyTempStatus {
+            case .normal, .optimal:
+                inRange += 1
+                total += 1
+            default:
+                total += 1
+            }
         }
         
-        switch healthController.respirationStatus {
-        case .normal, .optimal:
-            inRange += 1
-            total += 1
-        default:
-            total += 1
+        if hasRespiration {
+            switch healthController.respirationStatus {
+            case .normal, .optimal:
+                inRange += 1
+                total += 1
+            default:
+                total += 1
+            }
         }
         
-        switch healthController.oxygenStatus {
-        case .normal, .optimal:
-            inRange += 1
-            total += 1
-        default:
-            total += 1
+        if hasOxygen {
+            switch healthController.oxygenStatus {
+            case .normal, .optimal:
+                inRange += 1
+                total += 1
+            default:
+                total += 1
+            }
         }
         
-        switch healthController.rhrStatus {
-        case .normal, .optimal:
-            inRange += 1
-            total += 1
-        default:
-            total += 1
+        if hasRhr {
+            switch healthController.rhrStatus {
+            case .normal, .optimal:
+                inRange += 1
+                total += 1
+            default:
+                total += 1
+            }
         }
         
-        switch healthController.hrvStatus {
-        case .normal, .optimal:
-            inRange += 1
-            total += 1
-        default:
-            total += 1
+        if hasHrv {
+            switch healthController.hrvStatus {
+            case .normal, .optimal:
+                inRange += 1
+                total += 1
+            default:
+                total += 1
+            }
         }
         
-        switch healthController.sleepStatus {
-        case .normal, .optimal:
-            inRange += 1
-            total += 1
-        default:
-            total += 1
+        if hasSleep {
+            switch healthController.sleepStatus {
+            case .normal, .optimal:
+                inRange += 1
+                total += 1
+            default:
+                total += 1
+            }
         }
         
         return (inRange: inRange, total: total)
@@ -75,7 +87,7 @@ struct OverallReport: View {
     var body: some View {
         Section {
             ScrollView(.horizontal) {
-                HStack(spacing: 16) {
+                HStack(spacing: 8) {
                     if hasBodyTemp {
                         if healthController.bodyTempByDayLoading {
                             ProgressView()
@@ -153,13 +165,19 @@ struct OverallReport: View {
         } header: {
             HeaderLabel(title: "\(overallTitle) (\(metrics.inRange)/\(metrics.total) in range)", systemImage: overallSystemImage)
         } footer: {
-            ScrollView(.horizontal) {
-                HStack {
-                    MetricStatusTag(title: "Optimal", systemName: optimalRangeSystemImage, color: .yellow)
-                    MetricStatusTag(title: "Normal", systemName: inRangeSystemImage, color: .green)
-                    MetricStatusTag(title: "Unusual", systemName: outRangeSystemImage, color: .red)
-                    MetricStatusTag(title: "Missing", systemName: missingRangeSystemImage, color: .secondary)
+            DisclosureGroup {
+                ScrollView(.horizontal) {
+                    HStack {
+                        MetricStatusTag(title: "Low", systemName: lowRangeSystemImage, color: BodyMetricStatus.low.color())
+                        MetricStatusTag(title: "Normal", systemName: inRangeSystemImage, color: BodyMetricStatus.normal.color())
+                        MetricStatusTag(title: "Optimal", systemName: optimalRangeSystemImage, color: BodyMetricStatus.optimal.color())
+                        MetricStatusTag(title: "High", systemName: highRangeSystemImage, color: BodyMetricStatus.high.color())
+                        MetricStatusTag(title: "Missing", systemName: missingRangeSystemImage, color: BodyMetricStatus.missing.color())
+                    }
                 }
+            } label: {
+                Label("What does each status icon mean?", systemImage: "info.circle")
+                    .font(.footnote)
             }
         }
     }

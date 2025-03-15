@@ -21,7 +21,19 @@ struct BreatheCard: View {
     
     var body: some View {
         DisclosureGroup {
-            Text("Graph goes here...")
+            if showToday {
+                DayBreatheBarChart()
+                    .padding(.top)
+                    .task {
+                        healthController.getMindfulMinutesDayByHour()
+                    }
+            } else {
+                WeekBreatheBarChart()
+                    .padding(.top)
+                    .task {
+                        healthController.getMindfulMinutesWeekByDay()
+                    }
+            }
         } label: {
             Gauge(value: breathePercent > 1 ? 1 : breathePercent) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {

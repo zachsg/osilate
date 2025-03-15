@@ -29,7 +29,7 @@ struct ReportOptionsSheet: View {
                         Label("Respiration rate", systemImage: respirationSystemImage)
                     }
                     
-                    Toggle(isOn: $hasRespiration) {
+                    Toggle(isOn: $hasOxygen) {
                         Label("Blood oxygen", systemImage: oxygenSystemImage)
                     }
                     

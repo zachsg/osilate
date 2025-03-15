@@ -79,6 +79,10 @@ class HealthController {
     var latestMindfulMinutes: Date = .now
     var mindfulMinutesWeek = 0
     var mindfulMinutesWeekByDay: [Date: Int] = [:]
+    var mindfulMinutesDayByHour: [Date: Int] = [:]
+    
+    var mindfulMinutesDayByHourLoading = false
+    var mindfulMinutesWeekByDayLoading = false
     
     // Body temp
     var bodyTempLoading = false
@@ -1229,7 +1233,66 @@ class HealthController {
         healthStore.execute(query)
     }
     
+    func getMindfulMinutesDayByHour(refresh: Bool = false) {
+        self.mindfulMinutesDayByHourLoading = true
+        
+        guard let sampleType = HKObjectType.categoryType(forIdentifier: .mindfulSession) else {
+            fatalError("*** Unable to create a step count type ***")
+        }
+        
+        let calendar = Calendar.current
+        
+        let anchorDate = calendar.startOfDay(for: Date())
+        
+        let predicate = HKQuery.predicateForSamples(
+            withStart: anchorDate,
+            end: .now,
+            options: .strictStartDate
+        )
+        
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)
+        
+        let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
+            guard error == nil else {
+                print("error")
+                return
+            }
+            
+            var mindfulMinutesDayByHourTemp: [Date: Int] = [:]
+            for (_, sample) in samples!.enumerated() {
+                let date = sample.startDate.topOfTheHour()
+                let seconds = Int(sample.endDate.timeIntervalSince(sample.startDate))
+                
+                if mindfulMinutesDayByHourTemp[date] != nil {
+                    let prevValue = mindfulMinutesDayByHourTemp[date] ?? 0
+                    mindfulMinutesDayByHourTemp[date] = prevValue + seconds
+                } else {
+                    mindfulMinutesDayByHourTemp[date] = seconds
+                }
+            }
+            
+            for i in 1...24 {
+                let hour = Date.now.getTodayAtHour(i)
+                let value = Int((Double(mindfulMinutesDayByHourTemp[hour] ?? 0) / 60).rounded())
+                mindfulMinutesDayByHourTemp[hour] = value
+            }
+            
+            DispatchQueue.main.async {
+                self.mindfulMinutesDayByHour = mindfulMinutesDayByHourTemp
+                self.mindfulMinutesDayByHourLoading = false
+            }
+        }
+        
+        if refresh {
+            mindfulMinutesWeekByDay = [:]
+        }
+        
+        healthStore.execute(query)
+    }
+    
     func getMindfulMinutesWeekByDay(refresh: Bool = false) {
+        self.mindfulMinutesWeekByDayLoading = true
+        
         guard let sampleType = HKObjectType.categoryType(forIdentifier: .mindfulSession) else {
             fatalError("*** Unable to create a step count type ***")
         }
@@ -1297,6 +1360,7 @@ class HealthController {
             
             DispatchQueue.main.async {
                 self.mindfulMinutesWeekByDay = mindfulMinutesWeekByDayTemp
+                self.mindfulMinutesWeekByDayLoading = false
             }
         }
         
@@ -1307,7 +1371,6 @@ class HealthController {
         healthStore.execute(query)
     }
     
-    // MARK: - Mindful Minutes
     func setMindfulMinutes(seconds: Int, date: Date) {
         let mindfulType = HKCategoryType(.mindfulSession)
         

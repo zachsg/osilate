@@ -74,6 +74,38 @@ extension OActivity {
     }
 }
 
+extension BodyMetricStatus {
+    func color() -> Color {
+        switch self {
+        case .low:
+            .orange
+        case .normal:
+            .green
+        case .high:
+            .red
+        case .optimal:
+            .blue
+        case .missing:
+            .secondary
+        }
+    }
+    
+    func systemName() -> String {
+        switch self {
+        case .low:
+            lowRangeSystemImage
+        case .normal:
+            inRangeSystemImage
+        case .high:
+            highRangeSystemImage
+        case .optimal:
+            optimalRangeSystemImage
+        case .missing:
+            missingRangeSystemImage
+        }
+    }
+}
+
 extension Date {
     func day() -> String {
         let dateFormatter = DateFormatter()
@@ -295,3 +327,4 @@ extension FormatStyle where Self == ThousandsAbbreviationFormatStyle {
         ThousandsAbbreviationFormatStyle()
     }
 }
+

@@ -38,11 +38,11 @@ struct MetricStatus<Content: View>: View {
             }
             .shadow(radius: 1)
             
-            Image(systemName: status == .normal ? inRangeSystemImage : status == .optimal ? optimalRangeSystemImage : status == .missing ? missingRangeSystemImage : outRangeSystemImage)
+            Image(systemName: (status ?? .missing).systemName())
                 .resizable()
                 .scaledToFit()
                 .frame(width: 16, height: 16)
-                .foregroundStyle(status == .normal ? .green : status == .optimal ? .yellow : status == .missing ? .secondary : .red)
+                .foregroundStyle((status ?? .missing).color())
         }
     }
     

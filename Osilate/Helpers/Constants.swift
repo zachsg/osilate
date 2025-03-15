@@ -21,6 +21,8 @@ let healthReportSystemImage = "heart.text.clipboard.fill"
 let inRangeSystemImage = "checkmark.square.fill"
 let outRangeSystemImage = "exclamationmark.triangle.fill"
 let optimalRangeSystemImage = "star.circle.fill"
+let lowRangeSystemImage = "arrow.down.app.fill"
+let highRangeSystemImage = "arrow.up.square.fill"
 let missingRangeSystemImage = "questionmark.diamond.fill"
 // Overall
 let overallTitle = "Overall Today"
