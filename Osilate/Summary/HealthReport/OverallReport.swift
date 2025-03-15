@@ -99,7 +99,6 @@ struct OverallReport: View {
                                 }
                                 .font(.caption2.bold())
                             }
-                            .padding(.leading, 4)
                         }
                     }
                     
@@ -161,6 +160,8 @@ struct OverallReport: View {
                         }
                     }
                 }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 12)
             }
         } header: {
             HeaderLabel(title: "\(overallTitle) (\(metrics.inRange)/\(metrics.total) in range)", systemImage: overallSystemImage)
@@ -180,6 +181,7 @@ struct OverallReport: View {
                     .font(.footnote)
             }
         }
+        .listRowInsets(EdgeInsets())
     }
 }
 

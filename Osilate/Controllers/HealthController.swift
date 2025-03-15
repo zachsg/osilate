@@ -1677,7 +1677,7 @@ class HealthController {
         
         // Begin looking 3 hours before midnight of 14 days ago
         let start = calendar.startOfDay(for: .now).addingTimeInterval(-hourInSeconds * 339)
-        
+
         let interval = DateComponents(day: 1)
         
         let query = HKStatisticsCollectionQuery(
@@ -1705,7 +1705,7 @@ class HealthController {
                 return
             }
             
-            let end = Date.now
+            let end = calendar.startOfDay(for: .now).addingTimeInterval(hourInSeconds * 10)
             
             var oxygenByDayTemp: [Date: Double] = [:]
             statsCollection.enumerateStatistics(from: start, to: end) { (statistics, stop) in
