@@ -36,36 +36,37 @@ struct BreatheCard: View {
             }
         } label: {
             Gauge(value: breathePercent > 1 ? 1 : breathePercent) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
-                        .font(.title2.bold())
-                        .foregroundStyle(.breathe)
-                    
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text("of")
-                            .font(.footnote)
-                        Text((showToday ? dailyBreatheGoal : (dailyBreatheGoal * 7)) / 60, format: .number)
-                        Text("minutes")
-                            .font(.footnote)
+                HStack {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(showToday ? healthController.mindfulMinutesToday : healthController.mindfulMinutesWeek, format: .number)
+                            .font(.title2.bold())
+                            .foregroundStyle(.breathe)
+                        
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text("of")
+                                .font(.footnote)
+                            Text((showToday ? dailyBreatheGoal : (dailyBreatheGoal * 7)) / 60, format: .number)
+                            Text("minutes")
+                                .font(.footnote)
+                        }
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.secondary)
+                        .tint(.secondary)
                     }
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.secondary)
-                    .tint(.secondary)
                     
                     Spacer()
                     
                     Button {
                         tabSelected = .breathe
                     } label: {
-                        Text(breatheString.uppercased())
-                            .font(.caption.bold())
-                            .foregroundStyle(.breathe)
+                        Image(systemName: breatheSystemImage)
+                            .resizable()
+                            .frame(width: 22, height: 22)
                     }
-                    .buttonStyle(.bordered)
                 }
             }
-            .tint(.breathe)
         }
+        .tint(.breathe)
         .padding(.horizontal)
         .padding(.vertical, 4)
         .background(.regularMaterial)

@@ -87,7 +87,7 @@ struct OverallReport: View {
     var body: some View {
         Section {
             ScrollView(.horizontal) {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     if hasBodyTemp {
                         if healthController.bodyTempByDayLoading {
                             ProgressView()
@@ -160,9 +160,9 @@ struct OverallReport: View {
                         }
                     }
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 12)
+                .padding(10)
             }
+            .listRowInsets(EdgeInsets())
         } header: {
             HeaderLabel(title: "\(overallTitle) (\(metrics.inRange)/\(metrics.total) in range)", systemImage: overallSystemImage)
         } footer: {
@@ -175,13 +175,13 @@ struct OverallReport: View {
                         MetricStatusTag(title: "High", systemName: highRangeSystemImage, color: BodyMetricStatus.high.color())
                         MetricStatusTag(title: "Missing", systemName: missingRangeSystemImage, color: BodyMetricStatus.missing.color())
                     }
+                    .padding(.vertical, 4)
                 }
             } label: {
                 Label("What does each status icon mean?", systemImage: "info.circle")
                     .font(.footnote)
             }
         }
-        .listRowInsets(EdgeInsets())
     }
 }
 

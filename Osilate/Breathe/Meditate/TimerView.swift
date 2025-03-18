@@ -98,11 +98,9 @@ struct TimerView: View {
                 )
             })
         }
-        .onAppear(perform: {
-            if isTimed {
-                NotificationController.scheduleNotification(title: notificationTitle, subtitle: notificationSubtitle, timeInSeconds: goal)
-            }
-        })
+        .onAppear {
+            NotificationController.scheduleNotification(title: notificationTitle, subtitle: notificationSubtitle, timeInSeconds: goal)
+        }
     }
     
     func timerStopped() {

@@ -36,36 +36,37 @@ struct MoveCard: View {
             }
         } label: {
             Gauge(value: movePercent > 1 ? 1 : movePercent) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(showToday ? healthController.stepCountToday : healthController.stepCountWeek, format: .number)
-                        .font(.title2.bold())
-                        .foregroundStyle(.move)
-                    
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text("of")
-                            .font(.footnote)
-                        Text(showToday ? dailyMoveGoal : dailyMoveGoal * 7, format: .thousandsAbbr)
-                        Text("steps")
-                            .font(.footnote)
+                HStack {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(showToday ? healthController.stepCountToday : healthController.stepCountWeek, format: .number)
+                            .font(.title2.bold())
+                            .foregroundStyle(.move)
+                        
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text("of")
+                                .font(.footnote)
+                            Text(showToday ? dailyMoveGoal : dailyMoveGoal * 7, format: .thousandsAbbr)
+                            Text("steps")
+                                .font(.footnote)
+                        }
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.secondary)
+                        .tint(.secondary)
                     }
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.secondary)
-                    .tint(.secondary)
                     
                     Spacer()
                     
                     Button {
                         tabSelected = .move
                     } label: {
-                        Text(moveString.uppercased())
-                            .font(.caption.bold())
-                            .foregroundStyle(.move)
+                        Image(systemName: moveSystemImage)
+                            .resizable()
+                            .frame(width: 22, height: 22)
                     }
-                    .buttonStyle(.bordered)
                 }
             }
-            .tint(.move)
         }
+        .tint(.move)
         .padding(.horizontal)
         .padding(.vertical, 4)
         .background(.regularMaterial)

@@ -22,8 +22,8 @@ struct MetricStatus<Content: View>: View {
                 .foregroundStyle(.secondary)
             
             ZStack {
-                Circle()
-                    .frame(width: 54, height: 54)
+                RoundedRectangle(cornerSize: CGSize(width: 12, height: 12))
+                    .frame(width: 46, height: 50)
                     .foregroundStyle(.regularMaterial)
                 
                 VStack {

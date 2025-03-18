@@ -16,6 +16,7 @@ struct SweatView: View {
 
     @State private var zone2TodayPercent = 0.0
     @State private var zone2WeekPercent = 0.0
+    @State private var showingInfoAlert = false
     
     var sweatPercent: Double {
         if showToday {
@@ -94,6 +95,19 @@ struct SweatView: View {
             }
             .navigationTitle(sweatString)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Info", systemImage: "info.circle") {
+                        showingInfoAlert.toggle()
+                    }
+                    .tint(.sweat)
+                }
+            }
+            .alert("What's Sweat?", isPresented: $showingInfoAlert) {
+                Button("Got it", role: .cancel) { }
+            } message: {
+                Text("Sweat is the amount of time you've spent in a heart rate of Zone 2 or higher.\n\nSet your Zone 2 threshold manually or use the auto-calculation feature (both available in settings).")
+            }
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 if newPhase == .active {
                     refresh()

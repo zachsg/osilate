@@ -21,12 +21,12 @@ struct WeekBreatheBarChart: View {
                         x: .value("Day", date.weekDay()),
                         y: .value("Minutes", minutes)
                     )
-                    .foregroundStyle(minutes >= Int((Double(dailyBreatheGoal) / 60).rounded()) ? .move : .accent)
+                    .foregroundStyle(minutes >= Int((Double(dailyBreatheGoal) / 60).rounded()) ? .breathe : .accent)
                     .cornerRadius(2)
                 }
                 
                 RuleMark(y: .value("Goal", Int((Double(dailyBreatheGoal) / 60).rounded())))
-                    .foregroundStyle(.move.opacity(0.4))
+                    .foregroundStyle(.breathe.opacity(0.4))
             }
             
             if healthController.mindfulMinutesWeekByDayLoading {

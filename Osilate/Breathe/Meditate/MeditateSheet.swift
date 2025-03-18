@@ -42,6 +42,9 @@ struct MeditateSheet: View {
                 }
             }
             .navigationTitle("Meditate")
+            .onAppear {
+                NotificationController.requestAuthorization()
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel", role: .cancel) {

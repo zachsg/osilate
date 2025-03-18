@@ -20,6 +20,7 @@ struct DayStepsBarChart: View {
                         y: .value("Steps", steps)
                     )
                     .cornerRadius(2)
+                    .foregroundStyle(.move)
                 }
             }
             

@@ -22,7 +22,7 @@ struct SettingsView: View {
                 Section {
                     // Left empty intentionally
                 } footer: {
-                    Text("Note: Weekly goals for move, sweat, breathe are auto-caculated based on your daily goals.")
+                    Text("Note: Weekly goals for Move, Sweat, Breathe are auto-calculated based on your daily goals.")
                 }
                 
                 AppDetailsSection()

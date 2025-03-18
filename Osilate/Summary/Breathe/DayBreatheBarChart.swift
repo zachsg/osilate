@@ -20,6 +20,7 @@ struct DayBreatheBarChart: View {
                         y: .value("Minutes", minutes)
                     )
                     .cornerRadius(2)
+                    .foregroundStyle(.breathe)
                 }
             }
             

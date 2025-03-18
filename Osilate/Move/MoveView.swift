@@ -16,6 +16,7 @@ struct MoveView: View {
     
     @State private var tab: OTimePeriod = .day
     @State private var animationAmount = 0.0
+    @State private var showingInfoAlert = false
     
     var movePercent: Double {
         if showToday {
@@ -129,6 +130,19 @@ struct MoveView: View {
             }
             .navigationTitle(moveString)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Info", systemImage: "info.circle") {
+                        showingInfoAlert.toggle()
+                    }
+                    .tint(.move)
+                }
+            }
+            .alert("What's Move?", isPresented: $showingInfoAlert) {
+                Button("Got it", role: .cancel) { }
+            } message: {
+                Text("Move is based on the amount of steps you've taken.\n\nYou can change your goal in settings.")
+            }
         }
         .onAppear {
             refresh()

@@ -20,6 +20,7 @@ struct DayZone2BarChart: View {
                         y: .value("Minutes", minutes)
                     )
                     .cornerRadius(2)
+                    .foregroundStyle(.sweat)
                 }
             }
             

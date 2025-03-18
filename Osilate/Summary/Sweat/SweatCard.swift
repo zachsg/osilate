@@ -36,36 +36,37 @@ struct SweatCard: View {
             }
         } label: {
             Gauge(value: sweatPercent > 1 ? 1 : sweatPercent) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(showToday ? healthController.zone2Today : healthController.zone2Week, format: .number)
-                        .font(.title2.bold())
-                        .foregroundStyle(.sweat)
-                    
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text("of")
-                            .font(.footnote)
-                        Text((showToday ? dailySweatGoal : (dailySweatGoal * 7)) / 60, format: .number)
-                        Text("minutes")
-                            .font(.footnote)
+                HStack {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(showToday ? healthController.zone2Today : healthController.zone2Week, format: .number)
+                            .font(.title2.bold())
+                            .foregroundStyle(.sweat)
+                        
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text("of")
+                                .font(.footnote)
+                            Text((showToday ? dailySweatGoal : (dailySweatGoal * 7)) / 60, format: .number)
+                            Text("minutes")
+                                .font(.footnote)
+                        }
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.secondary)
+                        .tint(.secondary)
                     }
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.secondary)
-                    .tint(.secondary)
                     
                     Spacer()
                     
                     Button {
                         tabSelected = .sweat
                     } label: {
-                        Text(sweatString.uppercased())
-                            .font(.caption.bold())
-                            .foregroundStyle(.sweat)
+                        Image(systemName: sweatSystemImage)
+                            .resizable()
+                            .frame(width: 22, height: 22)
                     }
-                    .buttonStyle(.bordered)
                 }
             }
-            .tint(.sweat)
         }
+        .tint(.sweat)
         .padding(.horizontal)
         .padding(.vertical, 4)
         .background(.regularMaterial)

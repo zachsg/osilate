@@ -125,6 +125,15 @@ struct HealthReportSheet: View {
     let healthController = HealthController()
     healthController.respirationToday = 14
     healthController.oxygenToday = 97.6
+    healthController.hrvToday = 55
+    healthController.sleepToday = 6.5
+    
+    healthController.bodyTempToday = 98.6
+    healthController.bodyTempRangeTop = 101
+    healthController.bodyTempRangeBottom = 94
+    healthController.bodyTempMeasuredTop = 100
+    healthController.bodyTempMeasuredBottom = 95
+    healthController.hasBodyTempToday = true
     
     let calendar = Calendar.current
     for i in 0...13 {
@@ -133,15 +142,10 @@ struct HealthReportSheet: View {
             healthController.bodyTempByDay[date] = Double(Int.random(in: 94...101))
             healthController.respirationByDay[date] = Double(Int.random(in: 13...18))
             healthController.oxygenByDay[date] = Double(Int.random(in: 95...98))
+            healthController.hrvByDay[date] = Double(Int.random(in: 45...70))
+            healthController.sleepByDay[date] = Double(Int.random(in: 5...9))
         }
     }
-    
-    healthController.bodyTempToday = 98
-    healthController.bodyTempRangeTop = 101
-    healthController.bodyTempRangeBottom = 94
-    healthController.bodyTempMeasuredTop = 100
-    healthController.bodyTempMeasuredBottom = 95
-    healthController.hasBodyTempToday = true
     
     return HealthReportSheet(sheetIsShowing: .constant(true))
         .environment(healthController)

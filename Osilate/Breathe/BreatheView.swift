@@ -24,6 +24,7 @@ struct BreatheView: View {
     @State private var meditateSheetIsShowing = false
     @State private var breathSheetIsShowing = false
     @State private var statsSheetIsShowing = false
+    @State private var showingInfoAlert = false
     @State private var lastDate: Date = .now
     
     var activities: [any OActivity] {
@@ -129,6 +130,13 @@ struct BreatheView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
+                    Button("Info", systemImage: "info.circle") {
+                        showingInfoAlert.toggle()
+                    }
+                    .tint(.breathe)
+                }
+                
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         statsSheetIsShowing.toggle()
                     } label: {
@@ -162,6 +170,11 @@ struct BreatheView: View {
             }
             .navigationTitle(breatheString)
             .navigationBarTitleDisplayMode(.inline)
+            .alert("What's Breathe?", isPresented: $showingInfoAlert) {
+                Button("Got it", role: .cancel) { }
+            } message: {
+                Text("Breathe counts mindful minutes saved to Apple Health from any source.\n\nYou can change your goal in settings.")
+            }
             .sheet(isPresented: $statsSheetIsShowing) {
                 StatsSheet(showingSheet: $statsSheetIsShowing)
             }
