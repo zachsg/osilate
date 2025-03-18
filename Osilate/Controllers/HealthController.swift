@@ -552,16 +552,28 @@ class HealthController {
                 guard let currData:HKQuantitySample = sample as? HKQuantitySample else { return }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
+                
                 if heartRate >= Double(zone2Min) {
+                    let zone3 = zone2Min.hrZone(.three)
+                    let zone4 = zone2Min.hrZone(.four)
+                    
+                    let multiplier = if heartRate >= Double(zone4) {
+                        3
+                    } else if heartRate >= Double(zone3) {
+                        2
+                    } else {
+                        1
+                    }
+                    
                     if let latest {
-                        let timeSinceLastZone2 = sample.startDate.timeIntervalSince(latest).second
+                        let timeSinceLastZone2 = (sample.startDate.timeIntervalSince(latest).second * multiplier)
                         if timeSinceLastZone2 < 120 {
                             total += timeSinceLastZone2
                         } else {
-                            total += 1
+                            total += multiplier
                         }
                     } else {
-                        total += 1
+                        total += multiplier
                     }
                     
                     latest = sample.startDate
@@ -641,17 +653,28 @@ class HealthController {
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 if heartRate >= Double(zone2Min) {
+                    let zone3 = zone2Min.hrZone(.three)
+                    let zone4 = zone2Min.hrZone(.four)
+                    
+                    let multiplier = if heartRate >= Double(zone4) {
+                        3
+                    } else if heartRate >= Double(zone3) {
+                        2
+                    } else {
+                        1
+                    }
+                    
                     let date = calendar.startOfDay(for: sample.startDate)
-                    let value = zone2WeekByDayTemp[date] ?? 0
+                    let value = zone2WeekByDayTemp[date] ?? multiplier
                     if let latest {
-                        let timeSinceLastZone2 = sample.startDate.timeIntervalSince(latest).second
+                        let timeSinceLastZone2 = (sample.startDate.timeIntervalSince(latest).second * multiplier)
                         if timeSinceLastZone2 < 120 {
                             zone2WeekByDayTemp[date] = value + timeSinceLastZone2
                         } else {
-                            zone2WeekByDayTemp[date] = value + 1
+                            zone2WeekByDayTemp[date] = value
                         }
                     } else {
-                        zone2WeekByDayTemp[date] = value + 1
+                        zone2WeekByDayTemp[date] = value
                     }
                     
                     latest = sample.startDate
@@ -719,10 +742,21 @@ class HealthController {
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 if heartRate >= Double(zone2Min) {
+                    let zone3 = zone2Min.hrZone(.three)
+                    let zone4 = zone2Min.hrZone(.four)
+                    
+                    let multiplier = if heartRate >= Double(zone4) {
+                        3
+                    } else if heartRate >= Double(zone3) {
+                        2
+                    } else {
+                        1
+                    }
+                    
                     let date = sample.startDate.topOfTheHour()
-                    let value = zone2DayByHourTemp[date] ?? 0
+                    let value = zone2DayByHourTemp[date] ?? multiplier
                     if let latest {
-                        let timeSinceLastZone2 = sample.startDate.timeIntervalSince(latest).second
+                        let timeSinceLastZone2 = (sample.startDate.timeIntervalSince(latest).second * multiplier)
                         if timeSinceLastZone2 < 10 {
                             zone2DayByHourTemp[date] = value + timeSinceLastZone2
                         } else {
@@ -813,17 +847,28 @@ class HealthController {
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 if heartRate >= Double(zone2Min) {
+                    let zone3 = zone2Min.hrZone(.three)
+                    let zone4 = zone2Min.hrZone(.four)
+                    
+                    let multiplier = if heartRate >= Double(zone4) {
+                        3
+                    } else if heartRate >= Double(zone3) {
+                        2
+                    } else {
+                        1
+                    }
+                    
                     let date = calendar.startOfDay(for: sample.startDate)
-                    let value = zone2RecentTemp[date] ?? 0
+                    let value = zone2RecentTemp[date] ?? multiplier
                     if let latest {
-                        let timeSinceLastZone2 = sample.startDate.timeIntervalSince(latest).second
+                        let timeSinceLastZone2 = (sample.startDate.timeIntervalSince(latest).second * multiplier)
                         if timeSinceLastZone2 < 10 {
                             zone2RecentTemp[date] = value + timeSinceLastZone2
                         } else {
-                            zone2RecentTemp[date] = value + 1
+                            zone2RecentTemp[date] = multiplier
                         }
                     } else {
-                        zone2RecentTemp[date] = value + 1
+                        zone2RecentTemp[date] = multiplier
                     }
                     
                     latest = sample.startDate
