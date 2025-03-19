@@ -8,5 +8,5 @@
 import Foundation
 
 enum OZone: String, Codable, CaseIterable {
-   case three, four
+   case three, four, five
 }

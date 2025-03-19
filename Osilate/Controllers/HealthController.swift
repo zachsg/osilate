@@ -556,8 +556,11 @@ class HealthController {
                 if heartRate >= Double(zone2Min) {
                     let zone3 = zone2Min.hrZone(.three)
                     let zone4 = zone2Min.hrZone(.four)
+                    let zone5 = zone2Min.hrZone(.five)
                     
-                    let multiplier = if heartRate >= Double(zone4) {
+                    let multiplier = if heartRate >= Double(zone5) {
+                        4
+                    } else if heartRate >= Double(zone4) {
                         3
                     } else if heartRate >= Double(zone3) {
                         2
@@ -655,8 +658,11 @@ class HealthController {
                 if heartRate >= Double(zone2Min) {
                     let zone3 = zone2Min.hrZone(.three)
                     let zone4 = zone2Min.hrZone(.four)
+                    let zone5 = zone2Min.hrZone(.five)
                     
-                    let multiplier = if heartRate >= Double(zone4) {
+                    let multiplier = if heartRate >= Double(zone5) {
+                        4
+                    } else if heartRate >= Double(zone4) {
                         3
                     } else if heartRate >= Double(zone3) {
                         2
@@ -744,8 +750,11 @@ class HealthController {
                 if heartRate >= Double(zone2Min) {
                     let zone3 = zone2Min.hrZone(.three)
                     let zone4 = zone2Min.hrZone(.four)
+                    let zone5 = zone2Min.hrZone(.five)
                     
-                    let multiplier = if heartRate >= Double(zone4) {
+                    let multiplier = if heartRate >= Double(zone5) {
+                        4
+                    } else if heartRate >= Double(zone4) {
                         3
                     } else if heartRate >= Double(zone3) {
                         2
@@ -757,7 +766,7 @@ class HealthController {
                     let value = zone2DayByHourTemp[date] ?? multiplier
                     if let latest {
                         let timeSinceLastZone2 = (sample.startDate.timeIntervalSince(latest).second * multiplier)
-                        if timeSinceLastZone2 < 10 {
+                        if timeSinceLastZone2 < 120 {
                             zone2DayByHourTemp[date] = value + timeSinceLastZone2
                         } else {
                             zone2DayByHourTemp[date] = value
@@ -849,8 +858,11 @@ class HealthController {
                 if heartRate >= Double(zone2Min) {
                     let zone3 = zone2Min.hrZone(.three)
                     let zone4 = zone2Min.hrZone(.four)
+                    let zone5 = zone2Min.hrZone(.five)
                     
-                    let multiplier = if heartRate >= Double(zone4) {
+                    let multiplier = if heartRate >= Double(zone5) {
+                        4
+                    } else if heartRate >= Double(zone4) {
                         3
                     } else if heartRate >= Double(zone3) {
                         2

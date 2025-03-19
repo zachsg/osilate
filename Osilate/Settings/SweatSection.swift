@@ -41,15 +41,15 @@ struct SweatSection: View {
                     }
                 }
                 
-                Button("Auto-calculate Zone 2") {
-                    zone2Min = Int((Double(220 - userAge) * 0.7).rounded())
+                Button("Auto-calculate zone 2") {
+                    zone2Min = Int((Double(220 - userAge) * 0.6).rounded())
                 }
                 .buttonStyle(.bordered)
             }
         } header: {
             HeaderLabel(title: sweatString, systemImage: sweatSystemImage, color: .sweat)
         } footer: {
-            Text("Auto-calculation of Zone 2 is based on your age.")
+            Text("Auto-calculation of zone 2 is based on your age.")
         }
     }
 }

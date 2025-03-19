@@ -11,6 +11,12 @@ let showTodayKey = "showToday"
 let showTodayDefault = false
 let hourInSeconds = 60.0 * 60.0
 
+let adjustTitle = "Make adjustments"
+let adjustSystemImage = "gauge.with.dots.needle.bottom.50percent"
+let aboutTitle = "About"
+let infoTitle = "Info"
+let infoSystemImage = "info.circle"
+
 // MARK: Summary
 let summaryString = "Summary"
 let summarySystemImage = "house.circle"
