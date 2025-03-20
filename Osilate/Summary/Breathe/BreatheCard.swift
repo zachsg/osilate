@@ -56,12 +56,16 @@ struct BreatheCard: View {
                     
                     Spacer()
                     
-                    Button {
-                        tabSelected = .breathe
-                    } label: {
-                        Image(systemName: breatheSystemImage)
-                            .resizable()
-                            .frame(width: 22, height: 22)
+                    if healthController.mindfulMinutesLoading {
+                        ProgressView()
+                    } else {
+                        Button {
+                            tabSelected = .breathe
+                        } label: {
+                            Image(systemName: breatheSystemImage)
+                                .resizable()
+                                .frame(width: 22, height: 22)
+                        }
                     }
                 }
             }

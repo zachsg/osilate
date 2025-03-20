@@ -22,6 +22,7 @@ class HealthController {
     var stepCountMonthByDay: [Date: Int] = [:]
     var latestSteps: Date = .now
     
+    var stepsLoading = false
     var stepsDayByHourLoading = false
     var stepsWeekByDayLoading = false
     var stepsMonthByDayLoading = false
@@ -34,6 +35,7 @@ class HealthController {
     var zone2ByDay: [Date: Int] = [:]
     var latestZone2: Date = .now
     
+    var zone2Loading = false
     var zone2DayByHourLoading = false
     var zone2WeekByDayLoading = false
     var zone2ByDayLoading = false
@@ -81,6 +83,7 @@ class HealthController {
     var mindfulMinutesWeekByDay: [Date: Int] = [:]
     var mindfulMinutesDayByHour: [Date: Int] = [:]
     
+    var mindfulMinutesLoading = false
     var mindfulMinutesDayByHourLoading = false
     var mindfulMinutesWeekByDayLoading = false
     
@@ -197,6 +200,8 @@ class HealthController {
     
     // MARK: - Steps
     func getStepCountFor(_ timeFrame: OTimePeriod) {
+        stepsLoading = true
+        
         let quantityType = HKQuantityType(.stepCount)
         
         let calendar = Calendar.current
@@ -229,6 +234,7 @@ class HealthController {
                 repeatedTimePolicy: .first,
                 direction: .backward
             ) else {
+                stepsLoading = false
                 fatalError("*** unable to find the previous Monday. ***")
             }
             
@@ -254,6 +260,7 @@ class HealthController {
         ) { _, result, error in
             guard let result = result, let sum = result.sumQuantity() else {
                 print("failed to read step count: \(error?.localizedDescription ?? "UNKNOWN ERROR")")
+                self.stepsLoading = false
                 return
             }
             
@@ -268,6 +275,8 @@ class HealthController {
                 case .month:
                     self.stepCountMonth = steps
                 }
+                
+                self.stepsLoading = false
             }
         }
         
@@ -304,6 +313,7 @@ class HealthController {
             
             guard let statsCollection = results else {
                 assertionFailure("")
+                self.stepsMonthByDayLoading = false
                 return
             }
             
@@ -384,6 +394,7 @@ class HealthController {
             
             guard let statsCollection = results else {
                 assertionFailure("")
+                self.stepsWeekByDayLoading = false
                 return
             }
             
@@ -391,6 +402,7 @@ class HealthController {
             let oneWeekAgo = DateComponents(day: -6)
             
             guard let startDate = calendar.date(byAdding: oneWeekAgo, to: endDate) else {
+                self.stepsWeekByDayLoading = false
                 fatalError("*** Unable to calculate the start date ***")
             }
             
@@ -450,6 +462,7 @@ class HealthController {
             
             guard let statsCollection = results else {
                 assertionFailure("")
+                self.stepsDayByHourLoading = false
                 return
             }
             
@@ -488,9 +501,12 @@ class HealthController {
     
     // MARK: - Zone 2
     func getZone2For(_ timeFrame: OTimePeriod) {
+        zone2Loading = true
+        
         @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
         
         guard let quantityType = HKObjectType.quantityType(forIdentifier: .heartRate) else {
+            zone2Loading = false
             fatalError("*** Unable to create a heart rate type ***")
         }
         
@@ -526,6 +542,7 @@ class HealthController {
                 repeatedTimePolicy: .first,
                 direction: .backward
             ) else {
+                zone2Loading = false
                 fatalError("*** unable to find the previous Monday. ***")
             }
             
@@ -542,14 +559,17 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sortDescriptors, resultsHandler: { (query, results, error) in
             guard error == nil else {
-                print("error")
+                self.zone2Loading = false
                 return
             }
             
             var total = 0
             var latest: Date?
             for (_, sample) in results!.enumerated() {
-                guard let currData:HKQuantitySample = sample as? HKQuantitySample else { return }
+                guard let currData:HKQuantitySample = sample as? HKQuantitySample else {
+                    self.zone2Loading = false
+                    return
+                }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 
@@ -596,6 +616,8 @@ class HealthController {
                 }
 
                 self.latestZone2 = latest ?? .now
+                
+                self.zone2Loading = false
             }
         })
         
@@ -645,14 +667,17 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sortDescriptors, resultsHandler: { (query, results, error) in
             guard error == nil else {
-                print("error")
+                self.zone2WeekByDayLoading = false
                 return
             }
             
             var latest: Date?
             var zone2WeekByDayTemp: [Date: Int] = [:]
             for (_, sample) in results!.enumerated() {
-                guard let currData:HKQuantitySample = sample as? HKQuantitySample else { return }
+                guard let currData:HKQuantitySample = sample as? HKQuantitySample else {
+                    self.zone2WeekByDayLoading = false
+                    return
+                }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 if heartRate >= Double(zone2Min) {
@@ -737,14 +762,17 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sortDescriptors, resultsHandler: { (query, results, error) in
             guard error == nil else {
-                print("error")
+                self.zone2DayByHourLoading = false
                 return
             }
             
             var latest: Date?
             var zone2DayByHourTemp: [Date: Int] = [:]
             for (_, sample) in results!.enumerated() {
-                guard let currData: HKQuantitySample = sample as? HKQuantitySample else { return }
+                guard let currData: HKQuantitySample = sample as? HKQuantitySample else {
+                    self.zone2DayByHourLoading = false
+                    return
+                }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 if heartRate >= Double(zone2Min) {
@@ -826,6 +854,7 @@ class HealthController {
             repeatedTimePolicy: .first,
             direction: .backward
         ) else {
+            zone2ByDayLoading = false
             fatalError("*** unable to find the previous Monday. ***")
         }
         
@@ -836,6 +865,7 @@ class HealthController {
         )
         
         guard let quantityType = HKObjectType.quantityType(forIdentifier: .heartRate) else {
+            zone2ByDayLoading = false
             fatalError("*** Unable to create a heart rate type ***")
         }
         
@@ -845,14 +875,17 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sortDescriptors, resultsHandler: { (query, results, error) in
             guard error == nil else {
-                print("error")
+                self.zone2ByDayLoading = false
                 return
             }
             
             var latest: Date?
             var zone2RecentTemp: [Date: Int] = [:]
             for (_, sample) in results!.enumerated() {
-                guard let currData:HKQuantitySample = sample as? HKQuantitySample else { return }
+                guard let currData:HKQuantitySample = sample as? HKQuantitySample else {
+                    self.zone2ByDayLoading = false
+                    return
+                }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 if heartRate >= Double(zone2Min) {
@@ -874,13 +907,13 @@ class HealthController {
                     let value = zone2RecentTemp[date] ?? multiplier
                     if let latest {
                         let timeSinceLastZone2 = (sample.startDate.timeIntervalSince(latest).second * multiplier)
-                        if timeSinceLastZone2 < 10 {
+                        if timeSinceLastZone2 < 120 {
                             zone2RecentTemp[date] = value + timeSinceLastZone2
                         } else {
-                            zone2RecentTemp[date] = multiplier
+                            zone2RecentTemp[date] = value
                         }
                     } else {
-                        zone2RecentTemp[date] = multiplier
+                        zone2RecentTemp[date] = value
                     }
                     
                     latest = sample.startDate
@@ -896,7 +929,8 @@ class HealthController {
                 } else {
                     zone2RecentTemp[checking] = 0
                 }
-                checking = checking.addingTimeInterval(-dayInSeconds)
+                
+                checking = calendar.startOfDay(for: checking.addingTimeInterval(-dayInSeconds))
             }
             
             DispatchQueue.main.async {
@@ -930,6 +964,7 @@ class HealthController {
 
         let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: Int(HKObjectQueryNoLimit), sortDescriptors: .none) { query, results, error in
             guard let samples = results as? [HKQuantitySample] else {
+                self.rhrLoading = false
                 return
             }
 
@@ -1004,6 +1039,7 @@ class HealthController {
 
         let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: Int(HKObjectQueryNoLimit), sortDescriptors: .none) { query, results, error in
             guard let samples = results as? [HKQuantitySample] else {
+                self.recoveryLoading = false
                 return
             }
 
@@ -1151,6 +1187,7 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: Int(HKObjectQueryNoLimit), sortDescriptors: .none) { query, results, error in
             guard let samples = results as? [HKQuantitySample] else {
+                self.cardioFitnessLoading = false
                 return
             }
             
@@ -1204,7 +1241,10 @@ class HealthController {
     
     // MARK: - Mindful Minutes
     func getMindfulMinutesFor(_ timeFrame: OTimePeriod) {
+        mindfulMinutesLoading = true
+        
         guard let sampleType = HKObjectType.categoryType(forIdentifier: .mindfulSession) else {
+            mindfulMinutesLoading = false
             fatalError("*** Unable to create a step count type ***")
         }
         
@@ -1239,6 +1279,7 @@ class HealthController {
                 repeatedTimePolicy: .first,
                 direction: .backward
             ) else {
+                mindfulMinutesLoading = false
                 fatalError("*** unable to find the previous Monday. ***")
             }
             
@@ -1255,9 +1296,7 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
             guard let samples else {
-                if let error {
-                    print(error.localizedDescription)
-                }
+                self.mindfulMinutesLoading = false
                 return
             }
             
@@ -1284,6 +1323,8 @@ class HealthController {
                 }
                 
                 self.latestMindfulMinutes = latest
+                
+                self.mindfulMinutesLoading = false
             }
         }
 
@@ -1291,9 +1332,10 @@ class HealthController {
     }
     
     func getMindfulMinutesDayByHour(refresh: Bool = false) {
-        self.mindfulMinutesDayByHourLoading = true
+        mindfulMinutesDayByHourLoading = true
         
         guard let sampleType = HKObjectType.categoryType(forIdentifier: .mindfulSession) else {
+            mindfulMinutesDayByHourLoading = false
             fatalError("*** Unable to create a step count type ***")
         }
         
@@ -1311,7 +1353,7 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
             guard error == nil else {
-                print("error")
+                self.mindfulMinutesDayByHourLoading = false
                 return
             }
             
@@ -1348,9 +1390,10 @@ class HealthController {
     }
     
     func getMindfulMinutesWeekByDay(refresh: Bool = false) {
-        self.mindfulMinutesWeekByDayLoading = true
+        mindfulMinutesWeekByDayLoading = true
         
         guard let sampleType = HKObjectType.categoryType(forIdentifier: .mindfulSession) else {
+            mindfulMinutesWeekByDayLoading = false
             fatalError("*** Unable to create a step count type ***")
         }
         
@@ -1375,6 +1418,7 @@ class HealthController {
             repeatedTimePolicy: .first,
             direction: .backward
         ) else {
+            mindfulMinutesWeekByDayLoading = false
             fatalError("*** unable to find the previous Monday. ***")
         }
         
@@ -1388,9 +1432,7 @@ class HealthController {
         
         let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
             guard let samples else {
-                if let error {
-                    print(error.localizedDescription)
-                }
+                self.mindfulMinutesWeekByDayLoading = false
                 return
             }
             
@@ -1467,7 +1509,7 @@ class HealthController {
             options: .discreteAverage
         ) { _, result, error in
             guard let result = result else {
-                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                self.bodyTempLoading = false
                 return
             }
             
@@ -1517,6 +1559,8 @@ class HealthController {
         
         query.initialResultsHandler = { query, results, error in
             if let error = error as? HKError {
+                self.bodyTempByDayLoading = false
+                
                 switch (error.code) {
                 case .errorDatabaseInaccessible:
                     // HealthKit couldn't access the database because the device is locked.
@@ -1529,6 +1573,7 @@ class HealthController {
             
             guard let statsCollection = results else {
                 assertionFailure("")
+                self.bodyTempByDayLoading = false
                 return
             }
             
@@ -1584,7 +1629,7 @@ class HealthController {
             options: .discreteAverage
         ) { _, result, error in
             guard let result = result else {
-                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                self.respirationLoading = false
                 return
             }
             
@@ -1631,6 +1676,8 @@ class HealthController {
         
         query.initialResultsHandler = { query, results, error in
             if let error = error as? HKError {
+                self.respirationByDayLoading = false
+                
                 switch (error.code) {
                 case .errorDatabaseInaccessible:
                     // HealthKit couldn't access the database because the device is locked.
@@ -1643,6 +1690,7 @@ class HealthController {
             
             guard let statsCollection = results else {
                 assertionFailure("")
+                self.respirationByDayLoading = false
                 return
             }
             
@@ -1698,7 +1746,7 @@ class HealthController {
             options: .discreteAverage
         ) { _, result, error in
             guard let result = result else {
-                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                self.oxygenLoading = false
                 return
             }
             
@@ -1747,6 +1795,8 @@ class HealthController {
         
         query.initialResultsHandler = { query, results, error in
             if let error = error as? HKError {
+                self.oxygenByDayLoading = false
+                
                 switch (error.code) {
                 case .errorDatabaseInaccessible:
                     // HealthKit couldn't access the database because the device is locked.
@@ -1759,6 +1809,7 @@ class HealthController {
             
             guard let statsCollection = results else {
                 assertionFailure("")
+                self.oxygenByDayLoading = false
                 return
             }
             
@@ -1814,7 +1865,7 @@ class HealthController {
             options: .discreteAverage
         ) { _, result, error in
             guard let result = result else {
-                print("failed to read body temp: \(error?.localizedDescription ?? "")")
+                self.hrvLoading = false
                 return
             }
             
@@ -1863,6 +1914,8 @@ class HealthController {
         
         query.initialResultsHandler = { query, results, error in
             if let error = error as? HKError {
+                self.hrvByDayLoading = false
+                
                 switch (error.code) {
                 case .errorDatabaseInaccessible:
                     // HealthKit couldn't access the database because the device is locked.
@@ -1875,6 +1928,7 @@ class HealthController {
             
             guard let statsCollection = results else {
                 assertionFailure("")
+                self.hrvByDayLoading = false
                 return
             }
             
@@ -1924,8 +1978,8 @@ class HealthController {
             predicate: predicate,
             limit: HKObjectQueryNoLimit,
             sortDescriptors: [sortDescriptor]) { (query, samples, error) in
-            if let error = error {
-                print("Error fetching sleep data: \(error.localizedDescription)")
+            if error != nil {
+                self.sleepLoading = false
                 return
             }
 
@@ -1960,8 +2014,8 @@ class HealthController {
             predicate: predicate,
             limit: HKObjectQueryNoLimit,
             sortDescriptors: [sortDescriptor]) { (query, samples, error) in
-            if let error = error {
-                print("Error fetching sleep data: \(error.localizedDescription)")
+            if error != nil {
+                self.sleepByDayLoading = false
                 return
             }
 

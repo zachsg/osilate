@@ -56,12 +56,16 @@ struct SweatCard: View {
                     
                     Spacer()
                     
-                    Button {
-                        tabSelected = .sweat
-                    } label: {
-                        Image(systemName: sweatSystemImage)
-                            .resizable()
-                            .frame(width: 22, height: 22)
+                    if healthController.zone2Loading {
+                        ProgressView()
+                    } else {
+                        Button {
+                            tabSelected = .sweat
+                        } label: {
+                            Image(systemName: sweatSystemImage)
+                                .resizable()
+                                .frame(width: 22, height: 22)
+                        }
                     }
                 }
             }

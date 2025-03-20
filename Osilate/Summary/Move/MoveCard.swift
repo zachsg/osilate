@@ -56,12 +56,16 @@ struct MoveCard: View {
                     
                     Spacer()
                     
-                    Button {
-                        tabSelected = .move
-                    } label: {
-                        Image(systemName: moveSystemImage)
-                            .resizable()
-                            .frame(width: 22, height: 22)
+                    if healthController.stepsLoading {
+                        ProgressView()
+                    } else {
+                        Button {
+                            tabSelected = .move
+                        } label: {
+                            Image(systemName: moveSystemImage)
+                                .resizable()
+                                .frame(width: 22, height: 22)
+                        }
                     }
                 }
             }

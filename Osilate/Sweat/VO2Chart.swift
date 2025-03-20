@@ -136,7 +136,7 @@ struct VO2Chart: View {
                             .foregroundStyle(.accent.opacity(0.7))
                     }
                     .chartYScale(domain: lowHighZone2.low...lowHighZone2.high)
-                    .chartForegroundStyleScale(["Zone 2 HR minutes": .sweat])
+                    .chartForegroundStyleScale(["Zone+ 2 HR minutes": .sweat])
                     .chartLegend(.visible)
                     
                     if healthController.zone2ByDayLoading {
