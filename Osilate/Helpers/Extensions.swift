@@ -264,19 +264,32 @@ extension Int {
             .stable
         }
     }
+}
+
+func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
+    @AppStorage(maxHrKey) var maxHr: Int = maxHrDefault
     
-    func hrZone(_ zone: OZone) -> Int {
-        @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
-        
-        let maxHr = Double(zone2Min) / 0.6
-        
+    if startOrEnd == .start {
         return switch zone {
+        case .two:
+            Int((Double(maxHr) * 0.6).rounded())
         case .three:
-            Int((maxHr * 0.7).rounded())
+            Int((Double(maxHr) * 0.7).rounded())
         case .four:
-            Int((maxHr * 0.8).rounded())
+            Int((Double(maxHr) * 0.8).rounded())
         case .five:
-            Int((maxHr * 0.9).rounded())
+            Int((Double(maxHr) * 0.9).rounded())
+        }
+    } else {
+        return switch zone {
+        case .two:
+            Int((Double(maxHr) * 0.7).rounded()) - 1
+        case .three:
+            Int((Double(maxHr) * 0.8).rounded()) - 1
+        case .four:
+            Int((Double(maxHr) * 0.9).rounded()) - 1
+        case .five:
+            maxHr
         }
     }
 }

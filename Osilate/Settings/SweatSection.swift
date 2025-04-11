@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SweatSection: View {
     @AppStorage(dailySweatGoalKey) var dailySweatGoal = dailySweatGoalDefault
-    @AppStorage(zone2MinKey) var zone2Min = zone2MinDefault
+    @AppStorage(maxHrKey) var maxHr = maxHrDefault
     @AppStorage(userAgeKey) var userAge = userAgeDefault
     
     var body: some View {
@@ -28,12 +28,12 @@ struct SweatSection: View {
             }
             
             VStack {
-                Stepper(value: $zone2Min.animation(), in: 100...200, step: 1) {
+                Stepper(value: $maxHr.animation(), in: 120...230, step: 1) {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text("Zone 2 starts at")
+                        Text("Maximum HR")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Text((zone2Min), format: .number)
+                        Text((maxHr), format: .number)
                             .fontWeight(.bold)
                         Text("bpm")
                             .font(.caption)
@@ -41,15 +41,15 @@ struct SweatSection: View {
                     }
                 }
                 
-                Button("Auto-calculate zone 2") {
-                    zone2Min = Int((Double(220 - userAge) * 0.6).rounded())
+                Button("Auto-calculate max HR") {
+                    maxHr = 220 - userAge
                 }
                 .buttonStyle(.bordered)
             }
         } header: {
             HeaderLabel(title: sweatString, systemImage: sweatSystemImage, color: .sweat)
         } footer: {
-            Text("Auto-calculation of zone 2 is based on your age.")
+            Text("Auto-calculation of max heart rate is based on your age.")
         }
     }
 }

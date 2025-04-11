@@ -80,8 +80,8 @@ let sweatSystemImage = "drop.circle"
 
 let dailySweatGoalKey = "dailyZone2Goal"
 let dailySweatGoalDefault = 1200 // 20 minutes
-let zone2MinKey = "zone2Threshold"
-let zone2MinDefault = 136
+let maxHrKey = "maxHr"
+let maxHrDefault = 185
 
 // VO2 max
 let vO2SystemImage = "stethoscope"

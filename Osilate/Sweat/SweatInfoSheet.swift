@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SweatInfoSheet: View {
     @AppStorage(userAgeKey) var userAge = userAgeDefault
-    @AppStorage(zone2MinKey) var zone2Min = zone2MinDefault
+    @AppStorage(maxHrKey) var maxHr = maxHrDefault
     
     @Binding var sheetIsShowing: Bool
     
@@ -39,12 +39,12 @@ struct SweatInfoSheet: View {
                             }
                             
                             VStack {
-                                Stepper(value: $zone2Min.animation(), in: 100...200, step: 1) {
+                                Stepper(value: $maxHr.animation(), in: 120...230, step: 1) {
                                     HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                        Text("Zone 2 starts at")
+                                        Text("Maximum HR")
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
-                                        Text((zone2Min), format: .number)
+                                        Text((maxHr), format: .number)
                                             .fontWeight(.bold)
                                         Text("bpm")
                                             .font(.caption)
@@ -52,18 +52,18 @@ struct SweatInfoSheet: View {
                                     }
                                 }
                                 
-                                Button("Auto-calculate zone 2") {
-                                    zone2Min = Int((Double(220 - userAge) * 0.6).rounded())
+                                Button("Auto-calculate max HR") {
+                                    maxHr = 220 - userAge
                                 }
                                 .buttonStyle(.bordered)
                             }
                         } footer: {
-                            Text("Auto-calculation of zone 2 is based on your age.")
+                            Text("Auto-calculation of max heart rate is based on your age.")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
                     } label: {
-                        Text("Edit age & zone 2 threshold")
+                        Text("Edit maximum heart rate")
                     }
                 } header: {
                     HeaderLabel(title: adjustTitle, systemImage: adjustSystemImage)
@@ -76,9 +76,9 @@ struct SweatInfoSheet: View {
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Text("Zone 2:")
                             HStack(spacing: 1) {
-                                Text(zone2Min, format: .number)
+                                Text(hrZone(.two, at: .start), format: .number)
                                 Text("-")
-                                Text(zone2Min.hrZone(.three) - 1, format: .number)
+                                Text(hrZone(.two, at: .end), format: .number)
                             }
                             .fontWeight(.bold)
                             Text("bpm")
@@ -109,9 +109,9 @@ struct SweatInfoSheet: View {
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Text("Zone 3:")
                             HStack(spacing: 1) {
-                                Text(zone2Min.hrZone(.three), format: .number)
+                                Text(hrZone(.three, at: .start), format: .number)
                                 Text("-")
-                                Text(zone2Min.hrZone(.four) - 1, format: .number)
+                                Text(hrZone(.three, at: .end), format: .number)
                             }
                             .fontWeight(.bold)
                             Text("bpm")
@@ -142,9 +142,9 @@ struct SweatInfoSheet: View {
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Text("Zone 4:")
                             HStack(spacing: 1) {
-                                Text(zone2Min.hrZone(.four), format: .number)
+                                Text(hrZone(.four, at: .start), format: .number)
                                 Text("-")
-                                Text(zone2Min.hrZone(.five) - 1, format: .number)
+                                Text(hrZone(.four, at: .end), format: .number)
                             }
                             .fontWeight(.bold)
                             Text("bpm")
@@ -175,7 +175,7 @@ struct SweatInfoSheet: View {
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Text("Zone 5:")
                             HStack(spacing: 1) {
-                                Text(zone2Min.hrZone(.five), format: .number)
+                                Text(hrZone(.five, at: .start), format: .number)
                                 Text("+")
                             }
                             .fontWeight(.bold)

@@ -503,8 +503,6 @@ class HealthController {
     func getZone2For(_ timeFrame: OTimePeriod) {
         zone2Loading = true
         
-        @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
-        
         guard let quantityType = HKObjectType.quantityType(forIdentifier: .heartRate) else {
             zone2Loading = false
             fatalError("*** Unable to create a heart rate type ***")
@@ -573,10 +571,10 @@ class HealthController {
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
                 
-                if heartRate >= Double(zone2Min) {
-                    let zone3 = zone2Min.hrZone(.three)
-                    let zone4 = zone2Min.hrZone(.four)
-                    let zone5 = zone2Min.hrZone(.five)
+                if heartRate >= Double(hrZone(.two, at: .start)) {
+                    let zone3 = hrZone(.three, at: .start)
+                    let zone4 = hrZone(.four, at: .start)
+                    let zone5 = hrZone(.five, at: .start)
                     
                     let multiplier = if heartRate >= Double(zone5) {
                         4
@@ -625,8 +623,6 @@ class HealthController {
     }
     
     func getZone2WeekByDay(refresh: Bool = false) {
-        @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
-        
         let calendar = Calendar.current
         
         // Set the anchor for 3 a.m. 6 days ago.
@@ -680,10 +676,10 @@ class HealthController {
                 }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
-                if heartRate >= Double(zone2Min) {
-                    let zone3 = zone2Min.hrZone(.three)
-                    let zone4 = zone2Min.hrZone(.four)
-                    let zone5 = zone2Min.hrZone(.five)
+                if heartRate >= Double(hrZone(.two, at: .start)) {
+                    let zone3 = hrZone(.three, at: .start)
+                    let zone4 = hrZone(.four, at: .start)
+                    let zone5 = hrZone(.five, at: .start)
                     
                     let multiplier = if heartRate >= Double(zone5) {
                         4
@@ -740,8 +736,6 @@ class HealthController {
     }
     
     func getZone2DayByHour(refresh: Bool = false) {
-        @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
-        
         let calendar = Calendar.current
         
         let anchorDate = calendar.startOfDay(for: Date())
@@ -775,10 +769,10 @@ class HealthController {
                 }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
-                if heartRate >= Double(zone2Min) {
-                    let zone3 = zone2Min.hrZone(.three)
-                    let zone4 = zone2Min.hrZone(.four)
-                    let zone5 = zone2Min.hrZone(.five)
+                if heartRate >= Double(hrZone(.two, at: .start)) {
+                    let zone3 = hrZone(.three, at: .start)
+                    let zone4 = hrZone(.four, at: .start)
+                    let zone5 = hrZone(.five, at: .start)
                     
                     let multiplier = if heartRate >= Double(zone5) {
                         4
@@ -830,8 +824,6 @@ class HealthController {
     }
     
     func getZone2Recent(refresh: Bool = false) {
-        @AppStorage(zone2MinKey) var zone2Min: Int = zone2MinDefault
-        
         let calendar = Calendar.current
         
         // Set the anchor for 3 a.m. 60 days ago.
@@ -888,10 +880,10 @@ class HealthController {
                 }
                 
                 let heartRate = currData.quantity.doubleValue(for: heartRateUnit)
-                if heartRate >= Double(zone2Min) {
-                    let zone3 = zone2Min.hrZone(.three)
-                    let zone4 = zone2Min.hrZone(.four)
-                    let zone5 = zone2Min.hrZone(.five)
+                if heartRate >= Double(hrZone(.two, at: .start)) {
+                    let zone3 = hrZone(.three, at: .start)
+                    let zone4 = hrZone(.four, at: .start)
+                    let zone5 = hrZone(.five, at: .start)
                     
                     let multiplier = if heartRate >= Double(zone5) {
                         4
