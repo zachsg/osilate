@@ -175,7 +175,8 @@ class HealthController {
             HKQuantityType(.appleSleepingWristTemperature),
             HKQuantityType(.respiratoryRate),
             HKQuantityType(.oxygenSaturation),
-            HKQuantityType(.heartRateVariabilitySDNN)
+            HKQuantityType(.heartRateVariabilitySDNN),
+            HKQuantityType.workoutType()
 //            HKQuantityType(.physicalEffort),
 //            HKQuantityType(.appleStandTime),
 //            HKQuantityType(.flightsClimbed),
@@ -194,6 +195,18 @@ class HealthController {
         healthStore.requestAuthorization(toShare: toShare, read: toRead) { success, error in
             if !success {
                 print("\(String(describing: error))")
+            }
+        }
+    }
+    
+    // MARK: - Mirroring
+    var isMirroring = false
+    
+    func startMirroring() {
+        healthStore.workoutSessionMirroringStartHandler = { mirroredSession in
+            DispatchQueue.main.async {
+                print("I am mirroring now")
+                self.isMirroring = true
             }
         }
     }

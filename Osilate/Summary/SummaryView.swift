@@ -75,6 +75,10 @@ struct SummaryView: View {
                     MoveCard(tabSelected: $tabSelected, movePercent: movePercent)
                     SweatCard(tabSelected: $tabSelected, sweatPercent: sweatPercent)
                     BreatheCard(tabSelected: $tabSelected, breathePercent: breathePercent)
+                    
+                    if healthController.isMirroring {
+                        Text("Apple Watch workout started...")
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.bottom)

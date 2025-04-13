@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct Osilate_Watch_Watch_AppApp: App {
+    @State private var workoutManager = WorkoutManager()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(workoutManager)
         }
     }
 }

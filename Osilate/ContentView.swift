@@ -35,6 +35,9 @@ struct ContentView: View {
             }
         }
         .tint(tabTint(selection: tabSelected))
+        .onAppear {
+            healthController.startMirroring()
+        }
     }
     
     private func tabTint(selection: OTabSelected) -> Color {
