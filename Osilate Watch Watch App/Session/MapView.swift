@@ -10,15 +10,53 @@ import SwiftUI
 
 struct MapView: View {
     @Environment(WorkoutManager.self) private var workoutManager
-    @State private var cameraPosition: MapCameraPosition = .automatic
+    
+    // A flag to delay map rendering
+    @State private var shouldRenderMap = false
     
     var body: some View {
-        // Use a simpler Map implementation first
         ZStack {
+            if shouldRenderMap {
+                // Simple map implementation
+                MapContent()
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                // Loading placeholder
+                ProgressView("Loading Map...")
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    // Force refresh
+                    shouldRenderMap = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        shouldRenderMap = true
+                    }
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .padding(2)
+                        .background(.regularMaterial)
+                        .clipShape(Circle())
+                }
+            }
+        }
+        .onAppear {
+            // Delay map rendering to give the view time to initialize
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                shouldRenderMap = true
+            }
+        }
+    }
+    
+    // Move map content to a separate view
+    struct MapContent: View {
+        @Environment(WorkoutManager.self) private var workoutManager
+        
+        var body: some View {
             Map {
-                // Only show user location marker if we have at least one location
+                // Show current location marker
                 if let currentLocation = workoutManager.locations.last {
-                    // Custom marker for current location
                     Annotation("", coordinate: currentLocation.coordinate) {
                         Circle()
                             .fill(.blue)
@@ -27,48 +65,13 @@ struct MapView: View {
                     }
                 }
                 
-                // Display route using polyline if we have multiple locations
+                // Show route polyline
                 if workoutManager.locations.count > 1 {
                     MapPolyline(coordinates: workoutManager.locations.map { $0.coordinate })
                         .stroke(.blue, lineWidth: 3)
                 }
             }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
-                    updateMapPosition()
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                        .padding(4)
-                        .background(.regularMaterial)
-                        .clipShape(Circle())
-                }
-            }
-        }
-        .onAppear {
-            updateMapPosition()
-        }
-        .onChange(of: workoutManager.locations) { _, _ in
-            // Only update position when there are significant changes
-            // to reduce the number of updates
-            if workoutManager.locations.count % 5 == 0 {
-                updateMapPosition()
-            }
-        }
-    }
-    
-    private func updateMapPosition() {
-        // If we have at least one location, update the camera
-        if !workoutManager.locations.isEmpty {
-            // Just center on the most recent location with a reasonable zoom level
-            // This is simpler and less likely to cause rendering issues
-            if let currentLocation = workoutManager.locations.last {
-                cameraPosition = .region(MKCoordinateRegion(
-                    center: currentLocation.coordinate,
-                    span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-                ))
-            }
+            .mapStyle(.standard(pointsOfInterest: [])) // Simplified style
         }
     }
 }
