@@ -26,13 +26,13 @@ struct MapView: View {
         .toolbar {
             ToolbarItem(placement: .bottomBar) {
                 HStack {
-                    Button(action: {
+                    Button {
                         // Force refresh
                         shouldRenderMap = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             shouldRenderMap = true
                         }
-                    }) {
+                    } label: {
                         Image(systemName: "arrow.clockwise")
                             .padding(4)
                             .background(.regularMaterial)
@@ -74,7 +74,7 @@ struct MapView: View {
                 // Show route polyline
                 if workoutManager.locations.count > 1 {
                     MapPolyline(coordinates: workoutManager.locations.map { $0.coordinate })
-                        .stroke(.blue, lineWidth: 3)
+                        .stroke(.blue, lineWidth: 5)
                 }
             }
             .mapStyle(.standard(pointsOfInterest: []))
@@ -95,9 +95,9 @@ struct MapView: View {
                     HStack {
                         Spacer()
                         
-                        Button(action: {
+                        Button {
                             recenterMap()
-                        }) {
+                        } label: {
                             Image(systemName: "location.fill")
                                 .padding(4)
                                 .background(.regularMaterial)
