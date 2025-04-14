@@ -248,7 +248,15 @@ extension WorkoutManager: CLLocationManagerDelegate {
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.activityType = .fitness
         locationManager.distanceFilter = 10
-        locationManager.requestWhenInUseAuthorization()
+        
+        // Force the permission dialog to appear immediately
+        DispatchQueue.main.async {
+            self.locationManager.requestWhenInUseAuthorization()
+        }
+        
+        // Check current status and log it
+        let status = locationManager.authorizationStatus
+        print("Current location authorization status: \(status.rawValue)")
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations newLocations: [CLLocation]) {

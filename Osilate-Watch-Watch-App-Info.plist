@@ -3,14 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>UIBackgroundModes</key>
-	<array/>
+	<array>
+		<string>location</string>
+	</array>
 	<key>WKBackgroundModes</key>
 	<array>
 		<string>workout-processing</string>
 	</array>
-	<key>NSHealthShareUsageDescription</key>
-	<string>Osilate shows your saved workout data.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>Osilate saves workouts to Apple Health.</string>
 </dict>
 </plist>

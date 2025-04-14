@@ -381,6 +381,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Osilate-Watch-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Osilate Watch";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Osilate shows your saved workout data.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Osilate saves workouts to Apple Health.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Osilate needs your location to track your workout route even when in the background.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Osilate needs your location to track your workout route.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = io.mobn.Osilate;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -411,6 +415,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Osilate-Watch-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Osilate Watch";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Osilate shows your saved workout data.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Osilate saves workouts to Apple Health.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Osilate needs your location to track your workout route even when in the background.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Osilate needs your location to track your workout route.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = io.mobn.Osilate;
 				LD_RUNPATH_SEARCH_PATHS = (

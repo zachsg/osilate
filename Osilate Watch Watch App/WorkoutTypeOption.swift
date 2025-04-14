@@ -14,7 +14,13 @@ struct WorkoutTypeOption: View {
     
     var workoutType: HKWorkoutActivityType
     
-    @State private var isOutdoors = false
+    @State private var isOutdoors = false {
+        didSet {
+            if isOutdoors {
+                workoutManager.locationManager.requestWhenInUseAuthorization()
+            }
+        }
+    }
     
     var body: some View {
         HStack {
