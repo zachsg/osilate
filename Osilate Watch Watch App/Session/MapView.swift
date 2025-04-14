@@ -10,63 +10,62 @@ import SwiftUI
 
 struct MapView: View {
     @Environment(WorkoutManager.self) private var workoutManager
-    @State private var region = MKCoordinateRegion()
-    @State private var mapRect: MKMapRect?
+    @State private var cameraPosition: MapCameraPosition = .automatic
     
     var body: some View {
-        Map(position: .constant(.rect(mapRect ?? MKMapRect())),
-            interactionModes: .all) {
-            UserAnnotation()
+        Map(position: $cameraPosition) {
+            // Only show user location marker if we have at least one location
+            if let currentLocation = workoutManager.locations.last {
+                // Custom marker for current location
+                Marker("Current", coordinate: currentLocation.coordinate)
+                    .tint(.blue)
+            }
             
-            if !workoutManager.locations.isEmpty {
+            // Display route using polyline
+            if workoutManager.locations.count > 1 {
                 MapPolyline(coordinates: workoutManager.locations.map { $0.coordinate })
                     .stroke(.blue, lineWidth: 4)
             }
         }
-        .mapControls {
-            MapUserLocationButton()
-            MapCompass()
-        }
+        .mapStyle(.standard)
         .onAppear {
-            centerMapOnUserLocation()
+            updateMapPosition()
         }
-        .onChange(of: workoutManager.locations) { oldLocations, newLocations in
-            if !newLocations.isEmpty {
-                updateMapWithLocations(newLocations)
-            }
+        .onChange(of: workoutManager.locations) { _, _ in
+            updateMapPosition()
         }
     }
     
-    private func centerMapOnUserLocation() {
-        if let userLocation = workoutManager.locations.last {
-            // Create a region centered on the user's current location
-            region = MKCoordinateRegion(
-                center: userLocation.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-            )
-            
-            let point = MKMapPoint(userLocation.coordinate)
-            let size = MKMapSize(width: 1000, height: 1000)
-            mapRect = MKMapRect(origin: point, size: size)
+    private func updateMapPosition() {
+        // If we have multiple locations, show the entire route
+        if workoutManager.locations.count > 1 {
+            let coordinates = workoutManager.locations.map { $0.coordinate }
+            cameraPosition = .rect(MKMapRect(coordinates: coordinates).insetBy(dx: -200, dy: -200))
+        }
+        // If we have only one location, center on it
+        else if let currentLocation = workoutManager.locations.last {
+            cameraPosition = .region(MKCoordinateRegion(
+                center: currentLocation.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+            ))
         }
     }
-    
-    private func updateMapWithLocations(_ locations: [CLLocation]) {
-        // Create a map rect that contains all locations
-        if locations.count > 1 {
-            var rect = MKMapRect.null
+}
+
+// Helper extension to create MKMapRect from an array of coordinates
+extension MKMapRect {
+    init(coordinates: [CLLocationCoordinate2D]) {
+        self = .null
+        
+        for coordinate in coordinates {
+            let point = MKMapPoint(coordinate)
+            let rect = MKMapRect(x: point.x - 1, y: point.y - 1, width: 2, height: 2)
             
-            for location in locations {
-                let point = MKMapPoint(location.coordinate)
-                let pointRect = MKMapRect(x: point.x - 50, y: point.y - 50, width: 100, height: 100)
-                rect = rect.union(pointRect)
+            if self.isNull {
+                self = rect
+            } else {
+                self = self.union(rect)
             }
-            
-            // Set the map to show the entire path with some padding
-            mapRect = rect.insetBy(dx: -rect.width * 0.1, dy: -rect.height * 0.1)
-        } else if let location = locations.last {
-            // If there's only one location, center on it
-            centerMapOnUserLocation()
         }
     }
 }
