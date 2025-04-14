@@ -12,6 +12,12 @@ import Observation
 
 @Observable
 class WorkoutManager: NSObject {
+    override
+    init() {
+        super.init()
+        setupLocationManager()
+    }
+    
     var selectedWorkout: HKWorkoutActivityType? {
         didSet {
             guard let selectedWorkout = selectedWorkout else { return }
