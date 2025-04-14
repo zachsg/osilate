@@ -71,6 +71,15 @@ extension MKMapRect {
 }
 
 #Preview {
-    MapView()
-        .environment(WorkoutManager())
+    let workoutManager = WorkoutManager()
+    // Add some sample locations for preview
+    let coordinates = [
+        CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        CLLocationCoordinate2D(latitude: 37.7750, longitude: -122.4180),
+        CLLocationCoordinate2D(latitude: 37.7748, longitude: -122.4170)
+    ]
+    workoutManager.locations = coordinates.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+    
+    return MapView()
+        .environment(workoutManager)
 }
