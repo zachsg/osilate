@@ -10,12 +10,14 @@ import SwiftUI
 
 struct MapView: View {
     @Environment(WorkoutManager.self) private var workoutManager
+    
     @State private var shouldRenderMap = false
+    @State private var userZoomDistance: Double = 300
     
     var body: some View {
         ZStack {
             if shouldRenderMap {
-                MapContent()
+                MapContent(userZoomDistance: $userZoomDistance)
             } else {
                 ProgressView("Loading Map...")
             }
@@ -51,9 +53,11 @@ struct MapView: View {
     
     struct MapContent: View {
         @Environment(WorkoutManager.self) private var workoutManager
+        
+        @Binding var userZoomDistance: Double
+        
         @State private var position: MapCameraPosition = .automatic
         @State private var isUserInteracting = false
-        @State private var userZoomDistance: Double? = nil
         
         var body: some View {
             Map(position: $position, interactionModes: .all) {
@@ -122,9 +126,7 @@ struct MapView: View {
                         isUserInteracting = true
                     }
             )
-            .onChange(of: position) { oldPos, newPos in
-                
-            }
+            .digitalCrownRotation($userZoomDistance, from: 50, through: 1000, by: 50, sensitivity: .low, isContinuous: false)
         }
         
         private func setInitialPosition() {
@@ -134,7 +136,7 @@ struct MapView: View {
                 withAnimation {
                     position = .camera(MapCamera(
                         centerCoordinate: location.coordinate,
-                        distance: userZoomDistance ?? 300,
+                        distance: userZoomDistance,
                         heading: 0,
                         pitch: 0
                     ))
@@ -187,7 +189,7 @@ struct MapView: View {
             withAnimation {
                 position = .camera(MapCamera(
                     centerCoordinate: lastLocation.coordinate,
-                    distance: 300,
+                    distance: userZoomDistance,
                     heading: heading,
                     pitch: 0
                 ))
@@ -200,12 +202,14 @@ struct MapView: View {
             if workoutManager.locations.count >= 2 {
                 followUserLocationAndDirection(workoutManager.locations)
             } else if let location = workoutManager.locations.last {
-                position = .camera(MapCamera(
-                    centerCoordinate: location.coordinate,
-                    distance: 300,
-                    heading: 0,
-                    pitch: 0
-                ))
+                withAnimation {
+                    position = .camera(MapCamera(
+                        centerCoordinate: location.coordinate,
+                        distance: userZoomDistance,
+                        heading: 0,
+                        pitch: 0
+                    ))
+                }
             }
         }
     }
