@@ -5,6 +5,7 @@
 //  Created by Zach Gottlieb on 4/12/25.
 //
 
+import CoreLocation
 import Foundation
 import HealthKit
 import Observation
@@ -66,6 +67,10 @@ class WorkoutManager: NSObject {
         builder?.beginCollection(withStart: startDate) { success, error in
             // The workout has started.
         }
+        
+        if isOutdoors {
+            locationManager.startUpdatingLocation()
+        }
     }
     
     func requestAuthorization() {
@@ -106,6 +111,23 @@ class WorkoutManager: NSObject {
     }
     
     func endWorkout() {
+        if isOutdoors {
+            locationManager.stopUpdatingLocation()
+            
+            if !locations.isEmpty {
+                let routeBuilder = HKWorkoutRouteBuilder(healthStore: healthStore, device: nil)
+                routeBuilder.insertRouteData(locations) { success, error in
+                    if success {
+                        routeBuilder.finishRoute(with: self.workout!, metadata: nil) { route, error in
+                            if let error = error {
+                                print("Error saving route: \(error.localizedDescription)")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
         session?.end()
         showingSummaryView = true
         
@@ -155,7 +177,12 @@ class WorkoutManager: NSObject {
         averageHeartRate = 0
         heartRate = 0
         distance = 0
+        locations = []
     }
+    
+    // MARK: - Location
+    let locationManager = CLLocationManager()
+    var locations: [CLLocation] = []
 }
 
 // MARK: - HKWorkoutSessionDelegate
@@ -199,5 +226,22 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
             
             updateForStatistics(statistics)
         }
+    }
+}
+
+// MARK: - CoreLocation
+extension WorkoutManager: CLLocationManagerDelegate {
+    func setupLocationManager() {
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.activityType = .fitness
+        locationManager.distanceFilter = 10
+        locationManager.requestWhenInUseAuthorization()
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations newLocations: [CLLocation]) {
+        guard let location = newLocations.last else { return }
+        
+        locations.append(location)
     }
 }
