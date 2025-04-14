@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct OsilateApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var healthController = HealthController()
     
     var sharedModelContainer: ModelContainer = {
@@ -33,5 +34,17 @@ struct OsilateApp: App {
         }
         .modelContainer(sharedModelContainer)
         .environment(healthController)
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            switch newPhase {
+            case .active:
+                healthController.startMirroring() // Re-establish mirroring when app becomes active
+            case .background:
+                break // Handle background state if needed
+            case .inactive:
+                break
+            @unknown default:
+                break
+            }
+        }
     }
 }

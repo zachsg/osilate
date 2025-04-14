@@ -176,7 +176,8 @@ class HealthController {
             HKQuantityType(.respiratoryRate),
             HKQuantityType(.oxygenSaturation),
             HKQuantityType(.heartRateVariabilitySDNN),
-            HKQuantityType.workoutType()
+            HKQuantityType.workoutType(),
+            HKObjectType.activitySummaryType()
 //            HKQuantityType(.physicalEffort),
 //            HKQuantityType(.appleStandTime),
 //            HKQuantityType(.flightsClimbed),
@@ -184,7 +185,8 @@ class HealthController {
         let toShare = Set([
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
-            HKObjectType.categoryType(forIdentifier: .mindfulSession)!
+            HKObjectType.categoryType(forIdentifier: .mindfulSession)!,
+            HKQuantityType.workoutType()
         ])
             
         guard HKHealthStore.isHealthDataAvailable() else {
@@ -193,7 +195,11 @@ class HealthController {
         }
         
         healthStore.requestAuthorization(toShare: toShare, read: toRead) { success, error in
-            if !success {
+            if success {
+                DispatchQueue.main.async {
+                    self.startMirroring()
+                }
+            } else {
                 print("\(String(describing: error))")
             }
         }

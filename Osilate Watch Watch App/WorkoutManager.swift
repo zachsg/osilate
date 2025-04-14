@@ -40,6 +40,14 @@ class WorkoutManager: NSObject {
         do {
             session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
             builder = session?.associatedWorkoutBuilder()
+            
+            Task {
+                do {
+                    try await session?.startMirroringToCompanionDevice()
+                } catch {
+                    
+                }
+            }
         } catch {
             // Handle any exceptions.
             return
@@ -100,6 +108,14 @@ class WorkoutManager: NSObject {
     func endWorkout() {
         session?.end()
         showingSummaryView = true
+        
+        Task {
+            do {
+                try await session?.stopMirroringToCompanionDevice()
+            } catch {
+                
+            }
+        }
     }
     
     // MARK: - Workout Metrics
