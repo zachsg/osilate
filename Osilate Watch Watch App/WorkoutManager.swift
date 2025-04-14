@@ -89,7 +89,8 @@ class WorkoutManager: NSObject {
     
     func requestAuthorization() {
         let typesToShare: Set = [
-            HKQuantityType.workoutType()
+            HKQuantityType.workoutType(),
+            HKSeriesType.workoutRoute()
         ]
         
         let typesToRead: Set = [
@@ -127,19 +128,6 @@ class WorkoutManager: NSObject {
     func endWorkout() {
         if isOutdoors {
             locationManager.stopUpdatingLocation()
-            
-            if !locations.isEmpty {
-                let routeBuilder = HKWorkoutRouteBuilder(healthStore: healthStore, device: nil)
-                routeBuilder.insertRouteData(locations) { success, error in
-                    if success {
-                        routeBuilder.finishRoute(with: self.workout!, metadata: nil) { route, error in
-                            if let error = error {
-                                print("Error saving route: \(error.localizedDescription)")
-                            }
-                        }
-                    }
-                }
-            }
         }
         
         session?.end()
@@ -149,7 +137,7 @@ class WorkoutManager: NSObject {
             do {
                 try await session?.stopMirroringToCompanionDevice()
             } catch {
-                
+                print("Error stopping mirroring: \(error.localizedDescription)")
             }
         }
     }
@@ -219,9 +207,42 @@ extension WorkoutManager: HKWorkoutSessionDelegate {
         if toState == .ended {
             builder?.endCollection(withEnd: date) { success, error in
                 self.builder?.finishWorkout { workout, error in
+                    guard let workout, error == nil else {
+                        print("Error finishing workout: \(error?.localizedDescription ?? "Unknown")")
+                        return
+                    }
+                    
                     DispatchQueue.main.async {
                         self.workout = workout
+                        self.showingSummaryView = true
+                        
+                        if self.isOutdoors && !self.locations.isEmpty {
+                            self.saveWorkoutRoute(for: workout)
+                        }
                     }
+                }
+            }
+        }
+    }
+    
+    private func saveWorkoutRoute(for workout: HKWorkout) {
+        guard !locations.isEmpty else { return }
+        
+        let routeBuilder = HKWorkoutRouteBuilder(healthStore: healthStore, device: nil)
+            
+        // Insert location data
+        routeBuilder.insertRouteData(locations) { success, error in
+            if !success {
+                print("Failed to insert route data: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            // Finish and save route
+            routeBuilder.finishRoute(with: workout, metadata: nil) { route, error in
+                if let error = error {
+                    print("Error saving route: \(error.localizedDescription)")
+                } else {
+                    print("Successfully saved workout route")
                 }
             }
         }
@@ -268,21 +289,22 @@ extension WorkoutManager: CLLocationManagerDelegate {
         guard let location = newLocations.last else { return }
         
         // Filter out invalid or old locations
-        if location.horizontalAccuracy < 0 || location.timestamp.timeIntervalSinceNow < -10 {
+        if location.horizontalAccuracy < 0 || location.horizontalAccuracy > 20 || location.timestamp.timeIntervalSinceNow < -10 {
+            print("Skipping low quality location: accuracy \(location.horizontalAccuracy)m")
             return
         }
         
         locations.append(location)
         
-        let currentElevation = location.altitude
-        if let lastElevation = lastElevation {
-            // Only count positive elevation changes (going up)
-            let elevationChange = currentElevation - lastElevation
+        // Calculate elevation gain if needed
+        if let lastLocation = locations.dropLast().last {
+            let elevationChange = location.altitude - lastLocation.altitude
             if elevationChange > 0 {
                 elevationGain += elevationChange
             }
+            
+            lastElevation = lastLocation.altitude
         }
-        lastElevation = currentElevation
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
