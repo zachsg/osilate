@@ -12,7 +12,11 @@ struct MapView: View {
     @Environment(WorkoutManager.self) private var workoutManager
     
     @State private var shouldRenderMap = false
-    @State private var userZoomDistance: Double = 300
+    @State private var userZoomDistance: Double = 300 {
+        didSet {
+            print("Zoom is now: $\(userZoomDistance)")
+        }
+    }
     
     var body: some View {
         ZStack {
