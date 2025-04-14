@@ -200,12 +200,14 @@ class WorkoutManager: NSObject {
 // MARK: - HKWorkoutSessionDelegate
 extension WorkoutManager: HKWorkoutSessionDelegate {
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: any Error) {
+        print("workoutSession: Empty")
     }
     
     func workoutSession(_ workoutSession: HKWorkoutSession,
                         didChangeTo toState: HKWorkoutSessionState,
                         from fromState: HKWorkoutSessionState,
                         date: Date) {
+        print("workoutSession: Full")
         DispatchQueue.main.async {
             self.running = toState == .running
         }

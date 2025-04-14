@@ -10,8 +10,6 @@ import SwiftUI
 struct MetricsView: View {
     @Environment(WorkoutManager.self) private var workoutManager
     
-    @State private var showingMap = false
-    
     var body: some View {
         TimelineView(
             MetricsTimelineSchedule(
@@ -64,18 +62,6 @@ struct MetricsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .ignoresSafeArea(edges: .bottom)
             .scenePadding()
-            .toolbar {
-                if workoutManager.isOutdoors {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Map", systemImage: "map") {
-                            showingMap = true
-                        }
-                    }
-                }
-            }
-            .sheet(isPresented: $showingMap) {
-                MapView()
-            }
         }
     }
 }

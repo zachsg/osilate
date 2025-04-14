@@ -13,6 +13,7 @@ struct SessionPagingView: View {
     @Environment(WorkoutManager.self) private var workoutManager
     
     @State private var selection: Tab = .metrics
+    @State private var showingMap = false
     
     enum Tab {
         case controls, metrics, nowPlaying
@@ -38,6 +39,22 @@ struct SessionPagingView: View {
         .navigationTitle(workoutManager.selectedWorkout?.name ?? "")
         .navigationBarBackButtonHidden()
         .toolbar(selection == .nowPlaying ? .hidden : .visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Image(systemName: workoutManager.selectedWorkout?.systemName() ?? "")
+            }
+            
+            if workoutManager.isOutdoors {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Map", systemImage: "map") {
+                        showingMap = true
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingMap) {
+            MapView()
+        }
         .onChange(of: workoutManager.running) { oldValue, newValue in
             displayMetrics()
         }
