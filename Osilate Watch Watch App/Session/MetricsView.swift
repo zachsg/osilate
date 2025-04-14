@@ -23,45 +23,77 @@ struct MetricsView: View {
                 )
                 .foregroundStyle(.yellow)
                 
-                Text(
-                    Measurement(
-                        value: workoutManager.activeEnergy,
-                        unit: UnitEnergy.kilocalories
-                    )
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .workout,
-                            numberFormatStyle: .number.precision(.fractionLength(0))
+                Label {
+                    Text(
+                        Measurement(
+                            value: workoutManager.activeEnergy,
+                            unit: UnitEnergy.kilocalories
                         )
-                    )
-                )
-                
-                Text(
-                    workoutManager.heartRate
                         .formatted(
-                            .number.precision(.fractionLength(0))
+                            .measurement(
+                                width: .abbreviated,
+                                usage: .workout,
+                                numberFormatStyle: .number.precision(.fractionLength(0))
+                            )
                         )
-                    + " bpm"
-                )
+                    )
+                } icon: {
+                    Image(systemName: "bolt.circle.fill")
+                }
                 
-                Text(
-                    Measurement(
-                        value: workoutManager.distance,
-                        unit: UnitLength.meters
+                Label {
+                    Text(
+                        workoutManager.heartRate
+                            .formatted(
+                                .number.precision(.fractionLength(0))
+                            )
+                        + " bpm"
                     )
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .road,
+                } icon: {
+                    Image(systemName: "heart.circle.fill")
+                }
+                .foregroundStyle(zoneColor())
+                
+                Label {
+                    Text(
+                        Measurement(
+                            value: workoutManager.distance,
+                            unit: UnitLength.meters
+                        )
+                        .formatted(
+                            .measurement(
+                                width: .abbreviated,
+                                usage: .road,
+                            )
                         )
                     )
-                )
+                } icon: {
+                    Image(systemName: "arrow.right.circle.fill")
+                }
             }
             .font(.title.monospacedDigit().lowercaseSmallCaps())
             .frame(maxWidth: .infinity, alignment: .leading)
-            .ignoresSafeArea(edges: .bottom)
             .scenePadding()
+        }
+    }
+    
+    private func zoneColor() -> Color {
+        let zone2Range = Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
+        let zone3Range = Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
+        let zone4Range = Double(hrZone(.four, at: .start))...Double(hrZone(.four, at: .end))
+        let zone5Start = Double(hrZone(.five, at: .start))
+        
+        switch workoutManager.heartRate {
+            case zone2Range:
+            return .yellow
+        case zone3Range:
+            return .orange
+            case zone4Range:
+            return .red
+        case let x where x >= zone5Start:
+            return .purple
+        default:
+            return .green
         }
     }
 }

@@ -12,11 +12,11 @@ struct SessionPagingView: View {
     @Environment(\.isLuminanceReduced) var isLuminanceReduced
     @Environment(WorkoutManager.self) private var workoutManager
     
-    @State private var selection: Tab = .metrics
+    @State private var selection: Tab = .primary
     @State private var showingMap = false
     
     enum Tab {
-        case controls, metrics, nowPlaying
+        case controls, primary, nowPlaying
     }
     
     var body: some View {
@@ -26,10 +26,10 @@ struct SessionPagingView: View {
             }
             .tag(Tab.controls)
             
-            MetricsView().tabItem {
-                Text("Metrics")
+            PrimaryView().tabItem {
+                Text("Primary")
             }
-            .tag(Tab.metrics)
+            .tag(Tab.primary)
             
             NowPlayingView().tabItem {
                 Text("Now Playing")
@@ -41,7 +41,7 @@ struct SessionPagingView: View {
         .toolbar(selection == .nowPlaying ? .hidden : .visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Image(systemName: workoutManager.selectedWorkout?.systemName() ?? "")
+                Image(systemName: workoutManager.selectedWorkout?.systemName(outdoors: workoutManager.isOutdoors) ?? "")
             }
             
             if workoutManager.isOutdoors {
@@ -56,19 +56,19 @@ struct SessionPagingView: View {
             MapView()
         }
         .onChange(of: workoutManager.running) { oldValue, newValue in
-            displayMetrics()
+            displayPrimary()
         }
         .tabViewStyle(
             .page(indexDisplayMode: isLuminanceReduced ? .never : .automatic)
         )
         .onChange(of: isLuminanceReduced) { oldValue, newValue in
-            displayMetrics()
+            displayPrimary()
         }
     }
     
-    private func displayMetrics() {
+    private func displayPrimary() {
         withAnimation {
-            selection = .metrics
+            selection = .primary
         }
     }
 }

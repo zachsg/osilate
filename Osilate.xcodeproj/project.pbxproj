@@ -56,6 +56,26 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		925218A62DADB85900537743 /* Exceptions for "Osilate" folder in "Osilate Watch Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Helpers/Constants.swift,
+				Helpers/Extensions.swift,
+				Models/BodyMetricStatus.swift,
+				Models/O478Breath.swift,
+				Models/OActivity.swift,
+				Models/OBoxBreath.swift,
+				Models/OBreathType.swift,
+				Models/OGender.swift,
+				Models/OMeditate.swift,
+				Models/ORecoveryTrend.swift,
+				Models/ORHRTrend.swift,
+				Models/OTimeOfDay.swift,
+				Models/OZone.swift,
+				Models/VO2.swift,
+			);
+			target = 92C138E22DA991B2007FAC98 /* Osilate Watch Watch App */;
+		};
 		92D7C1C62D7B579000AFA9B2 /* Exceptions for "Osilate" folder in "Osilate" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -75,6 +95,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				92D7C1C62D7B579000AFA9B2 /* Exceptions for "Osilate" folder in "Osilate" target */,
+				925218A62DADB85900537743 /* Exceptions for "Osilate" folder in "Osilate Watch Watch App" target */,
 			);
 			path = Osilate;
 			sourceTree = "<group>";

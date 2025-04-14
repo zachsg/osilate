@@ -47,15 +47,8 @@ class WorkoutManager: NSObject {
         do {
             session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
             builder = session?.associatedWorkoutBuilder()
-            
-            Task {
-                do {
-                    try await session?.startMirroringToCompanionDevice()
-                } catch {
-                    
-                }
-            }
         } catch {
+            print("error...")
             // Handle any exceptions.
             return
         }
@@ -72,6 +65,7 @@ class WorkoutManager: NSObject {
         session?.startActivity(with: startDate)
         builder?.beginCollection(withStart: startDate) { success, error in
             // The workout has started.
+            print("Session started and data collection in progress.")
         }
         
         if isOutdoors {
@@ -81,6 +75,14 @@ class WorkoutManager: NSObject {
                 print("Started updating location for outdoor workout")
             } else {
                 print("Cannot start location updates - authorization not granted")
+            }
+        }
+        
+        Task {
+            do {
+                try await session?.startMirroringToCompanionDevice()
+            } catch {
+                
             }
         }
     }
@@ -157,6 +159,7 @@ class WorkoutManager: NSObject {
     var heartRate: Double = 0
     var activeEnergy: Double = 0
     var distance: Double = 0
+    var elevationGain: Double = 0
     var workout: HKWorkout?
     
     func updateForStatistics(_ statistics: HKStatistics?) {
@@ -200,14 +203,12 @@ class WorkoutManager: NSObject {
 // MARK: - HKWorkoutSessionDelegate
 extension WorkoutManager: HKWorkoutSessionDelegate {
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: any Error) {
-        print("workoutSession: Empty")
     }
     
     func workoutSession(_ workoutSession: HKWorkoutSession,
                         didChangeTo toState: HKWorkoutSessionState,
                         from fromState: HKWorkoutSessionState,
                         date: Date) {
-        print("workoutSession: Full")
         DispatchQueue.main.async {
             self.running = toState == .running
         }
@@ -258,7 +259,6 @@ extension WorkoutManager: CLLocationManagerDelegate {
         
         // Check current status and log it
         let status = locationManager.authorizationStatus
-        print("Current location authorization status: \(status.rawValue)")
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations newLocations: [CLLocation]) {
@@ -269,14 +269,12 @@ extension WorkoutManager: CLLocationManagerDelegate {
             return
         }
         
-        print("Location updated: \(location.coordinate.latitude), \(location.coordinate.longitude)")
         locations.append(location)
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
-            print("Location authorization granted")
             // If a workout is already in progress and outdoors, start updating
             if session != nil && isOutdoors {
                 locationManager.startUpdatingLocation()
