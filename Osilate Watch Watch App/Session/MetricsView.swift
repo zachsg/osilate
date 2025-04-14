@@ -67,7 +67,7 @@ struct MetricsView: View {
             .toolbar {
                 if workoutManager.isOutdoors {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("Map", systemImage: "map.circle") {
+                        Button("Map", systemImage: "map") {
                             showingMap = true
                         }
                     }

@@ -10,8 +10,6 @@ import SwiftUI
 
 struct MapView: View {
     @Environment(WorkoutManager.self) private var workoutManager
-    
-    // A flag to delay map rendering
     @State private var shouldRenderMap = false
     
     var body: some View {
@@ -49,7 +47,6 @@ struct MapView: View {
         }
     }
     
-    // Move map content to a separate view
     struct MapContent: View {
         @Environment(WorkoutManager.self) private var workoutManager
         
@@ -71,7 +68,15 @@ struct MapView: View {
                         .stroke(.blue, lineWidth: 3)
                 }
             }
-            .mapStyle(.standard(pointsOfInterest: [])) // Simplified style
+            .mapStyle(.standard(pointsOfInterest: []))
+            .overlay(alignment: .center) {
+                if workoutManager.locations.isEmpty {
+                    Text("No location data available")
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(8)
+                }
+            }
         }
     }
 }

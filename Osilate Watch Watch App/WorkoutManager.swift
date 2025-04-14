@@ -75,7 +75,13 @@ class WorkoutManager: NSObject {
         }
         
         if isOutdoors {
-            locationManager.startUpdatingLocation()
+            let authStatus = locationManager.authorizationStatus
+            if authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways {
+                locationManager.startUpdatingLocation()
+                print("Started updating location for outdoor workout")
+            } else {
+                print("Cannot start location updates - authorization not granted")
+            }
         }
     }
     
@@ -248,6 +254,29 @@ extension WorkoutManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations newLocations: [CLLocation]) {
         guard let location = newLocations.last else { return }
         
+        // Filter out invalid or old locations
+        if location.horizontalAccuracy < 0 || location.timestamp.timeIntervalSinceNow < -10 {
+            return
+        }
+        
+        print("Location updated: \(location.coordinate.latitude), \(location.coordinate.longitude)")
         locations.append(location)
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            print("Location authorization granted")
+            // If a workout is already in progress and outdoors, start updating
+            if session != nil && isOutdoors {
+                locationManager.startUpdatingLocation()
+            }
+        case .denied, .restricted:
+            print("Location authorization denied")
+        case .notDetermined:
+            print("Location authorization not determined yet")
+        @unknown default:
+            break
+        }
     }
 }
