@@ -15,11 +15,8 @@ struct MapView: View {
     var body: some View {
         ZStack {
             if shouldRenderMap {
-                // Simple map implementation
                 MapContent()
-//                    .edgesIgnoringSafeArea(.all)
             } else {
-                // Loading placeholder
                 ProgressView("Loading Map...")
             }
         }
@@ -56,6 +53,7 @@ struct MapView: View {
         @Environment(WorkoutManager.self) private var workoutManager
         @State private var position: MapCameraPosition = .automatic
         @State private var isUserInteracting = false
+        @State private var userZoomDistance: Double? = nil
         
         var body: some View {
             Map(position: $position, interactionModes: .all) {
@@ -124,6 +122,9 @@ struct MapView: View {
                         isUserInteracting = true
                     }
             )
+            .onChange(of: position) { oldPos, newPos in
+                
+            }
         }
         
         private func setInitialPosition() {
@@ -133,7 +134,7 @@ struct MapView: View {
                 withAnimation {
                     position = .camera(MapCamera(
                         centerCoordinate: location.coordinate,
-                        distance: 300,
+                        distance: userZoomDistance ?? 300,
                         heading: 0,
                         pitch: 0
                     ))
