@@ -74,6 +74,7 @@ struct MetricsView: View {
             .font(.title.monospacedDigit().lowercaseSmallCaps())
             .frame(maxWidth: .infinity, alignment: .leading)
             .scenePadding()
+            .padding(.top, 40)
         }
     }
     

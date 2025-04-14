@@ -160,6 +160,7 @@ class WorkoutManager: NSObject {
     var activeEnergy: Double = 0
     var distance: Double = 0
     var elevationGain: Double = 0
+    var lastElevation: Double?
     var workout: HKWorkout?
     
     func updateForStatistics(_ statistics: HKStatistics?) {
@@ -193,6 +194,8 @@ class WorkoutManager: NSObject {
         heartRate = 0
         distance = 0
         locations = []
+        elevationGain = 0
+        lastElevation = nil
     }
     
     // MARK: - Location
@@ -270,6 +273,16 @@ extension WorkoutManager: CLLocationManagerDelegate {
         }
         
         locations.append(location)
+        
+        let currentElevation = location.altitude
+        if let lastElevation = lastElevation {
+            // Only count positive elevation changes (going up)
+            let elevationChange = currentElevation - lastElevation
+            if elevationChange > 0 {
+                elevationGain += elevationChange
+            }
+        }
+        lastElevation = currentElevation
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

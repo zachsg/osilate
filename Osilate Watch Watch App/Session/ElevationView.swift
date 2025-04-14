@@ -15,13 +15,30 @@ struct ElevationView: View {
             Label {
                 Text(
                     Measurement(
+                        value: workoutManager.lastElevation ?? 0,
+                        unit: UnitLength.meters
+                    )
+                    .formatted(
+                        .measurement(
+                            width: .abbreviated,
+                            usage: .road
+                        )
+                    )
+                )
+            } icon: {
+                Image(systemName: "mountain.2.circle.fill")
+            }
+            
+            Label {
+                Text(
+                    Measurement(
                         value: workoutManager.elevationGain,
                         unit: UnitLength.meters
                     )
                     .formatted(
                         .measurement(
                             width: .abbreviated,
-                            usage: .road,
+                            usage: .road
                         )
                     )
                 )
@@ -29,6 +46,10 @@ struct ElevationView: View {
                 Image(systemName: "arrow.up.circle.fill")
             }
         }
+        .font(.title.monospacedDigit().lowercaseSmallCaps())
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .scenePadding()
+        .padding(.top, 40)
     }
 }
 

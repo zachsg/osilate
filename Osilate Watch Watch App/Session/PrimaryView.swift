@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct PrimaryView: View {
+    @Environment(WorkoutManager.self) private var workoutManager
+    
     @State private var selection: Tab = .metrics
     
     enum Tab {
@@ -21,9 +23,11 @@ struct PrimaryView: View {
             }
             .tag(Tab.metrics)
             
-            Text("Elevation").tabItem {
-                Text("Elevation")
-            }.tag(Tab.elevation)
+            if workoutManager.isOutdoors {
+                ElevationView().tabItem {
+                    Text("Elevation")
+                }.tag(Tab.elevation)
+            }
         }
         .tabViewStyle(.verticalPage)
     }
@@ -31,4 +35,5 @@ struct PrimaryView: View {
 
 #Preview {
     PrimaryView()
+        .environment(WorkoutManager())
 }
