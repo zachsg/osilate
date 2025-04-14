@@ -24,20 +24,24 @@ struct MapView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
-                    // Force refresh
-                    shouldRenderMap = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        shouldRenderMap = true
+            ToolbarItem(placement: .bottomBar) {
+                HStack {
+                    Button(action: {
+                        // Force refresh
+                        shouldRenderMap = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            shouldRenderMap = true
+                        }
+                    }) {
+                        Image(systemName: "arrow.clockwise")
+                            .padding(4)
+                            .background(.regularMaterial)
+                            .clipShape(Circle())
                     }
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                        .padding(4)
-                        .background(.regularMaterial)
-                        .clipShape(Circle())
+                    .buttonStyle(.plain)
+                    
+                    Spacer()
                 }
-                .buttonStyle(.plain)
             }
         }
         .onAppear {
@@ -100,13 +104,13 @@ struct MapView: View {
                 }
             }
             .onAppear {
-                // Start with map locked to user location
+                // Start with map locked to user location and direction
                 setInitialPosition()
             }
-            .onChange(of: workoutManager.locations) { _, newValue in
+            .onChange(of: workoutManager.locations) { _, newLocations in
                 // When location updates, follow the user if not manually panned
-                if !isUserInteracting && !newValue.isEmpty {
-                    followUserLocation(newValue.last!)
+                if !isUserInteracting && newLocations.count >= 2 {
+                    followUserLocationAndDirection(newLocations)
                 }
             }
             // Using gesture to detect user interaction with the map
@@ -119,33 +123,84 @@ struct MapView: View {
         }
         
         private func setInitialPosition() {
-            if let location = workoutManager.locations.last {
-                position = .camera(MapCamera(
-                    centerCoordinate: location.coordinate,
-                    distance: 300,
-                    heading: 0,
-                    pitch: 0
-                ))
+            if workoutManager.locations.count >= 2 {
+                followUserLocationAndDirection(workoutManager.locations)
+            } else if let location = workoutManager.locations.last {
+                withAnimation {
+                    position = .camera(MapCamera(
+                        centerCoordinate: location.coordinate,
+                        distance: 300,
+                        heading: 0,
+                        pitch: 0
+                    ))
+                }
             } else {
                 position = .automatic
             }
         }
         
-        private func followUserLocation(_ location: CLLocation) {
+        private func calculateHeading(from locations: [CLLocation]) -> CLLocationDirection {
+            guard locations.count >= 2 else { return 0 }
+            
+            // Get the last two locations to calculate direction
+            let lastLocation = locations.last!
+            
+            // Find a previous location that's far enough away to calculate a meaningful heading
+            var previousIndex = locations.count - 2
+            var previousLocation = locations[previousIndex]
+            let minimumDistance: CLLocationDistance = 5 // 5 meters minimum for reliable heading
+            
+            // Try to find a previous location that's far enough away
+            while previousIndex > 0 && lastLocation.distance(from: previousLocation) < minimumDistance {
+                previousIndex -= 1
+                previousLocation = locations[previousIndex]
+            }
+            
+            // If we couldn't find a location far enough away, use the most recent previous location
+            if lastLocation.distance(from: previousLocation) < minimumDistance {
+                previousLocation = locations[locations.count - 2]
+            }
+            
+            // Calculate the heading based on the change in coordinates
+            let deltaLat = lastLocation.coordinate.latitude - previousLocation.coordinate.latitude
+            let deltaLong = lastLocation.coordinate.longitude - previousLocation.coordinate.longitude
+            
+            // Convert to heading in degrees (0° is North, 90° is East)
+            let heading = atan2(deltaLong, deltaLat) * 180 / .pi
+            
+            // Normalize to 0-360 range
+            return heading >= 0 ? heading : heading + 360
+        }
+        
+        private func followUserLocationAndDirection(_ locations: [CLLocation]) {
+            guard let lastLocation = locations.last else { return }
+            
+            // Calculate the heading from the recent locations
+            let heading = calculateHeading(from: locations)
+            
+            // Update the map camera position with the current location and heading
             withAnimation {
                 position = .camera(MapCamera(
-                    centerCoordinate: location.coordinate,
+                    centerCoordinate: lastLocation.coordinate,
                     distance: 300,
-                    heading: 0,
+                    heading: heading,
                     pitch: 0
                 ))
             }
         }
         
         private func recenterMap() {
-            if let location = workoutManager.locations.last {
-                isUserInteracting = false // Re-enable auto-follow
-                followUserLocation(location)
+            isUserInteracting = false // Re-enable auto-follow
+            
+            if workoutManager.locations.count >= 2 {
+                followUserLocationAndDirection(workoutManager.locations)
+            } else if let location = workoutManager.locations.last {
+                position = .camera(MapCamera(
+                    centerCoordinate: location.coordinate,
+                    distance: 300,
+                    heading: 0,
+                    pitch: 0
+                ))
             }
         }
     }
