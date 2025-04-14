@@ -17,7 +17,7 @@ struct MapView: View {
             if shouldRenderMap {
                 // Simple map implementation
                 MapContent()
-                    .edgesIgnoringSafeArea(.all)
+//                    .edgesIgnoringSafeArea(.all)
             } else {
                 // Loading placeholder
                 ProgressView("Loading Map...")
@@ -78,6 +78,10 @@ struct MapView: View {
                 }
             }
             .mapStyle(.standard(pointsOfInterest: []))
+            .mapControls {
+                MapCompass()
+                    .mapControlVisibility(.visible)
+            }
             .overlay(alignment: .center) {
                 if workoutManager.locations.isEmpty {
                     Text("No location data available")
