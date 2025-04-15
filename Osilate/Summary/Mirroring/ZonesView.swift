@@ -56,7 +56,7 @@ struct ZonesView: View {
     }
 
     var body: some View {
-        TimelineView(.periodic(from: Date(), by: 1.0)) { timeline in
+        TimelineView(.animation) { timeline in
             ZStack {
                 healthController.heartRate.zoneColor().opacity(0.2)
                     .ignoresSafeArea()
