@@ -41,7 +41,7 @@ struct HeartPulse: View {
             Text(Int(workoutManager.heartRate), format: .number)
         }
         .font(.caption2.bold())
-        .padding(.trailing, 8)
+        .padding(.trailing, 4)
         .onAppear {
             isAnimating = true
         }
@@ -61,7 +61,7 @@ struct ZonesView: View {
                 workoutManager.heartRate.zoneColor().opacity(0.2)
                 
                 GeometryReader { geometry in
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 2) {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 2)
                                 .foregroundStyle(.green.opacity(0.7))
@@ -187,7 +187,7 @@ struct ZonesView: View {
         let totalTime = workoutManager.timeInZones.values.reduce(0, +)
         guard totalTime > 0 else { return 0 }
         
-        return (workoutManager.timeInZones[zone] ?? 0) / totalTime * 0.95
+        return (workoutManager.timeInZones[zone] ?? 0) / totalTime * 0.88
     }
     
     // Format time interval as MM:SS

@@ -207,6 +207,7 @@ class HealthController {
     
     // MARK: - Mirroring
     var isMirroring = false
+    private var updateTimer: Timer?
     
     var activeEnergy: Double = 0
     var distance: Double = 0
@@ -223,9 +224,27 @@ class HealthController {
             }
             self.workoutConfig = mirroredSession.workoutConfiguration
             
-            let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
-            self.updateForStatistics(heartRates)
+            // Set up a timer to continuously update statistics
+            self.updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+                guard let self = self else { return }
+                
+                // Request updated statistics for each metric
+                let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
+                let energy = mirroredSession.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
+                let distance = mirroredSession.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
+                
+                // Update UI with new stats
+                self.updateForStatistics(heartRates)
+                self.updateForStatistics(energy)
+                self.updateForStatistics(distance)
+            }
         }
+    }
+    
+    func stopMirroring() {
+        updateTimer?.invalidate()
+        updateTimer = nil
+        isMirroring = false
     }
     
     private func updateForStatistics(_ statistics: HKStatistics?) {
