@@ -271,6 +271,8 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
     
     if startOrEnd == .start {
         return switch zone {
+        case .one:
+            0
         case .two:
             Int((Double(maxHr) * 0.6).rounded())
         case .three:
@@ -282,6 +284,8 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
         }
     } else {
         return switch zone {
+        case .one:
+            Int((Double(maxHr) * 0.6).rounded()) - 1
         case .two:
             Int((Double(maxHr) * 0.7).rounded()) - 1
         case .three:
@@ -295,6 +299,41 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
 }
 
 extension Double {
+    func zoneRange(for zone: OZone) -> ClosedRange<Double> {
+        switch zone {
+        case .one:
+            return Double(hrZone(.one, at: .start))...Double(hrZone(.one, at: .end))
+        case .two:
+            return Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
+        case .three:
+            return Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
+        case .four:
+            return Double(hrZone(.four, at: .start))...Double(hrZone(.four, at: .end))
+        case .five:
+            return Double(hrZone(.five, at: .start))...300
+        }
+    }
+    
+    func zone() -> OZone {
+        let zone2Range = Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
+        let zone3Range = Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
+        let zone4Range = Double(hrZone(.four, at: .start))...Double(hrZone(.four, at: .end))
+        let zone5Start = Double(hrZone(.five, at: .start))
+        
+        switch self {
+            case zone2Range:
+            return .two
+        case zone3Range:
+            return .three
+            case zone4Range:
+            return .four
+        case let x where x >= zone5Start:
+            return .five
+        default:
+            return .one
+        }
+    }
+    
     func zoneColor() -> Color {
         let zone2Range = Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
         let zone3Range = Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
