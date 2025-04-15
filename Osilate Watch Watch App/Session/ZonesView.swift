@@ -9,12 +9,6 @@ import SwiftUI
 
 struct ZonesView: View {
     @Environment(WorkoutManager.self) private var workoutManager
-    
-    @State private var zone1Percent = 1.0
-    @State private var zone2Percent = 0.3
-    @State private var zone3Percent = 0.0
-    @State private var zone4Percent = 0.0
-    @State private var zone5Percent = 0.0
 
     var body: some View {
         ZStack {
@@ -25,10 +19,10 @@ struct ZonesView: View {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .foregroundStyle(.green.opacity(0.7))
-                            .frame(width: geometry.size.width * zone1Percent, height: 34)
+                            .frame(width: geometry.size.width * zonePercentage(.one), height: 34)
                         
                         Label {
-                            Text("03:15")
+                            Text(formatTimeInterval(workoutManager.timeInZones[.one] ?? 0))
                         } icon: {
                             Image(systemName: "1.circle")
                         }
@@ -37,10 +31,10 @@ struct ZonesView: View {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .foregroundStyle(.yellow.opacity(0.7))
-                            .frame(width: geometry.size.width * zone2Percent, height: 34)
+                            .frame(width: geometry.size.width * zonePercentage(.two), height: 34)
                         
                         Label {
-                            Text("03:15")
+                            Text(formatTimeInterval(workoutManager.timeInZones[.two] ?? 0))
                         } icon: {
                             Image(systemName: "2.circle")
                         }
@@ -49,10 +43,10 @@ struct ZonesView: View {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .foregroundStyle(.orange.opacity(0.7))
-                            .frame(width: geometry.size.width * zone3Percent, height: 34)
+                            .frame(width: geometry.size.width * zonePercentage(.three), height: 34)
                         
                         Label {
-                            Text("03:15")
+                            Text(formatTimeInterval(workoutManager.timeInZones[.three] ?? 0))
                         } icon: {
                             Image(systemName: "3.circle")
                         }
@@ -61,10 +55,10 @@ struct ZonesView: View {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .foregroundStyle(.red.opacity(0.7))
-                            .frame(width: geometry.size.width * zone4Percent, height: 34)
+                            .frame(width: geometry.size.width * zonePercentage(.four), height: 34)
                         
                         Label {
-                            Text("03:15")
+                            Text(formatTimeInterval(workoutManager.timeInZones[.four] ?? 0))
                         } icon: {
                             Image(systemName: "4.circle")
                         }
@@ -73,10 +67,10 @@ struct ZonesView: View {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .foregroundStyle(.purple.opacity(0.7))
-                            .frame(width: geometry.size.width * zone5Percent, height: 34)
+                            .frame(width: geometry.size.width * zonePercentage(.five), height: 34)
                         
                         Label {
-                            Text("03:15")
+                            Text(formatTimeInterval(workoutManager.timeInZones[.five] ?? 0))
                         } icon: {
                             Image(systemName: "5.circle")
                         }
@@ -89,6 +83,21 @@ struct ZonesView: View {
             }
         }
         .ignoresSafeArea()
+    }
+    
+    // Helper function to calculate the percentage width for each zone
+    private func zonePercentage(_ zone: OZone) -> Double {
+        let totalTime = workoutManager.timeInZones.values.reduce(0, +)
+        guard totalTime > 0 else { return 0 }
+        
+        return (workoutManager.timeInZones[zone] ?? 0) / totalTime
+    }
+    
+    // Format time interval as MM:SS
+    private func formatTimeInterval(_ interval: TimeInterval) -> String {
+        let minutes = Int(interval) / 60
+        let seconds = Int(interval) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 

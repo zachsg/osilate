@@ -143,6 +143,8 @@ class WorkoutManager: NSObject {
     }
     
     // MARK: - Workout Metrics
+    var heartRateSamples: [(timestamp: Date, value: Double)] = []
+    var timeInZones: [OZone: TimeInterval] = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
     var averageHeartRate: Double = 0
     var heartRate: Double = 0
     var activeEnergy: Double = 0
@@ -163,7 +165,15 @@ class WorkoutManager: NSObject {
             switch statistics.quantityType {
             case HKQuantityType.quantityType(forIdentifier: .heartRate):
                 let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
-                self.heartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+                let newHeartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+                
+                // If we have a valid heart rate reading, store it with timestamp
+                if newHeartRate > 0 {
+                    self.heartRate = newHeartRate
+                    self.heartRateSamples.append((timestamp: Date(), value: newHeartRate))
+                    self.updateTimeInZones()
+                }
+                
                 self.averageHeartRate = statistics.averageQuantity()?.doubleValue(for: heartRateUnit) ?? 0
             case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
                 let energyUnit = HKUnit.kilocalorie()
@@ -177,12 +187,38 @@ class WorkoutManager: NSObject {
         }
     }
     
+    private func updateTimeInZones() {
+        guard heartRateSamples.count > 1 else { return }
+        
+        // Reset timeInZones
+        timeInZones = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+        
+        // Calculate time spent in each zone
+        for i in 1..<heartRateSamples.count {
+            let prevSample = heartRateSamples[i-1]
+            let currentSample = heartRateSamples[i]
+            
+            // Calculate time difference between samples
+            let timeInterval = currentSample.timestamp.timeIntervalSince(prevSample.timestamp)
+            
+            // Determine zone for the heart rate value
+            let zone = prevSample.value.zone()
+            
+            // Add the time to the appropriate zone
+            if let currentTime = timeInZones[zone] {
+                timeInZones[zone] = currentTime + timeInterval
+            }
+        }
+    }
+    
     func resetWorkout() {
         selectedWorkout = nil
         builder = nil
         session = nil
         workout = nil
         activeEnergy = 0
+        heartRateSamples = []
+        timeInZones = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
         averageHeartRate = 0
         heartRate = 0
         distance = 0
