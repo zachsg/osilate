@@ -169,6 +169,7 @@ class HealthController {
             HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
             HKObjectType.quantityType(forIdentifier: .heartRateRecoveryOneMinute)!,
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
+            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
             HKObjectType.quantityType(forIdentifier: .vo2Max)!,
             HKObjectType.categoryType(forIdentifier: .mindfulSession)!,
             HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
