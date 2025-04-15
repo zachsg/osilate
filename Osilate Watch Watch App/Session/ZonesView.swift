@@ -7,8 +7,53 @@
 
 import SwiftUI
 
+struct ZoneBorder: View {
+    @Environment(WorkoutManager.self) private var workoutManager
+    
+    var zone: OZone
+    
+    var currentZone: OZone {
+        workoutManager.heartRate.zone()
+    }
+    
+    var body: some View {
+        if currentZone == zone {
+            RoundedRectangle(cornerRadius: 2)
+                .stroke(.white, lineWidth: 2)
+        }
+    }
+}
+
+struct HeartPulse: View {
+    @Environment(WorkoutManager.self) private var workoutManager
+    
+    @State private var isAnimating = false
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "heart.fill")
+                .scaleEffect(isAnimating ? 1.2 : 1.0)
+                .animation(
+                    .easeInOut(duration: 0.5)
+                    .repeatForever(autoreverses: true),
+                    value: isAnimating
+                )
+            Text(Int(workoutManager.heartRate), format: .number)
+        }
+        .font(.caption2.bold())
+        .padding(.trailing, 2)
+        .onAppear {
+            isAnimating = true
+        }
+    }
+}
+
 struct ZonesView: View {
     @Environment(WorkoutManager.self) private var workoutManager
+    
+    var zone: OZone {
+        workoutManager.heartRate.zone()
+    }
 
     var body: some View {
         TimelineView(.periodic(from: Date(), by: 1.0)) { timeline in
@@ -18,63 +63,113 @@ struct ZonesView: View {
                 GeometryReader { geometry in
                     VStack(alignment: .leading, spacing: 0) {
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: 2)
                                 .foregroundStyle(.green.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.one), height: 28)
+                                .overlay {
+                                    ZoneBorder(zone: .one)
+                                }
                             
                             Label {
-                                Text(formatTimeInterval(workoutManager.timeInZones[.one] ?? 0))
+                                HStack {
+                                    Text(formatTimeInterval(workoutManager.timeInZones[.one] ?? 0))
+                                    Spacer()
+                                    if zone == .one {
+                                        HeartPulse()
+                                    }
+                                }
                             } icon: {
                                 Image(systemName: "1.circle")
                             }
+                            .padding(.leading, 2)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.yellow.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.two), height: 28)
+                                .overlay {
+                                    ZoneBorder(zone: .two)
+                                }
                             
                             Label {
-                                Text(formatTimeInterval(workoutManager.timeInZones[.two] ?? 0))
+                                HStack {
+                                    Text(formatTimeInterval(workoutManager.timeInZones[.two] ?? 0))
+                                    Spacer()
+                                    if zone == .two {
+                                        HeartPulse()
+                                    }
+                                }
                             } icon: {
                                 Image(systemName: "2.circle")
                             }
+                            .padding(.leading, 2)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.orange.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.three), height: 28)
+                                .overlay {
+                                    ZoneBorder(zone: .three)
+                                }
                             
                             Label {
-                                Text(formatTimeInterval(workoutManager.timeInZones[.three] ?? 0))
+                                HStack {
+                                    Text(formatTimeInterval(workoutManager.timeInZones[.three] ?? 0))
+                                    Spacer()
+                                    if zone == .three {
+                                        HeartPulse()
+                                    }
+                                }
                             } icon: {
                                 Image(systemName: "3.circle")
                             }
+                            .padding(.leading, 2)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.red.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.four), height: 28)
+                                .overlay {
+                                    ZoneBorder(zone: .four)
+                                }
                             
                             Label {
-                                Text(formatTimeInterval(workoutManager.timeInZones[.four] ?? 0))
+                                HStack {
+                                    Text(formatTimeInterval(workoutManager.timeInZones[.four] ?? 0))
+                                    Spacer()
+                                    if zone == .four {
+                                        HeartPulse()
+                                    }
+                                }
                             } icon: {
                                 Image(systemName: "4.circle")
                             }
+                            .padding(.leading, 2)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.purple.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.five), height: 28)
+                                .overlay {
+                                    ZoneBorder(zone: .five)
+                                }
                             
                             Label {
-                                Text(formatTimeInterval(workoutManager.timeInZones[.five] ?? 0))
+                                HStack {
+                                    Text(formatTimeInterval(workoutManager.timeInZones[.five] ?? 0))
+                                    Spacer()
+                                    if zone == .five {
+                                        HeartPulse()
+                                    }
+                                }
                             } icon: {
                                 Image(systemName: "5.circle")
                             }
+                            .padding(.leading, 2)
                         }
                     }
                     .font(.title3.monospacedDigit().lowercaseSmallCaps())
@@ -92,7 +187,7 @@ struct ZonesView: View {
         let totalTime = workoutManager.timeInZones.values.reduce(0, +)
         guard totalTime > 0 else { return 0 }
         
-        return (workoutManager.timeInZones[zone] ?? 0) / totalTime
+        return (workoutManager.timeInZones[zone] ?? 0) / totalTime * 0.95
     }
     
     // Format time interval as MM:SS
