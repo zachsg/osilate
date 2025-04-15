@@ -10,7 +10,7 @@ import HealthKit
 import SwiftUI
 
 @Observable
-class HealthController {
+class HealthController: NSObject {
     var healthStore = HKHealthStore()
     
     // Steps
@@ -157,7 +157,9 @@ class HealthController {
     var sleepMeasuredBottom: Double = 0.0
     var sleepStatus: BodyMetricStatus = .normal
     
+    override
     init() {
+        super.init()
         requestAuthorization()
     }
     
@@ -208,7 +210,7 @@ class HealthController {
     
     // MARK: - Mirroring
     var isMirroring = false
-    private var updateTimer: Timer?
+    var mirroredSession: HKWorkoutSession?
     
     var activeEnergy: Double = 0
     var distance: Double = 0
@@ -216,98 +218,17 @@ class HealthController {
     var timeInZones: [OZone: TimeInterval] = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
     var averageHeartRate: Double = 0
     var heartRate: Double = 0
-    var workoutConfig: HKWorkoutConfiguration?
     
     func startMirroring() {
         healthStore.workoutSessionMirroringStartHandler = { mirroredSession in
             DispatchQueue.main.async {
                 self.isMirroring = true
             }
-            self.workoutConfig = mirroredSession.workoutConfiguration
             
-            print("Going to start mirroring loop")
-            
-            DispatchQueue.main.async {
-                print("Creating timer on main thread")
-                self.updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-                    print("Timer fired!")
-                    guard let self = self else { return }
-                    
-                    // Request updated statistics for each metric
-                    let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
-                    let energy = mirroredSession.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
-                    let distance = mirroredSession.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
-                    
-                    print("Getting statistics")
-                    
-                    // Update UI with new stats
-                    self.updateForStatistics(heartRates)
-                    self.updateForStatistics(energy)
-                    self.updateForStatistics(distance)
-                }
-                print("Timer created: \(self.updateTimer != nil)")
-                
-                // Make sure the timer is added to the current run loop
-                RunLoop.current.add(self.updateTimer!, forMode: .common)
-            }
-            
-            // Set up a timer to continuously update statistics
-//            self.updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-//                print("inside mirroring loop")
-//
-//                guard let self = self else { return }
-//                
-//                // Request updated statistics for each metric
-//                let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
-//                let energy = mirroredSession.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
-//                let distance = mirroredSession.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
-//                
-//                // Update UI with new stats
-//                self.updateForStatistics(heartRates)
-//                self.updateForStatistics(energy)
-//                self.updateForStatistics(distance)
-//                
-//                print("mirroring")
-//            }
-        }
-    }
-    
-    func stopMirroring() {
-        updateTimer?.invalidate()
-        updateTimer = nil
-        isMirroring = false
-    }
-    
-    private func updateForStatistics(_ statistics: HKStatistics?) {
-        print("Doing the stats")
-        guard let statistics = statistics else { return }
-        
-        print("Put the stats on the main thread")
-        DispatchQueue.main.async {
-            switch statistics.quantityType {
-            case HKQuantityType.quantityType(forIdentifier: .heartRate):
-                let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
-                let newHeartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
-                
-                // If we have a valid heart rate reading, store it with timestamp
-                print("Updating heart rate")
-                if newHeartRate > 0 {
-                    self.heartRate = newHeartRate
-                    self.heartRateSamples.append((timestamp: Date(), value: newHeartRate))
-                    self.updateTimeInZones()
-                    print("Heart rate updated")
-                }
-                
-                self.averageHeartRate = statistics.averageQuantity()?.doubleValue(for: heartRateUnit) ?? 0
-            case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
-                let energyUnit = HKUnit.kilocalorie()
-                self.activeEnergy = statistics.sumQuantity()?.doubleValue(for: energyUnit) ?? 0
-            case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning), HKQuantityType.quantityType(forIdentifier: .distanceCycling):
-                let meterUnit = HKUnit.meter()
-                self.distance = statistics.sumQuantity()?.doubleValue(for: meterUnit) ?? 0
-            default:
-                return
-            }
+            print("setting mirrored session")
+            self.mirroredSession = mirroredSession
+            self.mirroredSession?.delegate = self
+            print("mirrored session delegate set up")
         }
     }
     
@@ -2470,4 +2391,57 @@ class HealthController {
         
         return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
     }
+}
+
+extension HealthController: HKWorkoutSessionDelegate {
+    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        let heartRates = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.heartRate))
+        let energy = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
+        let distance = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
+        
+        print("Getting statistics")
+        
+        self.updateForStatistics(heartRates)
+        self.updateForStatistics(energy)
+        self.updateForStatistics(distance)
+    }
+    
+    private func updateForStatistics(_ statistics: HKStatistics?) {
+        print("Doing the stats")
+        guard let statistics = statistics else { return }
+        
+        print("Put the stats on the main thread")
+        DispatchQueue.main.async {
+            switch statistics.quantityType {
+            case HKQuantityType.quantityType(forIdentifier: .heartRate):
+                let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
+                let newHeartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+                
+                // If we have a valid heart rate reading, store it with timestamp
+                print("Updating heart rate")
+                if newHeartRate > 0 {
+                    self.heartRate = newHeartRate
+                    self.heartRateSamples.append((timestamp: Date(), value: newHeartRate))
+                    self.updateTimeInZones()
+                    print("Heart rate updated")
+                }
+                
+                self.averageHeartRate = statistics.averageQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+            case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
+                let energyUnit = HKUnit.kilocalorie()
+                self.activeEnergy = statistics.sumQuantity()?.doubleValue(for: energyUnit) ?? 0
+            case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning), HKQuantityType.quantityType(forIdentifier: .distanceCycling):
+                let meterUnit = HKUnit.meter()
+                self.distance = statistics.sumQuantity()?.doubleValue(for: meterUnit) ?? 0
+            default:
+                return
+            }
+        }
+    }
+    
+    func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: any Error) {
+        print("Mirror session data error: \(error.localizedDescription)")
+    }
+    
+    
 }

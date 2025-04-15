@@ -29,7 +29,7 @@ struct MirroringSheet: View {
                         }
                     }
                 }
-                .navigationTitle(healthController.workoutConfig?.description ?? "Working Out")
+                .navigationTitle("Working Out")
         }
     }
 }
