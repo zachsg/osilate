@@ -147,7 +147,10 @@ class WorkoutManager: NSObject {
     var heartRate: Double = 0
     var activeEnergy: Double = 0
     var distance: Double = 0
+    var elevationStart: Double = 0
     var elevationGain: Double = 0
+    var elevationLost: Double = 0
+    var relativeElevationChange: Double = 0
     var lastElevation: Double?
     var workout: HKWorkout?
     
@@ -182,7 +185,10 @@ class WorkoutManager: NSObject {
         heartRate = 0
         distance = 0
         locations = []
+        elevationStart = 0
         elevationGain = 0
+        elevationLost = 0
+        relativeElevationChange = 0
         lastElevation = nil
     }
     
@@ -238,7 +244,8 @@ extension WorkoutManager: HKWorkoutSessionDelegate {
             }
             
             // Finish and save route
-            routeBuilder.finishRoute(with: workout, metadata: nil) { route, error in
+            let metadata: [String: Any] = [HKMetadataKeyWasUserEntered: false]
+            routeBuilder.finishRoute(with: workout, metadata: metadata) { route, error in
                 if let error = error {
                     print("Error saving route: \(error.localizedDescription)")
                 } else {
@@ -274,7 +281,8 @@ extension WorkoutManager: CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.activityType = .fitness
-        locationManager.distanceFilter = 10
+        locationManager.distanceFilter = 2
+        locationManager.allowsBackgroundLocationUpdates = true
         
         // Force the permission dialog to appear immediately
         DispatchQueue.main.async {
@@ -282,26 +290,34 @@ extension WorkoutManager: CLLocationManagerDelegate {
         }
         
         // Check current status and log it
-        let status = locationManager.authorizationStatus
+        let _ = locationManager.authorizationStatus
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations newLocations: [CLLocation]) {
         guard let location = newLocations.last else { return }
         
         // Filter out invalid or old locations
-        if location.horizontalAccuracy < 0 || location.horizontalAccuracy > 20 || location.timestamp.timeIntervalSinceNow < -10 {
+        if location.horizontalAccuracy < 0 || location.horizontalAccuracy > 30 || location.timestamp.timeIntervalSinceNow < -30 {
             print("Skipping low quality location: accuracy \(location.horizontalAccuracy)m")
             return
         }
         
         locations.append(location)
         
-        // Calculate elevation gain if needed
+        if elevationStart == 0 {
+            elevationStart = location.altitude
+        }
+        
+        // Calculate elevation gain
         if let lastLocation = locations.dropLast().last {
             let elevationChange = location.altitude - lastLocation.altitude
-            if elevationChange > 0 {
+            if elevationChange > 0 && elevationChange < 200 {
                 elevationGain += elevationChange
+            } else if elevationChange < 0 && elevationChange > -200 {
+                elevationLost -= abs(elevationChange)
             }
+            
+            relativeElevationChange = elevationStart - location.altitude
             
             lastElevation = lastLocation.altitude
         }
