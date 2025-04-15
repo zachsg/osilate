@@ -71,7 +71,7 @@ struct MetricsView: View {
                     Image(systemName: "arrow.right.circle.fill")
                 }
             }
-            .font(.title.monospacedDigit().lowercaseSmallCaps())
+            .font(.title2.monospacedDigit().lowercaseSmallCaps())
             .frame(maxWidth: .infinity, alignment: .leading)
             .scenePadding()
             .padding(.top, 40)

@@ -147,7 +147,9 @@ class WorkoutManager: NSObject {
     var heartRate: Double = 0
     var activeEnergy: Double = 0
     var distance: Double = 0
-    var elevationStart: Double = 0
+    private var initialElevationReadings: [Double] = []
+    private let requiredInitialReadings = 3  // Number of readings to collect before setting elevationStart
+    var elevationStart: Double = -1
     var elevationGain: Double = 0
     var elevationLost: Double = 0
     var relativeElevationChange: Double = 0
@@ -185,7 +187,8 @@ class WorkoutManager: NSObject {
         heartRate = 0
         distance = 0
         locations = []
-        elevationStart = 0
+        initialElevationReadings = []
+        elevationStart = -1
         elevationGain = 0
         elevationLost = 0
         relativeElevationChange = 0
@@ -304,20 +307,37 @@ extension WorkoutManager: CLLocationManagerDelegate {
         
         locations.append(location)
         
-        if elevationStart == 0 {
-            elevationStart = location.altitude
+        // Collect initial elevation readings
+        if elevationStart == -1 {
+            // Only collect readings when horizontal accuracy is good
+            if location.horizontalAccuracy < 20 && location.verticalAccuracy < 20 {
+                initialElevationReadings.append(location.altitude)
+                print("Initial elevation reading: \(location.altitude)m (accuracy: \(location.verticalAccuracy)m)")
+                
+                // Once we have enough readings, set the elevation start to the median value
+                if initialElevationReadings.count >= requiredInitialReadings {
+                    // Sort readings and take the middle one (median)
+                    let sortedReadings = initialElevationReadings.sorted()
+                    let medianIndex = sortedReadings.count / 2
+                    elevationStart = sortedReadings[medianIndex]
+                    print("Set initial elevation to \(elevationStart)m (median of \(initialElevationReadings.count) readings)")
+                }
+            }
         }
         
-        // Calculate elevation gain
-        if let lastLocation = locations.dropLast().last {
+        // Calculate elevation changes only after we have a stable starting point
+        if let lastLocation = locations.dropLast().last, elevationStart != 0 {
             let elevationChange = location.altitude - lastLocation.altitude
-            if elevationChange > 0 && elevationChange < 200 {
+            
+            // Filter out unreasonable elevation changes (usually GPS errors)
+            if elevationChange > 0 && elevationChange < 20 {  // Reduced from 200m to 20m for more reasonable filtering
                 elevationGain += elevationChange
-            } else if elevationChange < 0 && elevationChange > -200 {
-                elevationLost -= abs(elevationChange)
+            } else if elevationChange < 0 && elevationChange > -20 {  // Reduced from -200m to -20m
+                elevationLost += abs(elevationChange)  // Changed to += to accumulate as positive number
             }
             
-            relativeElevationChange = elevationStart - location.altitude
+            // Fix sign of relative elevation change (positive means you've climbed)
+            relativeElevationChange = location.altitude - elevationStart
             
             lastElevation = lastLocation.altitude
         }

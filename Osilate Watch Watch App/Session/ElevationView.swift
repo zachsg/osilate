@@ -26,7 +26,8 @@ struct ElevationView: View {
                     )
                 )
             } icon: {
-                Image(systemName: "mountain.2.circle.fill")
+                Text("   Elev.   ")
+                    .font(.caption2)
             }
             
             Label {
@@ -43,10 +44,47 @@ struct ElevationView: View {
                     )
                 )
             } icon: {
-                Image(systemName: "arrow.up.circle.fill")
+                Text("   Gain   ")
+                    .font(.caption2)
+            }
+            
+            Label {
+                Text(
+                    Measurement(
+                        value: -workoutManager.elevationLost,
+                        unit: UnitLength.meters
+                    )
+                    .formatted(
+                        .measurement(
+                            width: .abbreviated,
+                            usage: .road
+                        )
+                    )
+                )
+            } icon: {
+                Text("   Loss   ")
+                    .font(.caption2)
+            }
+            
+            Label {
+                Text(
+                    Measurement(
+                        value: workoutManager.relativeElevationChange,
+                        unit: UnitLength.meters
+                    )
+                    .formatted(
+                        .measurement(
+                            width: .abbreviated,
+                            usage: .road
+                        )
+                    )
+                )
+            } icon: {
+                Text("Change")
+                    .font(.caption2)
             }
         }
-        .font(.title.monospacedDigit().lowercaseSmallCaps())
+        .font(.title2.monospacedDigit().lowercaseSmallCaps())
         .frame(maxWidth: .infinity, alignment: .leading)
         .scenePadding()
         .padding(.top, 40)
