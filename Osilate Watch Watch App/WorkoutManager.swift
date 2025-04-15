@@ -82,7 +82,7 @@ class WorkoutManager: NSObject {
             do {
                 try await session?.startMirroringToCompanionDevice()
             } catch {
-                
+                print("Failed to start mirroring on companion device: \(error.localizedDescription)")
             }
         }
     }

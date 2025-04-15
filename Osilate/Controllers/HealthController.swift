@@ -223,12 +223,12 @@ class HealthController: NSObject {
         healthStore.workoutSessionMirroringStartHandler = { mirroredSession in
             DispatchQueue.main.async {
                 self.isMirroring = true
+                
+                print("setting mirrored session")
+                self.mirroredSession = mirroredSession
+                self.mirroredSession?.delegate = self
+                print("mirrored session delegate set up")
             }
-            
-            print("setting mirrored session")
-            self.mirroredSession = mirroredSession
-            self.mirroredSession?.delegate = self
-            print("mirrored session delegate set up")
         }
     }
     
@@ -2395,6 +2395,8 @@ class HealthController: NSObject {
 
 extension HealthController: HKWorkoutSessionDelegate {
     func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        print("Getting statistics")
+        
         let heartRates = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.heartRate))
         let energy = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
         let distance = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
@@ -2404,6 +2406,10 @@ extension HealthController: HKWorkoutSessionDelegate {
         self.updateForStatistics(heartRates)
         self.updateForStatistics(energy)
         self.updateForStatistics(distance)
+    }
+    
+    func workoutSession(_ workoutSession: HKWorkoutSession, didReceiveDataFromRemoteDevice data: Data) {
+        print("Remote data received...")
     }
     
     private func updateForStatistics(_ statistics: HKStatistics?) {
@@ -2442,6 +2448,4 @@ extension HealthController: HKWorkoutSessionDelegate {
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: any Error) {
         print("Mirror session data error: \(error.localizedDescription)")
     }
-    
-    
 }
