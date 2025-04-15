@@ -7,23 +7,6 @@
 
 import SwiftUI
 
-struct ZoneBorder: View {
-    @Environment(HealthController.self) private var healthController
-    
-    var zone: OZone
-    
-    var currentZone: OZone {
-        healthController.heartRate.zone()
-    }
-    
-    var body: some View {
-        if currentZone == zone {
-            RoundedRectangle(cornerRadius: 2)
-                .stroke(.white, lineWidth: 4)
-        }
-    }
-}
-
 struct HeartPulse: View {
     @Environment(HealthController.self) private var healthController
     
@@ -67,9 +50,6 @@ struct ZonesView: View {
                             RoundedRectangle(cornerRadius: 2)
                                 .foregroundStyle(.green.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.one), height: 50)
-                                .overlay {
-                                    ZoneBorder(zone: .one)
-                                }
                             
                             Label {
                                 HStack {
@@ -89,9 +69,6 @@ struct ZonesView: View {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.yellow.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.two), height: 50)
-                                .overlay {
-                                    ZoneBorder(zone: .two)
-                                }
                             
                             Label {
                                 HStack {
@@ -111,9 +88,6 @@ struct ZonesView: View {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.orange.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.three), height: 50)
-                                .overlay {
-                                    ZoneBorder(zone: .three)
-                                }
                             
                             Label {
                                 HStack {
@@ -133,9 +107,6 @@ struct ZonesView: View {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.red.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.four), height: 50)
-                                .overlay {
-                                    ZoneBorder(zone: .four)
-                                }
                             
                             Label {
                                 HStack {
@@ -155,9 +126,6 @@ struct ZonesView: View {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.purple.opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.five), height: 50)
-                                .overlay {
-                                    ZoneBorder(zone: .five)
-                                }
                             
                             Label {
                                 HStack {

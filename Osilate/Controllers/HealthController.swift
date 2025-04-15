@@ -224,20 +224,50 @@ class HealthController {
             }
             self.workoutConfig = mirroredSession.workoutConfiguration
             
-            // Set up a timer to continuously update statistics
-            self.updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-                guard let self = self else { return }
+            print("Going to start mirroring loop")
+            
+            DispatchQueue.main.async {
+                print("Creating timer on main thread")
+                self.updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+                    print("Timer fired!")
+                    guard let self = self else { return }
+                    
+                    // Request updated statistics for each metric
+                    let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
+                    let energy = mirroredSession.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
+                    let distance = mirroredSession.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
+                    
+                    print("Getting statistics")
+                    
+                    // Update UI with new stats
+                    self.updateForStatistics(heartRates)
+                    self.updateForStatistics(energy)
+                    self.updateForStatistics(distance)
+                }
+                print("Timer created: \(self.updateTimer != nil)")
                 
-                // Request updated statistics for each metric
-                let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
-                let energy = mirroredSession.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
-                let distance = mirroredSession.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
-                
-                // Update UI with new stats
-                self.updateForStatistics(heartRates)
-                self.updateForStatistics(energy)
-                self.updateForStatistics(distance)
+                // Make sure the timer is added to the current run loop
+                RunLoop.current.add(self.updateTimer!, forMode: .common)
             }
+            
+            // Set up a timer to continuously update statistics
+//            self.updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+//                print("inside mirroring loop")
+//
+//                guard let self = self else { return }
+//                
+//                // Request updated statistics for each metric
+//                let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
+//                let energy = mirroredSession.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
+//                let distance = mirroredSession.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
+//                
+//                // Update UI with new stats
+//                self.updateForStatistics(heartRates)
+//                self.updateForStatistics(energy)
+//                self.updateForStatistics(distance)
+//                
+//                print("mirroring")
+//            }
         }
     }
     
@@ -248,8 +278,10 @@ class HealthController {
     }
     
     private func updateForStatistics(_ statistics: HKStatistics?) {
+        print("Doing the stats")
         guard let statistics = statistics else { return }
         
+        print("Put the stats on the main thread")
         DispatchQueue.main.async {
             switch statistics.quantityType {
             case HKQuantityType.quantityType(forIdentifier: .heartRate):
@@ -257,10 +289,12 @@ class HealthController {
                 let newHeartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
                 
                 // If we have a valid heart rate reading, store it with timestamp
+                print("Updating heart rate")
                 if newHeartRate > 0 {
                     self.heartRate = newHeartRate
                     self.heartRateSamples.append((timestamp: Date(), value: newHeartRate))
                     self.updateTimeInZones()
+                    print("Heart rate updated")
                 }
                 
                 self.averageHeartRate = statistics.averageQuantity()?.doubleValue(for: heartRateUnit) ?? 0
