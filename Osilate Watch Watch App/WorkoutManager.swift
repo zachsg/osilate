@@ -229,7 +229,7 @@ extension WorkoutManager: HKWorkoutSessionDelegate {
         guard !locations.isEmpty else { return }
         
         let routeBuilder = HKWorkoutRouteBuilder(healthStore: healthStore, device: nil)
-            
+        
         // Insert location data
         routeBuilder.insertRouteData(locations) { success, error in
             if !success {
