@@ -208,11 +208,75 @@ class HealthController {
     // MARK: - Mirroring
     var isMirroring = false
     
+    var activeEnergy: Double = 0
+    var distance: Double = 0
+    var heartRateSamples: [(timestamp: Date, value: Double)] = []
+    var timeInZones: [OZone: TimeInterval] = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+    var averageHeartRate: Double = 0
+    var heartRate: Double = 0
+    var workoutConfig: HKWorkoutConfiguration?
+    
     func startMirroring() {
         healthStore.workoutSessionMirroringStartHandler = { mirroredSession in
             DispatchQueue.main.async {
-                print("I am mirroring now")
                 self.isMirroring = true
+            }
+            self.workoutConfig = mirroredSession.workoutConfiguration
+            
+            let heartRates = mirroredSession.currentActivity.statistics(for: HKQuantityType(.heartRate))
+            self.updateForStatistics(heartRates)
+        }
+    }
+    
+    private func updateForStatistics(_ statistics: HKStatistics?) {
+        guard let statistics = statistics else { return }
+        
+        DispatchQueue.main.async {
+            switch statistics.quantityType {
+            case HKQuantityType.quantityType(forIdentifier: .heartRate):
+                let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
+                let newHeartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+                
+                // If we have a valid heart rate reading, store it with timestamp
+                if newHeartRate > 0 {
+                    self.heartRate = newHeartRate
+                    self.heartRateSamples.append((timestamp: Date(), value: newHeartRate))
+                    self.updateTimeInZones()
+                }
+                
+                self.averageHeartRate = statistics.averageQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+            case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
+                let energyUnit = HKUnit.kilocalorie()
+                self.activeEnergy = statistics.sumQuantity()?.doubleValue(for: energyUnit) ?? 0
+            case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning), HKQuantityType.quantityType(forIdentifier: .distanceCycling):
+                let meterUnit = HKUnit.meter()
+                self.distance = statistics.sumQuantity()?.doubleValue(for: meterUnit) ?? 0
+            default:
+                return
+            }
+        }
+    }
+    
+    private func updateTimeInZones() {
+        guard heartRateSamples.count > 1 else { return }
+        
+        // Reset timeInZones
+        timeInZones = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+        
+        // Calculate time spent in each zone
+        for i in 1..<heartRateSamples.count {
+            let prevSample = heartRateSamples[i-1]
+            let currentSample = heartRateSamples[i]
+            
+            // Calculate time difference between samples
+            let timeInterval = currentSample.timestamp.timeIntervalSince(prevSample.timestamp)
+            
+            // Determine zone for the heart rate value
+            let zone = prevSample.value.zone()
+            
+            // Add the time to the appropriate zone
+            if let currentTime = timeInZones[zone] {
+                timeInZones[zone] = currentTime + timeInterval
             }
         }
     }

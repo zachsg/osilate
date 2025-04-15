@@ -1,31 +1,31 @@
 //
 //  ZonesView.swift
-//  Osilate Watch Watch App
+//  Osilate
 //
-//  Created by Zach Gottlieb on 4/14/25.
+//  Created by Zach Gottlieb on 4/15/25.
 //
 
 import SwiftUI
 
 struct ZoneBorder: View {
-    @Environment(WorkoutManager.self) private var workoutManager
+    @Environment(HealthController.self) private var healthController
     
     var zone: OZone
     
     var currentZone: OZone {
-        workoutManager.heartRate.zone()
+        healthController.heartRate.zone()
     }
     
     var body: some View {
         if currentZone == zone {
             RoundedRectangle(cornerRadius: 2)
-                .stroke(.white, lineWidth: 2)
+                .stroke(.white, lineWidth: 4)
         }
     }
 }
 
 struct HeartPulse: View {
-    @Environment(WorkoutManager.self) private var workoutManager
+    @Environment(HealthController.self) private var healthController
     
     @State private var isAnimating = false
     
@@ -38,10 +38,10 @@ struct HeartPulse: View {
                     .repeatForever(autoreverses: true),
                     value: isAnimating
                 )
-            Text(Int(workoutManager.heartRate), format: .number)
+            Text(Int(healthController.heartRate), format: .number)
         }
-        .font(.caption2.bold())
-        .padding(.trailing, 8)
+        .font(.title.bold())
+        .padding(.trailing)
         .onAppear {
             isAnimating = true
         }
@@ -49,30 +49,31 @@ struct HeartPulse: View {
 }
 
 struct ZonesView: View {
-    @Environment(WorkoutManager.self) private var workoutManager
+    @Environment(HealthController.self) private var healthController
     
     var zone: OZone {
-        workoutManager.heartRate.zone()
+        healthController.heartRate.zone()
     }
 
     var body: some View {
         TimelineView(.periodic(from: Date(), by: 1.0)) { timeline in
             ZStack {
-                workoutManager.heartRate.zoneColor().opacity(0.2)
+                healthController.heartRate.zoneColor().opacity(0.2)
+                    .ignoresSafeArea()
                 
                 GeometryReader { geometry in
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 8) {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 2)
                                 .foregroundStyle(.green.opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.one), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.one), height: 50)
                                 .overlay {
                                     ZoneBorder(zone: .one)
                                 }
                             
                             Label {
                                 HStack {
-                                    Text(formatTimeInterval(workoutManager.timeInZones[.one] ?? 0))
+                                    Text(formatTimeInterval(healthController.timeInZones[.one] ?? 0))
                                     Spacer()
                                     if zone == .one {
                                         HeartPulse()
@@ -81,20 +82,20 @@ struct ZonesView: View {
                             } icon: {
                                 Image(systemName: "1.circle")
                             }
-                            .padding(.leading, 2)
+                            .padding(.leading, 12)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.yellow.opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.two), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.two), height: 50)
                                 .overlay {
                                     ZoneBorder(zone: .two)
                                 }
                             
                             Label {
                                 HStack {
-                                    Text(formatTimeInterval(workoutManager.timeInZones[.two] ?? 0))
+                                    Text(formatTimeInterval(healthController.timeInZones[.two] ?? 0))
                                     Spacer()
                                     if zone == .two {
                                         HeartPulse()
@@ -103,20 +104,20 @@ struct ZonesView: View {
                             } icon: {
                                 Image(systemName: "2.circle")
                             }
-                            .padding(.leading, 2)
+                            .padding(.leading, 12)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.orange.opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.three), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.three), height: 50)
                                 .overlay {
                                     ZoneBorder(zone: .three)
                                 }
                             
                             Label {
                                 HStack {
-                                    Text(formatTimeInterval(workoutManager.timeInZones[.three] ?? 0))
+                                    Text(formatTimeInterval(healthController.timeInZones[.three] ?? 0))
                                     Spacer()
                                     if zone == .three {
                                         HeartPulse()
@@ -125,20 +126,20 @@ struct ZonesView: View {
                             } icon: {
                                 Image(systemName: "3.circle")
                             }
-                            .padding(.leading, 2)
+                            .padding(.leading, 12)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.red.opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.four), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.four), height: 50)
                                 .overlay {
                                     ZoneBorder(zone: .four)
                                 }
                             
                             Label {
                                 HStack {
-                                    Text(formatTimeInterval(workoutManager.timeInZones[.four] ?? 0))
+                                    Text(formatTimeInterval(healthController.timeInZones[.four] ?? 0))
                                     Spacer()
                                     if zone == .four {
                                         HeartPulse()
@@ -147,20 +148,20 @@ struct ZonesView: View {
                             } icon: {
                                 Image(systemName: "4.circle")
                             }
-                            .padding(.leading, 2)
+                            .padding(.leading, 12)
                         }
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(.purple.opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.five), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.five), height: 50)
                                 .overlay {
                                     ZoneBorder(zone: .five)
                                 }
                             
                             Label {
                                 HStack {
-                                    Text(formatTimeInterval(workoutManager.timeInZones[.five] ?? 0))
+                                    Text(formatTimeInterval(healthController.timeInZones[.five] ?? 0))
                                     Spacer()
                                     if zone == .five {
                                         HeartPulse()
@@ -169,36 +170,35 @@ struct ZonesView: View {
                             } icon: {
                                 Image(systemName: "5.circle")
                             }
-                            .padding(.leading, 2)
+                            .padding(.leading, 12)
                         }
                     }
-                    .font(.title3.monospacedDigit().lowercaseSmallCaps())
+                    .font(.title.monospacedDigit().lowercaseSmallCaps())
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .scenePadding()
-                    .padding(.top, 60)
                 }
             }
-            .ignoresSafeArea()
         }
     }
     
     // Helper function to calculate the percentage width for each zone
     private func zonePercentage(_ zone: OZone) -> Double {
-        let totalTime = workoutManager.timeInZones.values.reduce(0, +)
+        let totalTime = healthController.timeInZones.values.reduce(0, +)
         guard totalTime > 0 else { return 0 }
         
-        return (workoutManager.timeInZones[zone] ?? 0) / totalTime * 0.95
+        return (healthController.timeInZones[zone] ?? 0) / totalTime * 0.92
     }
     
     // Format time interval as MM:SS
     private func formatTimeInterval(_ interval: TimeInterval) -> String {
         let minutes = Int(interval) / 60
         let seconds = Int(interval) % 60
+        
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 
 #Preview {
     ZonesView()
-        .environment(WorkoutManager())
+        .environment(HealthController())
 }
