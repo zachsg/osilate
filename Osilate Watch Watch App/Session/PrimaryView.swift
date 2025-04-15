@@ -13,7 +13,7 @@ struct PrimaryView: View {
     @State private var selection: Tab = .metrics
     
     enum Tab {
-        case metrics, elevation
+        case metrics, elevation, zones
     }
     
     var body: some View {
@@ -28,6 +28,10 @@ struct PrimaryView: View {
                     Text("Elevation")
                 }.tag(Tab.elevation)
             }
+            
+            ZonesView().tabItem {
+                Text("Zones")
+            }.tag(Tab.zones)
         }
         .tabViewStyle(.verticalPage)
     }

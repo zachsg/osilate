@@ -8,86 +8,65 @@
 import SwiftUI
 
 struct ElevationView: View {
+    @Environment(\.locale) private var locale
     @Environment(WorkoutManager.self) private var workoutManager
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Label {
-                Text(
-                    Measurement(
-                        value: workoutManager.lastElevation ?? 0,
-                        unit: UnitLength.meters
-                    )
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .road
-                        )
-                    )
-                )
-            } icon: {
-                Text("   Elev.   ")
-                    .font(.caption2)
-            }
+        ZStack {
+            workoutManager.heartRate.zoneColor().opacity(0.2)
             
-            Label {
-                Text(
-                    Measurement(
-                        value: workoutManager.elevationGain,
-                        unit: UnitLength.meters
-                    )
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .road
-                        )
-                    )
-                )
-            } icon: {
-                Text("   Gain   ")
-                    .font(.caption2)
+            VStack(alignment: .leading) {
+                Label {
+                    Text(formattedElevation(workoutManager.lastElevation ?? 0))
+                } icon: {
+                    Text("   Elev.   ")
+                        .font(.caption2)
+                }
+                
+                Label {
+                    Text(formattedElevation(workoutManager.elevationGain))
+                } icon: {
+                    Text("   Gain   ")
+                        .font(.caption2)
+                }
+                
+                Label {
+                    Text(formattedElevation(-workoutManager.elevationLost))
+                } icon: {
+                    Text("   Loss   ")
+                        .font(.caption2)
+                }
+                
+                Label {
+                    Text(formattedElevation(workoutManager.relativeElevationChange))
+                } icon: {
+                    Text("Change")
+                        .font(.caption2)
+                }
             }
-            
-            Label {
-                Text(
-                    Measurement(
-                        value: -workoutManager.elevationLost,
-                        unit: UnitLength.meters
-                    )
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .road
-                        )
-                    )
-                )
-            } icon: {
-                Text("   Loss   ")
-                    .font(.caption2)
-            }
-            
-            Label {
-                Text(
-                    Measurement(
-                        value: workoutManager.relativeElevationChange,
-                        unit: UnitLength.meters
-                    )
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .road
-                        )
-                    )
-                )
-            } icon: {
-                Text("Change")
-                    .font(.caption2)
-            }
+            .font(.title2.monospacedDigit().lowercaseSmallCaps())
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .scenePadding()
+            .padding(.top, 20)
         }
-        .font(.title2.monospacedDigit().lowercaseSmallCaps())
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .scenePadding()
-        .padding(.top, 40)
+        .ignoresSafeArea()
+    }
+    
+    private func formattedElevation(_ value: Double) -> String {
+        // Store the initial measurement in meters
+        let measurement = Measurement(value: value, unit: UnitLength.meters)
+        
+        // Create a formatter that will respect the locale
+        let formatter = MeasurementFormatter()
+        formatter.unitOptions = .providedUnit // Use the unit we provide
+        formatter.numberFormatter.maximumFractionDigits = 0
+        
+        // Choose the appropriate unit based on locale (metric vs imperial)
+        let useMetric = Locale.current.measurementSystem == .metric
+        let unit: UnitLength = useMetric ? .meters : .feet
+        
+        // Convert to the appropriate unit and format
+        return formatter.string(from: measurement.converted(to: unit))
     }
 }
 

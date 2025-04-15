@@ -295,6 +295,26 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
 }
 
 extension Double {
+    func zoneColor() -> Color {
+        let zone2Range = Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
+        let zone3Range = Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
+        let zone4Range = Double(hrZone(.four, at: .start))...Double(hrZone(.four, at: .end))
+        let zone5Start = Double(hrZone(.five, at: .start))
+        
+        switch self {
+            case zone2Range:
+            return .yellow
+        case zone3Range:
+            return .orange
+            case zone4Range:
+            return .red
+        case let x where x >= zone5Start:
+            return .purple
+        default:
+            return .green
+        }
+    }
+    
     /// Rounds the double to decimal places value
     func rounded(toPlaces places: Int) -> Double {
         let divisor = pow(10.0, Double(places))
