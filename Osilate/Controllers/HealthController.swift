@@ -221,13 +221,11 @@ class HealthController: NSObject {
     
     func startMirroring() {
         healthStore.workoutSessionMirroringStartHandler = { mirroredSession in
+            self.mirroredSession = mirroredSession
+            self.mirroredSession?.delegate = self
+            
             DispatchQueue.main.async {
                 self.isMirroring = true
-                
-                print("setting mirrored session")
-                self.mirroredSession = mirroredSession
-                self.mirroredSession?.delegate = self
-                print("mirrored session delegate set up")
             }
         }
     }

@@ -61,8 +61,26 @@ class WorkoutManager: NSObject {
         session?.delegate = self
         builder?.delegate = self
         
+        Task {
+            do {
+                try await session?.startMirroringToCompanionDevice()
+                
+                print("Mirroring started")
+                
+                if session?.state == .running {
+                    pause()
+                    resume()
+                    
+                    print("Mirroring was restarted")
+                }
+            } catch {
+                print("Failed to start mirroring on companion device: \(error.localizedDescription)")
+            }
+        }
+        
         let startDate = Date()
         session?.startActivity(with: startDate)
+        print("Session started")
         builder?.beginCollection(withStart: startDate) { success, error in
             // The workout has started.
             print("Session started and data collection in progress.")
@@ -75,14 +93,6 @@ class WorkoutManager: NSObject {
                 print("Started updating location for outdoor workout")
             } else {
                 print("Cannot start location updates - authorization not granted")
-            }
-        }
-        
-        Task {
-            do {
-                try await session?.startMirroringToCompanionDevice()
-            } catch {
-                print("Failed to start mirroring on companion device: \(error.localizedDescription)")
             }
         }
     }
