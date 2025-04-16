@@ -10,24 +10,37 @@ import SwiftUI
 struct HeartPulse: View {
     @Environment(HealthController.self) private var healthController
     
-    @State private var isAnimating = false
+    var speed: Double {
+        let speed = healthController.heartRate / 4
+        return speed > 1 ? speed : 1
+        
+    }
     
     var body: some View {
         HStack {
             Image(systemName: "heart.fill")
-                .scaleEffect(isAnimating ? 1.2 : 1.0)
-                .animation(
-                    .easeInOut(duration: 0.5)
-                    .repeatForever(autoreverses: true),
-                    value: isAnimating
-                )
+                .symbolEffect(.breathe, options: .speed(speed))
+            
             Text(Int(healthController.heartRate), format: .number)
         }
-        .font(.title.bold())
+        .font(.title.bold().monospacedDigit())
         .padding(.trailing)
-        .onAppear {
-            isAnimating = true
-        }
+    }
+}
+
+struct ElapsedTime: View {
+    var elapsed: TimeInterval
+    
+    var body: some View {
+        Text(format(elapsed))
+    }
+    
+    private func format(_ timeInterval: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.unitsStyle = .positional // e.g., "1:01:05"
+        formatter.zeroFormattingBehavior = .pad // Ensures leading zeros, e.g., "01" for 1 minute
+        return formatter.string(from: timeInterval) ?? "0:00:00"
     }
 }
 
@@ -37,15 +50,22 @@ struct ZonesView: View {
     var zone: OZone {
         healthController.heartRate.zone()
     }
-
+    
     var body: some View {
         TimelineView(.animation) { timeline in
             ZStack {
-                healthController.heartRate.zoneColor().opacity(0.2)
+                healthController.heartRate.zoneColor().opacity(0.3)
                     .ignoresSafeArea()
                 
                 GeometryReader { geometry in
                     VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Spacer()
+                            ElapsedTime(elapsed: healthController.elapsedTimeInterval)
+                                .font(.largeTitle.monospacedDigit().bold())
+                            Spacer()
+                        }
+                        
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 2)
                                 .foregroundStyle(.green.opacity(0.7))
@@ -142,6 +162,7 @@ struct ZonesView: View {
                         }
                     }
                     .font(.title.monospacedDigit().lowercaseSmallCaps())
+                    .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .scenePadding()
                 }

@@ -21,7 +21,10 @@ class WorkoutManager: NSObject {
     var selectedWorkout: HKWorkoutActivityType? {
         didSet {
             guard let selectedWorkout = selectedWorkout else { return }
-            startWorkout(workoutType: selectedWorkout)
+            
+            Task {
+                try await startWorkout(workoutType: selectedWorkout)
+            }
         }
     }
     
@@ -39,53 +42,7 @@ class WorkoutManager: NSObject {
     var builder: HKLiveWorkoutBuilder?
     var isOutdoors = false
     
-    func startWorkout(workoutType: HKWorkoutActivityType) {
-        let configuration = HKWorkoutConfiguration()
-        configuration.activityType = workoutType
-        configuration.locationType = isOutdoors ? .outdoor : .indoor
-        
-        do {
-            session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
-            builder = session?.associatedWorkoutBuilder()
-        } catch {
-            print("error...")
-            // Handle any exceptions.
-            return
-        }
-        
-        builder?.dataSource = HKLiveWorkoutDataSource(
-            healthStore: healthStore,
-            workoutConfiguration: configuration
-        )
-        
-        session?.delegate = self
-        builder?.delegate = self
-        
-        Task {
-            do {
-                try await session?.startMirroringToCompanionDevice()
-                
-                print("Mirroring started")
-                
-                if session?.state == .running {
-                    pause()
-                    resume()
-                    
-                    print("Mirroring was restarted")
-                }
-            } catch {
-                print("Failed to start mirroring on companion device: \(error.localizedDescription)")
-            }
-        }
-        
-        let startDate = Date()
-        session?.startActivity(with: startDate)
-        print("Session started")
-        builder?.beginCollection(withStart: startDate) { success, error in
-            // The workout has started.
-            print("Session started and data collection in progress.")
-        }
-        
+    func startWorkout(workoutType: HKWorkoutActivityType) async throws {
         if isOutdoors {
             let authStatus = locationManager.authorizationStatus
             if authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways {
@@ -95,6 +52,22 @@ class WorkoutManager: NSObject {
                 print("Cannot start location updates - authorization not granted")
             }
         }
+        
+        let configuration = HKWorkoutConfiguration()
+        configuration.activityType = workoutType
+        configuration.locationType = isOutdoors ? .outdoor : .indoor
+        
+        session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
+        builder = session?.associatedWorkoutBuilder()
+        session?.delegate = self
+        builder?.delegate = self
+        builder?.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore, workoutConfiguration: configuration)
+        
+        try await session?.startMirroringToCompanionDevice()
+        
+        let startDate = Date()
+        session?.startActivity(with: startDate)
+        try await builder?.beginCollection(at: startDate)
     }
     
     func requestAuthorization() {
@@ -194,6 +167,14 @@ class WorkoutManager: NSObject {
             default:
                 return
             }
+        }
+    }
+    
+    func sendData(_ data: Data) async {
+        do {
+            try await session?.sendToRemoteWorkoutSession(data: data)
+        } catch {
+            print("Error sending data to companion: \(error.localizedDescription)")
         }
     }
     
@@ -314,14 +295,37 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
     }
     
     func workoutBuilder(_ workoutBuilder: HKLiveWorkoutBuilder, didCollectDataOf collectedTypes: Set<HKSampleType>) {
-        for type in collectedTypes {
-            guard let quantityType = type as? HKQuantityType else { return }
+        Task { @MainActor in
+            var allStatistics: [HKStatistics] = []
+            for type in collectedTypes {
+                guard let quantityType = type as? HKQuantityType else { return }
+                
+                let statistics = workoutBuilder.statistics(for: quantityType)
+                if let statistics {
+                    updateForStatistics(statistics)
+                    allStatistics.append(statistics)
+                }
+            }
             
-            let statistics = workoutBuilder.statistics(for: quantityType)
+            let archivedData = try? NSKeyedArchiver.archivedData(withRootObject: allStatistics, requiringSecureCoding: true)
+            guard let archivedData = archivedData, !archivedData.isEmpty else {
+                return
+            }
             
-            updateForStatistics(statistics)
+            await sendData(archivedData)
+            
+            let elapsedTimeInterval = session?.associatedWorkoutBuilder().elapsedTime(at: Date()) ?? 0
+            let elapsedTime = WorkoutElapsedTime(timeInterval: elapsedTimeInterval, date: Date())
+            if let elapsedTimeData = try? JSONEncoder().encode(elapsedTime) {
+                await sendData(elapsedTimeData)
+            }
         }
     }
+}
+
+struct WorkoutElapsedTime: Codable {
+    var timeInterval: TimeInterval
+    var date: Date
 }
 
 // MARK: - CoreLocation

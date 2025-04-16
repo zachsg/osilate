@@ -29,7 +29,8 @@ struct MirroringSheet: View {
                         }
                     }
                 }
-                .navigationTitle("Working Out")
+                .navigationTitle("Mirroring")
+                .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

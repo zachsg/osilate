@@ -9,9 +9,21 @@ import Foundation
 import HealthKit
 import SwiftUI
 
+struct WorkoutElapsedTime: Codable {
+    var timeInterval: TimeInterval
+    var date: Date
+}
+
 @Observable
 class HealthController: NSObject {
+    struct SessionSateChange {
+        let newState: HKWorkoutSessionState
+        let date: Date
+    }
+    
     var healthStore = HKHealthStore()
+    
+    let asynStreamTuple = AsyncStream.makeStream(of: SessionSateChange.self, bufferingPolicy: .bufferingNewest(1))
     
     // Steps
     var stepCountToday = 0
@@ -218,14 +230,59 @@ class HealthController: NSObject {
     var timeInZones: [OZone: TimeInterval] = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
     var averageHeartRate: Double = 0
     var heartRate: Double = 0
+    var elapsedTimeInterval: TimeInterval = 0
     
     func startMirroring() {
         healthStore.workoutSessionMirroringStartHandler = { mirroredSession in
-            self.mirroredSession = mirroredSession
-            self.mirroredSession?.delegate = self
-            
-            DispatchQueue.main.async {
+            Task { @MainActor in
+                self.mirroredSession = mirroredSession
+                self.mirroredSession?.delegate = self
                 self.isMirroring = true
+            }
+        }
+    }
+    
+    func handleReceivedData(_ data: Data) throws {
+        if let elapsedTime = try? JSONDecoder().decode(WorkoutElapsedTime.self, from: data) {
+            var currentElapsedTime: TimeInterval = 0
+            if mirroredSession?.state == .running {
+                currentElapsedTime = elapsedTime.timeInterval + Date().timeIntervalSince(elapsedTime.date)
+            } else {
+                currentElapsedTime = elapsedTime.timeInterval
+            }
+            elapsedTimeInterval = currentElapsedTime
+        } else if let statisticsArray = try NSKeyedUnarchiver.unarchivedArrayOfObjects(ofClass: HKStatistics.self, from: data) {
+            for statistics in statisticsArray {
+                updateForStatistics(statistics)
+            }
+        }
+    }
+    
+    func updateForStatistics(_ statistics: HKStatistics?) {
+        guard let statistics = statistics else { return }
+        
+        DispatchQueue.main.async {
+            switch statistics.quantityType {
+            case HKQuantityType.quantityType(forIdentifier: .heartRate):
+                let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
+                let newHeartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+                
+                // If we have a valid heart rate reading, store it with timestamp
+                if newHeartRate > 0 {
+                    self.heartRate = newHeartRate
+                    self.heartRateSamples.append((timestamp: Date(), value: newHeartRate))
+                    self.updateTimeInZones()
+                }
+                
+                self.averageHeartRate = statistics.averageQuantity()?.doubleValue(for: heartRateUnit) ?? 0
+            case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
+                let energyUnit = HKUnit.kilocalorie()
+                self.activeEnergy = statistics.sumQuantity()?.doubleValue(for: energyUnit) ?? 0
+            case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning), HKQuantityType.quantityType(forIdentifier: .distanceCycling):
+                let meterUnit = HKUnit.meter()
+                self.distance = statistics.sumQuantity()?.doubleValue(for: meterUnit) ?? 0
+            default:
+                return
             }
         }
     }
@@ -253,7 +310,7 @@ class HealthController: NSObject {
             }
         }
     }
-    
+        
     // MARK: - Steps
     func getStepCountFor(_ timeFrame: OTimePeriod) {
         stepsLoading = true
@@ -2392,58 +2449,41 @@ class HealthController: NSObject {
 }
 
 extension HealthController: HKWorkoutSessionDelegate {
-    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
-        print("Getting statistics")
+    nonisolated func workoutSession(_ workoutSession: HKWorkoutSession,
+                                    didChangeTo toState: HKWorkoutSessionState,
+                                    from fromState: HKWorkoutSessionState,
+                                    date: Date) {
+        let sessionSateChange = SessionSateChange(newState: toState, date: date)
+        asynStreamTuple.continuation.yield(sessionSateChange)
         
-        let heartRates = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.heartRate))
-        let energy = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.activeEnergyBurned))
-        let distance = mirroredSession?.currentActivity.statistics(for: HKQuantityType(.distanceWalkingRunning))
-        
-        print("Getting statistics")
-        
-        self.updateForStatistics(heartRates)
-        self.updateForStatistics(energy)
-        self.updateForStatistics(distance)
-    }
-    
-    func workoutSession(_ workoutSession: HKWorkoutSession, didReceiveDataFromRemoteDevice data: Data) {
-        print("Remote data received...")
-    }
-    
-    private func updateForStatistics(_ statistics: HKStatistics?) {
-        print("Doing the stats")
-        guard let statistics = statistics else { return }
-        
-        print("Put the stats on the main thread")
-        DispatchQueue.main.async {
-            switch statistics.quantityType {
-            case HKQuantityType.quantityType(forIdentifier: .heartRate):
-                let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
-                let newHeartRate = statistics.mostRecentQuantity()?.doubleValue(for: heartRateUnit) ?? 0
-                
-                // If we have a valid heart rate reading, store it with timestamp
-                print("Updating heart rate")
-                if newHeartRate > 0 {
-                    self.heartRate = newHeartRate
-                    self.heartRateSamples.append((timestamp: Date(), value: newHeartRate))
-                    self.updateTimeInZones()
-                    print("Heart rate updated")
-                }
-                
-                self.averageHeartRate = statistics.averageQuantity()?.doubleValue(for: heartRateUnit) ?? 0
-            case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
-                let energyUnit = HKUnit.kilocalorie()
-                self.activeEnergy = statistics.sumQuantity()?.doubleValue(for: energyUnit) ?? 0
-            case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning), HKQuantityType.quantityType(forIdentifier: .distanceCycling):
-                let meterUnit = HKUnit.meter()
-                self.distance = statistics.sumQuantity()?.doubleValue(for: meterUnit) ?? 0
-            default:
-                return
-            }
+        switch toState {
+        case .running:
+            self.isMirroring = true
+        case .ended, .stopped:
+            self.isMirroring = false
+        default:
+            return
         }
     }
+        
+    nonisolated func workoutSession(_ workoutSession: HKWorkoutSession,
+                                    didFailWithError error: Error) {
+        print("Error: \(error)")
+    }
+
+    nonisolated func workoutSession(_ workoutSession: HKWorkoutSession,
+                                    didDisconnectFromRemoteDeviceWithError error: Error?) {
+    }
     
-    func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: any Error) {
-        print("Mirror session data error: \(error.localizedDescription)")
+    nonisolated func workoutSession(_ workoutSession: HKWorkoutSession,
+                                    didReceiveDataFromRemoteWorkoutSession data: [Data]) {
+        Task { @MainActor in
+            do {
+                for anElement in data {
+                    try handleReceivedData(anElement)
+                }
+            } catch {
+            }
+        }
     }
 }

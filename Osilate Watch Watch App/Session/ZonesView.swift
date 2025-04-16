@@ -10,24 +10,20 @@ import SwiftUI
 struct HeartPulse: View {
     @Environment(WorkoutManager.self) private var workoutManager
     
-    @State private var isAnimating = false
+    var speed: Double {
+        let speed = workoutManager.heartRate / 4
+        return speed > 1 ? speed : 1
+    }
     
     var body: some View {
         HStack {
             Image(systemName: "heart.fill")
-                .scaleEffect(isAnimating ? 1.2 : 1.0)
-                .animation(
-                    .easeInOut(duration: 0.5)
-                    .repeatForever(autoreverses: true),
-                    value: isAnimating
-                )
+                .symbolEffect(.breathe, options: .speed(speed))
+
             Text(Int(workoutManager.heartRate), format: .number)
         }
-        .font(.caption2.bold())
+        .font(.caption2.bold().monospacedDigit())
         .padding(.trailing, 4)
-        .onAppear {
-            isAnimating = true
-        }
     }
 }
 
@@ -41,7 +37,7 @@ struct ZonesView: View {
     var body: some View {
         TimelineView(.periodic(from: Date(), by: 1.0)) { timeline in
             ZStack {
-                workoutManager.heartRate.zoneColor().opacity(0.2)
+                workoutManager.heartRate.zoneColor().opacity(0.3)
                 
                 GeometryReader { geometry in
                     VStack(alignment: .leading, spacing: 2) {
