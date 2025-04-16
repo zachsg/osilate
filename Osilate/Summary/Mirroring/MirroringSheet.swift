@@ -13,40 +13,38 @@ struct MirroringSheet: View {
     @Binding var sheetIsShowing: Bool
     
     var body: some View {
-        OrientationControlledView {
-            NavigationStack {
-                ZonesView()
-                    .toolbar {
-                        ToolbarItem {
-                            Button {
-                                healthController.isMirroring = false
-                                sheetIsShowing.toggle()
-                            } label: {
-                                Label {
-                                    Text(closeLabel)
-                                } icon: {
-                                    Image(systemName: cancelSystemImage)
-                                }
+        NavigationStack {
+            ZonesView()
+                .toolbar {
+                    ToolbarItem {
+                        Button {
+                            healthController.isMirroring = false
+                            sheetIsShowing.toggle()
+                        } label: {
+                            Label {
+                                Text(closeLabel)
+                            } icon: {
+                                Image(systemName: cancelSystemImage)
                             }
                         }
                     }
-                    .navigationTitle("Mirroring")
-                    .navigationBarTitleDisplayMode(.inline)
-            }
-            .onAppear {
-                // Keep screen on
-                UIApplication.shared.isIdleTimerDisabled = true
-                
-                // Allow landscape orientations
-                UIApplication.shared.updateOrientation([.portrait, .landscapeLeft, .landscapeRight])
-            }
-            .onDisappear {
-                // Restore auto-lock
-                UIApplication.shared.isIdleTimerDisabled = false
-                
-                // Restrict to portrait
-                UIApplication.shared.updateOrientation(.portrait)
-            }
+                }
+                .navigationTitle("Mirroring")
+                .navigationBarTitleDisplayMode(.inline)
+        }
+        .onAppear {
+            // Keep screen on
+            UIApplication.shared.isIdleTimerDisabled = true
+            
+            // Allow landscape orientations
+            UIApplication.shared.updateOrientation([.portrait, .landscapeLeft, .landscapeRight])
+        }
+        .onDisappear {
+            // Restore auto-lock
+            UIApplication.shared.isIdleTimerDisabled = false
+            
+            // Restrict to portrait
+            UIApplication.shared.updateOrientation(.portrait)
         }
     }
 }
