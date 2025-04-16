@@ -20,7 +20,7 @@ struct SummaryView: View {
     
     @State private var animationAmount = 0.0
     @State private var healthReportIsShowing = false
-    @State private var mirroringSheetIsShowing = false
+    @State private var mirroringSheetIsShowing = true
     
     var movePercent: Double {
         if showToday {

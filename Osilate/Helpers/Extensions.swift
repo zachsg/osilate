@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import UIKit
 
 #if os(iOS)
 extension UIApplication {
@@ -415,3 +416,14 @@ extension FormatStyle where Self == ThousandsAbbreviationFormatStyle {
     }
 }
 
+#if os(iOS)
+extension UIApplication {
+    func updateOrientation(_ orientationMask: UIInterfaceOrientationMask) {
+        if let windowScene = connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: orientationMask)) { error in
+                print("Failed to update orientation: \(error)")
+            }
+        }
+    }
+}
+#endif
