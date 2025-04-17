@@ -13,11 +13,10 @@ struct WorkoutCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Activity type and date header
             HStack {
                 Image(systemName: activityTypeIcon)
                     .font(.title2)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.accentColor)
                 
                 VStack(alignment: .leading) {
                     Text(activityTypeString)
@@ -32,9 +31,9 @@ struct WorkoutCard: View {
                 
                 Text(formattedDuration)
                     .font(.headline)
-                    .padding(8)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(8)
+                    .padding(6)
+                    .background(.regularMaterial)
+                    .cornerRadius(4)
             }
             .padding(.horizontal)
             
@@ -74,7 +73,7 @@ struct WorkoutCard: View {
     // MARK: - Helper Views
     
     private func statView(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 0) {
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
