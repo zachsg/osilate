@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import HealthKit
 import SwiftUI
 import SwiftData
 
@@ -44,4 +45,85 @@ struct SampleData: PreviewModifier {
 
 extension PreviewTrait where T == Preview.ViewTraits {
     @MainActor static var sampleData: Self = .modifier(SampleData())
+}
+
+class MockWorkout {
+    func createMockWorkout() -> HKWorkout {
+        // Set workout parameters
+        let workoutType = HKWorkoutActivityType.hiking
+        
+        // Create start and end dates
+        let now = Date()
+        let startDate = now.addingTimeInterval(-3600) // 1 hour ago
+        let endDate = now
+        
+        // Energy burned in calories
+        let energyBurned = HKQuantity(unit: HKUnit.kilocalorie(), doubleValue: 325.0)
+        
+        // Distance in meters
+        let distance = HKQuantity(unit: HKUnit.meter(), doubleValue: 5000.0)
+        
+        // Create the workout
+        let workout = HKWorkout(
+            activityType: workoutType,
+            start: startDate,
+            end: endDate,
+            duration: 3600, // 1 hour in seconds
+            totalEnergyBurned: energyBurned,
+            totalDistance: distance,
+            metadata: [
+                "source": "Mock Data",
+                "location": "Outdoor",
+                "weather": "Sunny"
+            ]
+        )
+        
+        return workout
+    }
+
+    func createMockWorkoutEvents(workout: HKWorkout) {
+        // Create some workout events
+        let workoutEvents = [
+            HKWorkoutEvent(
+                type: .pause,
+                dateInterval: DateInterval(
+                    start: workout.startDate.addingTimeInterval(1200), // 20 minutes in
+                    duration: 180 // 3 minute pause
+                ),
+                metadata: nil
+            ),
+            HKWorkoutEvent(
+                type: .lap,
+                dateInterval: DateInterval(
+                    start: workout.startDate.addingTimeInterval(1800), // 30 minutes in
+                    duration: 0
+                ),
+                metadata: nil
+            ),
+            HKWorkoutEvent(
+                type: .motionPaused,
+                dateInterval: DateInterval(
+                    start: workout.startDate.addingTimeInterval(2700), // 45 minutes in
+                    duration: 120 // 2 minute pause
+                ),
+                metadata: nil
+            )
+        ]
+    }
+
+    // Optionally, you could add heart rate or other samples to the workout
+    func createWorkoutSamples(workout: HKWorkout) {
+        // Create a heart rate sample
+        let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate)!
+        let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
+        
+        // Mock a heart rate of 140 bpm at 30 minutes into the workout
+        let heartRateQuantity = HKQuantity(unit: heartRateUnit, doubleValue: 140.0)
+        let heartRateSample = HKQuantitySample(
+            type: heartRateType,
+            quantity: heartRateQuantity,
+            start: workout.startDate.addingTimeInterval(1800), // 30 minutes in
+            end: workout.startDate.addingTimeInterval(1800)
+        )
+    }
 }

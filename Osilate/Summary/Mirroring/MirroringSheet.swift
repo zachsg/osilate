@@ -32,20 +32,7 @@ struct MirroringSheet: View {
                 .navigationTitle("Mirroring")
                 .navigationBarTitleDisplayMode(.inline)
         }
-        .onAppear {
-            // Keep screen on
-            UIApplication.shared.isIdleTimerDisabled = true
-            
-            // Allow landscape orientations
-            UIApplication.shared.updateOrientation([.portrait, .landscapeLeft, .landscapeRight])
-        }
-        .onDisappear {
-            // Restore auto-lock
-            UIApplication.shared.isIdleTimerDisabled = false
-            
-            // Restrict to portrait
-            UIApplication.shared.updateOrientation(.portrait)
-        }
+        .unlockRotation()
     }
 }
 

@@ -92,6 +92,11 @@ struct SweatView: View {
                 } header: {
                     HeaderLabel(title: "Progress", systemImage: streaksSystemImage, color: .accent)
                 }
+                
+                Workouts()
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
             }
             .navigationTitle(sweatString)
             .navigationBarTitleDisplayMode(.inline)

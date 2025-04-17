@@ -11,6 +11,7 @@ struct ContentView: View {
     @Environment(HealthController.self) private var healthController
     
     @State private var tabSelected: OTabSelected = .summary
+    @State private var mirroringSheetIsShowing = false
     
     var body: some View {
         TabView(selection: $tabSelected) {
@@ -35,6 +36,13 @@ struct ContentView: View {
             }
         }
         .tint(tabTint(selection: tabSelected))
+        .sheet(isPresented: $mirroringSheetIsShowing) {
+            MirroringSheet(sheetIsShowing: $mirroringSheetIsShowing)
+                .interactiveDismissDisabled()
+        }
+        .onChange(of: healthController.isMirroring) { oldValue, newValue in
+            mirroringSheetIsShowing = newValue
+        }
     }
     
     private func tabTint(selection: OTabSelected) -> Color {

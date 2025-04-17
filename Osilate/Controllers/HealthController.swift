@@ -2446,6 +2446,67 @@ class HealthController: NSObject {
         
         return (rangeTop: rangeTop, rangeBottom: rangeBottom, measuredTop: measuredTop, measuredBottom: measuredBottom, status: status)
     }
+    
+    // MARK: - Workouts
+    func fetchTodaysWorkouts(todayOnly: Bool = true) async -> [HKWorkout] {
+        let samples = try? await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[HKSample], Error>) in
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.year, .month, .day], from: .now)
+            var startDate = calendar.date(from: components)
+            
+            if !todayOnly {
+                startDate?.addTimeInterval(-hourInSeconds * 24 * 6)
+            }
+            
+            guard let startDate else {
+                continuation.resume(returning: [])
+                return
+            }
+            let endDate = Date()
+
+            let todayPredicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
+            let cyclingPredicate = HKQuery.predicateForWorkouts(with: .cycling)
+            let walkingPredicate = HKQuery.predicateForWorkouts(with: .walking)
+            let runningPredicate = HKQuery.predicateForWorkouts(with: .running)
+            let hikingPredicate = HKQuery.predicateForWorkouts(with: .hiking)
+            let ellipticalPredicate = HKQuery.predicateForWorkouts(with: .elliptical)
+            let functionalStrengthPredicate = HKQuery.predicateForWorkouts(with: .functionalStrengthTraining)
+            let cooldownPredicate = HKQuery.predicateForWorkouts(with: .cooldown)
+            let yogaPredicate = HKQuery.predicateForWorkouts(with: .yoga)
+            let otherPredicate = HKQuery.predicateForWorkouts(with: .other)
+            let compoundOrPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [
+                cyclingPredicate,
+                walkingPredicate,
+                runningPredicate,
+                hikingPredicate,
+                ellipticalPredicate,
+                functionalStrengthPredicate,
+                cooldownPredicate,
+                yogaPredicate,
+                otherPredicate
+            ])
+            let compoundAndPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+                todayPredicate,
+                compoundOrPredicate
+            ])
+            
+            let sortByStartDate = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+            
+            let query = HKSampleQuery(sampleType: .workoutType(),
+                                      predicate: compoundAndPredicate,
+                                      limit: HKObjectQueryNoLimit,
+                                      sortDescriptors: [sortByStartDate]) { (query, samples, error) in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: samples!)
+            }
+            healthStore.execute(query)
+        }
+        let workouts = samples as? [HKWorkout]
+        return workouts == nil ? [] : workouts!
+    }
 }
 
 extension HealthController: HKWorkoutSessionDelegate {

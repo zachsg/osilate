@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct OsilateApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @State private var healthController = HealthController()
     

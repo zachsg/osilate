@@ -417,12 +417,20 @@ extension FormatStyle where Self == ThousandsAbbreviationFormatStyle {
 }
 
 #if os(iOS)
-extension UIApplication {
-    func updateOrientation(_ orientationMask: UIInterfaceOrientationMask) {
-        if let windowScene = connectedScenes.first as? UIWindowScene {
-            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: orientationMask)) { error in
-                print("Failed to update orientation: \(error)")
-            }
+extension View {
+    func unlockRotation() -> some View {
+        onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+
+            AppDelegate.orientationLock = UIInterfaceOrientationMask.allButUpsideDown
+            UIViewController.attemptRotationToDeviceOrientation()
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+
+            AppDelegate.orientationLock = UIInterfaceOrientationMask.portrait
+            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+            UIViewController.attemptRotationToDeviceOrientation()
         }
     }
 }

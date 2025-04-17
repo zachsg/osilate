@@ -20,7 +20,6 @@ struct SummaryView: View {
     
     @State private var animationAmount = 0.0
     @State private var healthReportIsShowing = false
-    @State private var mirroringSheetIsShowing = true
     
     var movePercent: Double {
         if showToday {
@@ -99,13 +98,6 @@ struct SummaryView: View {
             .sheet(isPresented: $healthReportIsShowing) {
                 HealthReportSheet(sheetIsShowing: $healthReportIsShowing)
             }
-            .sheet(isPresented: $mirroringSheetIsShowing) {
-                MirroringSheet(sheetIsShowing: $mirroringSheetIsShowing)
-                    .interactiveDismissDisabled()
-            }
-        }
-        .onChange(of: healthController.isMirroring) { oldValue, newValue in
-            mirroringSheetIsShowing = newValue
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
