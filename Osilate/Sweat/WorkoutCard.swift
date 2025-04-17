@@ -9,7 +9,12 @@ import HealthKit
 import SwiftUI
 
 struct WorkoutCard: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(HealthController.self) private var healthController
+    
     let workout: HKWorkout
+    
+    @State private var showingMap = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -18,12 +23,12 @@ struct WorkoutCard: View {
                     .font(.title2)
                     .foregroundColor(.accentColor)
                 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: -1) {
                     Text(activityTypeString)
                         .font(.headline)
                     
                     Text(formattedDate)
-                        .font(.subheadline)
+                        .font(.footnote)
                         .foregroundColor(.secondary)
                 }
                 
@@ -32,28 +37,30 @@ struct WorkoutCard: View {
                 Text(formattedDuration)
                     .font(.headline)
                     .padding(6)
-                    .background(.regularMaterial)
-                    .cornerRadius(4)
+                    .background(.accent.opacity(0.2))
+                    .cornerRadius(6)
             }
             .padding(.horizontal)
             
             // Stats section
             HStack(spacing: 20) {
-                statView(
-                    title: "Distance",
-                    value: Measurement(
-                        value: workout.totalDistance?.doubleValue(for: .meter()) ?? 0,
-                        unit: UnitLength.meters
-                    )
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .road,
+                if isOutdoors {
+                    statView(
+                        title: "Distance",
+                        value: Measurement(
+                            value: workout.totalDistance?.doubleValue(for: .meter()) ?? 0,
+                            unit: UnitLength.meters
+                        )
+                        .formatted(
+                            .measurement(
+                                width: .abbreviated,
+                                usage: .road,
+                            )
                         )
                     )
-                )
-                
-                Divider().frame(height: 30)
+                    
+                    Divider().frame(height: 30)
+                }
                 
                 statView(title: "Calories", value: formattedCalories)
                 
@@ -61,12 +68,36 @@ struct WorkoutCard: View {
                     Divider().frame(height: 30)
                     statView(title: "Segments", value: "\(workout.workoutActivities.count)")
                 }
+                
+                if isOutdoors {
+                    Spacer()
+                    Button {
+                        withAnimation {
+                            showingMap.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "map")
+                    }
+                }
             }
             .padding(.horizontal)
+            
+            if isOutdoors {
+                if showingMap {
+                    WorkoutMap(workout: workout)
+                        .padding(.horizontal)
+                }
+            }
         }
         .padding(.vertical, 12)
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
+        .background {
+            if colorScheme == .dark {
+                Rectangle().fill(Material.regularMaterial)
+            } else {
+                Rectangle().fill(Color.white) // Assuming BackgroundStyle.background is a Color
+            }
+        }
+        .cornerRadius(12)
         .padding(.vertical, 4)
     }
     
@@ -75,16 +106,38 @@ struct WorkoutCard: View {
     private func statView(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
             
             Text(value)
-                .font(.system(.body, design: .rounded))
+                .font(.subheadline)
                 .fontWeight(.semibold)
         }
     }
     
     // MARK: - Computed Properties
+    private var isOutdoors: Bool {
+        var isOutdoors = false
+        
+        switch workout.workoutActivityType {
+        case .elliptical, .cooldown, .yoga, .functionalStrengthTraining, .other:
+            isOutdoors = false
+        case .hiking:
+            isOutdoors = true
+        case .running, .cycling, .walking:
+            if let indoorWorkout = workout.metadata?[HKMetadataKeyIndoorWorkout] as? Bool {
+                if indoorWorkout {
+                    isOutdoors = false
+                } else {
+                    isOutdoors = true
+                }
+            }
+        default:
+            isOutdoors = false
+        }
+        
+        return isOutdoors
+    }
     
     private var activityTypeString: String {
         switch workout.workoutActivityType {
@@ -114,7 +167,7 @@ struct WorkoutCard: View {
         case .running:
             return "figure.run"
         case .cycling:
-            return "figure.cycling"
+            return "figure.outdoor.cycle"
         case .walking:
             return "figure.walk"
         case .functionalStrengthTraining:
@@ -175,4 +228,5 @@ struct WorkoutCard: View {
 
 #Preview {
     WorkoutCard(workout: MockWorkout().createMockWorkout())
+        .environment(HealthController())
 }

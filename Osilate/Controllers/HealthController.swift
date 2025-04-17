@@ -5,8 +5,10 @@
 //  Created by Zach Gottlieb on 3/7/25.
 //
 
+import CoreLocation
 import Foundation
 import HealthKit
+import MapKit
 import SwiftUI
 
 struct WorkoutElapsedTime: Codable {
