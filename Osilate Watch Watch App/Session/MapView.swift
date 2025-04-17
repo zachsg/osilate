@@ -83,7 +83,7 @@ struct MapView: View {
                         .stroke(.blue, lineWidth: 5)
                 }
             }
-            .mapStyle(.standard(pointsOfInterest: []))
+            .mapStyle(.standard(elevation: .realistic, pointsOfInterest: []))
             .mapControls {
                 MapCompass()
                     .mapControlVisibility(.visible)

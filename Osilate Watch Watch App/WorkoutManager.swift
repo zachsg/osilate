@@ -334,7 +334,7 @@ extension WorkoutManager: CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.activityType = .fitness
-        locationManager.distanceFilter = 2
+        locationManager.distanceFilter = 1
         locationManager.allowsBackgroundLocationUpdates = true
         
         // Force the permission dialog to appear immediately
@@ -360,7 +360,7 @@ extension WorkoutManager: CLLocationManagerDelegate {
         // Collect initial elevation readings
         if elevationStart == -1 {
             // Only collect readings when horizontal accuracy is good
-            if location.horizontalAccuracy < 20 && location.verticalAccuracy < 20 {
+            if location.horizontalAccuracy <= 10 && location.verticalAccuracy <= 10 {
                 initialElevationReadings.append(location.altitude)
                 print("Initial elevation reading: \(location.altitude)m (accuracy: \(location.verticalAccuracy)m)")
                 
@@ -376,17 +376,16 @@ extension WorkoutManager: CLLocationManagerDelegate {
         }
         
         // Calculate elevation changes only after we have a stable starting point
-        if let lastLocation = locations.dropLast().last, elevationStart != 0 {
+        if let lastLocation = locations.dropLast().last, elevationStart != -1 {
             let elevationChange = location.altitude - lastLocation.altitude
             
             // Filter out unreasonable elevation changes (usually GPS errors)
-            if elevationChange > 0 && elevationChange < 20 {  // Reduced from 200m to 20m for more reasonable filtering
+            if elevationChange > 0 && elevationChange < 10 {
                 elevationGain += elevationChange
-            } else if elevationChange < 0 && elevationChange > -20 {  // Reduced from -200m to -20m
-                elevationLost += abs(elevationChange)  // Changed to += to accumulate as positive number
+            } else if elevationChange < 0 && elevationChange > -10 {
+                elevationLost += abs(elevationChange)
             }
             
-            // Fix sign of relative elevation change (positive means you've climbed)
             relativeElevationChange = location.altitude - elevationStart
             
             lastElevation = lastLocation.altitude

@@ -11,6 +11,8 @@ import SwiftUI
 struct ContentView: View {
     @Environment(WorkoutManager.self) private var workoutManager
     
+    @AppStorage(maxHrKey) var maxHr = maxHrDefault
+    
     var workoutTypes: [HKWorkoutActivityType] = [.walking, .hiking, .running, .cycling, .elliptical, .functionalStrengthTraining, .yoga, .cooldown, .other]
     
     @State private var shouldNavigate = false
@@ -18,16 +20,21 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
-            List(workoutTypes) { workoutType in
-                WorkoutTypeOption(workoutManager: workoutManager, shouldNavigate: $shouldNavigate, workoutType: workoutType)
-            }
-            .listStyle(.carousel)
-            .navigationBarTitle("Workouts")
-            .navigationDestination(isPresented: $shouldNavigate) {
-                SessionPagingView()
+            VStack {
+                Text("Max HR: \(maxHr)")
+                
+                List(workoutTypes) { workoutType in
+                    WorkoutTypeOption(workoutManager: workoutManager, shouldNavigate: $shouldNavigate, workoutType: workoutType)
+                }
+                .listStyle(.carousel)
+                .navigationBarTitle("Workouts")
+                .navigationDestination(isPresented: $shouldNavigate) {
+                    SessionPagingView()
+                }
             }
         }
         .onAppear {
+            AppStorageSyncManager.shared.activateSession()
             workoutManager.requestAuthorization()
         }
         .onChange(of: workoutManager.showingSummaryView) { oldValue, newValue in

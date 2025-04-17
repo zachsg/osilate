@@ -14,10 +14,17 @@ struct Workouts: View {
     @AppStorage(showTodayKey) var showToday = showTodayDefault
     
     @State private var workoutList = [HKWorkout]()
+    @State private var loading = true
     
     var body: some View {
         Section {
-            if workoutList.isEmpty {
+            if loading {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+            } else if workoutList.isEmpty {
                 Text("No workouts so far.")
                     .font(.headline)
                     .foregroundStyle(.secondary)
@@ -31,14 +38,20 @@ struct Workouts: View {
         }
         .onAppear {
             Task {
-                workoutList = await healthController.fetchTodaysWorkouts(todayOnly: showToday ? true: false)
+                await fetchWorkouts()
             }
         }
         .onChange(of: showToday) { oldValue, newValue in
             Task {
-                workoutList = await healthController.fetchTodaysWorkouts(todayOnly: showToday ? true: false)
+                await fetchWorkouts()
             }
         }
+    }
+    
+    private func fetchWorkouts() async {
+        loading = true
+        workoutList = await healthController.fetchTodaysWorkouts(todayOnly: showToday ? true: false)
+        loading = false
     }
 }
 

@@ -1,14 +1,14 @@
 //
-//  WorkoutCard.swift
+//  WorkoutCardCompressed.swift
 //  Osilate
 //
-//  Created by Zach Gottlieb on 4/16/25.
+//  Created by Zach Gottlieb on 4/17/25.
 //
 
 import HealthKit
 import SwiftUI
 
-struct WorkoutCard: View {
+struct WorkoutCardCompressed: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(HealthController.self) private var healthController
     
@@ -17,32 +17,20 @@ struct WorkoutCard: View {
     @State private var showingMap = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: activityTypeIcon)
-                    .font(.title2)
-                    .foregroundColor(.accentColor)
-                
-                VStack(alignment: .leading, spacing: -1) {
-                    Text(activityTypeString)
-                        .font(.headline)
-                    
-                    Text(formattedDate)
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 2) {
+                Text("On")
+                Text(formattedDate)
+                    .fontWeight(.semibold)
+                Text("for")
+                Text(formattedDuration)
+                    .fontWeight(.semibold)
                 
                 Spacer()
-                
-                Text(formattedDuration)
-                    .font(.headline)
-                    .padding(6)
-                    .background(.accent.opacity(0.2))
-                    .cornerRadius(6)
             }
-            .padding(.horizontal)
-            
-            // Stats section
+            .padding(.top, 8)
+            .font(.footnote)
+    
             HStack(spacing: 20) {
                 if isOutdoors {
                     statView(
@@ -68,41 +56,11 @@ struct WorkoutCard: View {
                     Divider().frame(height: 30)
                     statView(title: "Segments", value: "\(workout.workoutActivities.count)")
                 }
-                
-                if isOutdoors {
-                    Spacer()
-                    Button {
-                        withAnimation {
-                            showingMap.toggle()
-                        }
-                    } label: {
-                        Image(systemName: "map")
-                    }
-                }
-            }
-            .padding(.horizontal)
-            
-//            if isOutdoors {
-//                if showingMap {
-//                    WorkoutMap(workout: workout)
-//                        .padding(.horizontal)
-//                }
-//            }
-        }
-        .padding(.vertical, 12)
-        .background {
-            if colorScheme == .dark {
-                Rectangle().fill(Material.regularMaterial)
-            } else {
-                Rectangle().fill(Color.white) // Assuming BackgroundStyle.background is a Color
             }
         }
-        .cornerRadius(12)
-        .padding(.vertical, 4)
-        .sheet(isPresented: $showingMap) {
-            WorkoutMap(workout: workout, sheetIsShowing: $showingMap)
-        }
-
+        .padding(.horizontal)
+        .navigationTitle(activityTypeString)
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     // MARK: - Helper Views
@@ -229,12 +187,11 @@ struct WorkoutCard: View {
         }
         
         let caloriesValue = calories.doubleValue(for: .kilocalorie())
-        return String(format: "%.0f kcal", caloriesValue)
+        return String(format: "%.0f", caloriesValue)
     }
 }
 
-
 #Preview {
-    WorkoutCard(workout: MockWorkout().createMockWorkout())
+    WorkoutCardCompressed(workout: MockWorkout().createMockWorkout())
         .environment(HealthController())
 }

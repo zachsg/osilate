@@ -51,6 +51,9 @@ struct SweatSection: View {
         } footer: {
             Text("Auto-calculation of max heart rate is based on your age.")
         }
+        .onChange(of: maxHr) { oldValue, newValue in
+            AppStorageSyncManager.shared.sendMaxHrToWatch(newValue)
+        }
     }
 }
 

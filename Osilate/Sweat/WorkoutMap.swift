@@ -13,6 +13,7 @@ struct WorkoutMap: View {
     @Environment(HealthController.self) private var healthController
     
     let workout: HKWorkout
+    @Binding var sheetIsShowing: Bool
     
     @State private var routeLocations: [CLLocation] = []
     @State private var isLoadingRoute = true
@@ -22,39 +23,57 @@ struct WorkoutMap: View {
     )
     
     var body: some View {
-        ZStack {
-            Map {
-                if routeLocations.count > 1 {
-                    MapPolyline(coordinates: routeLocations.map { $0.coordinate })
-                        .stroke(.blue, lineWidth: 4)
+        NavigationStack {
+            VStack {
+                WorkoutCardCompressed(workout: workout)
+
+                ZStack {
+                    
+                    Map {
+                        if routeLocations.count > 1 {
+                            MapPolyline(coordinates: routeLocations.map { $0.coordinate })
+                                .stroke(.blue, lineWidth: 4)
+                        }
+                        
+                        if let firstLocation = routeLocations.first {
+                            Marker("Start", coordinate: firstLocation.coordinate)
+                                .tint(.green)
+                        }
+                        
+                        if let lastLocation = routeLocations.last, routeLocations.count > 1 {
+                            Marker("End", coordinate: lastLocation.coordinate)
+                                .tint(.red)
+                        }
+                    }
+                    .mapStyle(.standard(elevation: .realistic, pointsOfInterest: []))
+                    
+                    if isLoadingRoute {
+                        ProgressView("Loading route...")
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(8)
+                    } else if routeLocations.isEmpty {
+                        Text("No route data available")
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(8)
+                    }
                 }
-                
-                if let firstLocation = routeLocations.first {
-                    Marker("Start", coordinate: firstLocation.coordinate)
-                        .tint(.green)
+                .toolbar {
+                    ToolbarItem {
+                        Button {
+                            sheetIsShowing.toggle()
+                        } label: {
+                            Label {
+                                Text(closeLabel)
+                            } icon: {
+                                Image(systemName: cancelSystemImage)
+                            }
+                        }
+                    }
                 }
-                
-                if let lastLocation = routeLocations.last, routeLocations.count > 1 {
-                    Marker("End", coordinate: lastLocation.coordinate)
-                        .tint(.red)
-                }
-            }
-            .mapStyle(.standard(pointsOfInterest: []))
-            
-            if isLoadingRoute {
-                ProgressView("Loading route...")
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(8)
-            } else if routeLocations.isEmpty {
-                Text("No route data available")
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(8)
             }
         }
-        .frame(height: 180)
-        .cornerRadius(8)
         .onAppear {
             loadWorkoutRoute()
         }
@@ -150,6 +169,6 @@ struct WorkoutMap: View {
 }
 
 #Preview {
-    WorkoutMap(workout: MockWorkout().createMockWorkout())
+    WorkoutMap(workout: MockWorkout().createMockWorkout(), sheetIsShowing: .constant(true))
         .environment(HealthController())
 }

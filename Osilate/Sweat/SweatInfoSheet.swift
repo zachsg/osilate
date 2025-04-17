@@ -206,6 +206,9 @@ struct SweatInfoSheet: View {
                     HeaderLabel(title: "HR Zones", systemImage: rhrSystemImage)
                 }
             }
+            .onChange(of: maxHr) { oldValue, newValue in
+                AppStorageSyncManager.shared.sendMaxHrToWatch(newValue)
+            }
             .navigationTitle("What's Sweat?")
             .toolbar {
                 ToolbarItem {
