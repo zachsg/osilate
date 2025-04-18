@@ -11,7 +11,7 @@ struct ContentView: View {
     @Environment(HealthController.self) private var healthController
     
     @State private var tabSelected: OTabSelected = .summary
-    @State private var mirroringSheetIsShowing = false
+    @State private var mirroringSheetIsShowing = true
     
     var body: some View {
         TabView(selection: $tabSelected) {

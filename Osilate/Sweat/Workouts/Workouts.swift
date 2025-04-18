@@ -52,7 +52,6 @@ struct Workouts: View {
     private func fetchWorkouts() async {
         await MainActor.run {
             loadingWorkouts = true
-            print("loading workouts")
         }
         
         let workouts = await healthController.fetchWorkouts(todayOnly: showToday ? true: false)
@@ -60,14 +59,12 @@ struct Workouts: View {
         await MainActor.run {
             workoutList = workouts
             loadingWorkouts = false
-            print("workouts loaded")
         }
     }
     
     private func fetchZones() async {
         await MainActor.run {
             loadingZones = true
-            print("loading zones")
         }
         
         let zones = await healthController.fetchZones(for: workoutList)
@@ -75,11 +72,6 @@ struct Workouts: View {
         await MainActor.run {
             zoneDurations = zones
             loadingZones = false
-            print("zones loaded")
-        }
-        
-        for zone in zoneDurations.keys {
-            print("\(zone.rawValue): \(zoneDurations[zone] ?? 0)")
         }
     }
 }

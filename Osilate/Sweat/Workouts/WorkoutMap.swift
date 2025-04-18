@@ -21,6 +21,7 @@ struct WorkoutMap: View {
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
+    @State private var showTerrain = false
     
     var body: some View {
         NavigationStack {
@@ -28,7 +29,6 @@ struct WorkoutMap: View {
                 WorkoutCardCompressed(workout: workout)
 
                 ZStack {
-                    
                     Map {
                         if routeLocations.count > 1 {
                             MapPolyline(coordinates: routeLocations.map { $0.coordinate })
@@ -45,7 +45,11 @@ struct WorkoutMap: View {
                                 .tint(.red)
                         }
                     }
-                    .mapStyle(.standard(elevation: .realistic, pointsOfInterest: []))
+                    .mapStyle(showTerrain ? .imagery : .standard(elevation: .realistic, pointsOfInterest: []))
+                    .mapControls {
+                        MapPitchToggle()
+                    }
+                    .mapControlVisibility(.visible)
                     
                     if isLoadingRoute {
                         ProgressView("Loading route...")
@@ -57,6 +61,26 @@ struct WorkoutMap: View {
                             .padding()
                             .background(.ultraThinMaterial)
                             .cornerRadius(8)
+                    }
+                    
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button {
+                                withAnimation {
+                                    showTerrain.toggle()
+                                }
+                            } label: {
+                                Label("Terrain", systemImage: showTerrain ? "globe" : "globe.americas")
+                                    .labelStyle(.iconOnly)
+                            }
+                            .padding(11)
+                            .background(.background.opacity(0.8))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .padding(.top, 54)
+                            .padding(.trailing, 6)
+                        }
+                        Spacer()
                     }
                 }
                 .toolbar {

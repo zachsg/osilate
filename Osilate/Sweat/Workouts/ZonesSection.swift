@@ -111,7 +111,7 @@ struct ZonesSection: View {
             .background(.background)
             .frame(height: 200)
         } header: {
-            HeaderLabel(title: "HR Zones \(showToday ? "Today" : "Past Week")", systemImage: chartSystemImage, color: .accent)
+            HeaderLabel(title: "Workout HR Zones \(showToday ? "Today" : "Past Week")", systemImage: chartSystemImage, color: .accent)
         }
     }
 }

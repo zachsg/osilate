@@ -233,6 +233,7 @@ class HealthController: NSObject {
     var averageHeartRate: Double = 0
     var heartRate: Double = 0
     var elapsedTimeInterval: TimeInterval = 0
+    var locations: [CLLocation] = []
     
     func startMirroring() {
         healthStore.workoutSessionMirroringStartHandler = { mirroredSession in
@@ -257,6 +258,8 @@ class HealthController: NSObject {
             for statistics in statisticsArray {
                 updateForStatistics(statistics)
             }
+        } else if let locations = try? decodeLocations(from: data) {
+            self.locations = locations
         }
     }
     

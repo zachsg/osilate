@@ -322,6 +322,10 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
             if let elapsedTimeData = try? JSONEncoder().encode(elapsedTime) {
                 await sendData(elapsedTimeData)
             }
+            
+            if let locationsData = try? encodeLocations(locations) {
+                await sendData(locationsData)
+            }
         }
     }
 }
