@@ -1099,11 +1099,7 @@ class HealthController: NSObject {
                     sum += Int(h.rounded())
                 }
 
-                if let heart = byDay[sample.endDate] {
-                    byDay[sample.endDate] = heart + Int(h.rounded())
-                } else {
-                    byDay[sample.endDate] = Int(h.rounded())
-                }
+                byDay[sample.endDate] = Int(h.rounded())
             }
 
             if let bestSample {

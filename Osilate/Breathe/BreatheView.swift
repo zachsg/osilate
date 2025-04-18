@@ -76,7 +76,7 @@ struct BreatheView: View {
                         StatsSection()
                         
                         Label("No time like the present. Let's take action!", systemImage: arrowSystemImage)
-                            .font(.title2)
+                            .font(.headline)
                             .multilineTextAlignment(.center)
                     }
                     .refreshable {

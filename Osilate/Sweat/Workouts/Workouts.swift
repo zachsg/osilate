@@ -9,6 +9,7 @@ import HealthKit
 import SwiftUI
 
 struct Workouts: View {
+    @Environment(\.scenePhase) var scenePhase
     @Environment(HealthController.self) private var healthController
     
     @AppStorage(showTodayKey) var showToday = showTodayDefault
@@ -36,9 +37,11 @@ struct Workouts: View {
         } header: {
             HeaderLabel(title: "Workouts \(showToday ? "Today" : "Past Week")", systemImage: "sun.max", color: .accent)
         }
-        .onAppear {
-            Task {
-                await fetchWorkouts()
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                Task {
+                    await fetchWorkouts()
+                }
             }
         }
         .onChange(of: showToday) { oldValue, newValue in

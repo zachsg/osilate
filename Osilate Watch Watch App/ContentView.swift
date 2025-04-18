@@ -20,17 +20,13 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("Max HR: \(maxHr)")
-                
-                List(workoutTypes) { workoutType in
-                    WorkoutTypeOption(workoutManager: workoutManager, shouldNavigate: $shouldNavigate, workoutType: workoutType)
-                }
-                .listStyle(.carousel)
-                .navigationBarTitle("Workouts")
-                .navigationDestination(isPresented: $shouldNavigate) {
-                    SessionPagingView()
-                }
+            List(workoutTypes) { workoutType in
+                WorkoutTypeOption(workoutManager: workoutManager, shouldNavigate: $shouldNavigate, workoutType: workoutType)
+            }
+            .listStyle(.carousel)
+            .navigationBarTitle("Workouts")
+            .navigationDestination(isPresented: $shouldNavigate) {
+                SessionPagingView()
             }
         }
         .onAppear {

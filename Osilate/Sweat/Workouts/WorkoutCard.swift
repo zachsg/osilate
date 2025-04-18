@@ -223,13 +223,16 @@ struct WorkoutCard: View {
         }
     }
     
-    private var formattedCalories: String {
-        guard let calories = workout.totalEnergyBurned else {
-            return "N/A"
+    var formattedCalories: String {
+        var kilocalories = 0.0
+        
+        let energyBurnedType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
+        if let statistics = workout.statistics(for: energyBurnedType),
+           let totalEnergy = statistics.sumQuantity() {
+            kilocalories = totalEnergy.doubleValue(for: .kilocalorie())
         }
         
-        let caloriesValue = calories.doubleValue(for: .kilocalorie())
-        return String(format: "%.0f kcal", caloriesValue)
+        return String(format: "%.0f kcal", kilocalories)
     }
 }
 

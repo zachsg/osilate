@@ -273,7 +273,7 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
     if startOrEnd == .start {
         return switch zone {
         case .one:
-            0
+            Int((Double(maxHr) * 0.5).rounded())
         case .two:
             Int((Double(maxHr) * 0.6).rounded())
         case .three:
@@ -322,7 +322,7 @@ extension Double {
         let zone5Start = Double(hrZone(.five, at: .start))
         
         switch self {
-            case zone2Range:
+        case zone2Range:
             return .two
         case zone3Range:
             return .three
@@ -423,14 +423,30 @@ extension View {
             UIApplication.shared.isIdleTimerDisabled = true
 
             AppDelegate.orientationLock = UIInterfaceOrientationMask.allButUpsideDown
-            UIViewController.attemptRotationToDeviceOrientation()
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootViewController = window.rootViewController {
+                rootViewController.setNeedsUpdateOfSupportedInterfaceOrientations()
+            }
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
 
             AppDelegate.orientationLock = UIInterfaceOrientationMask.portrait
-            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-            UIViewController.attemptRotationToDeviceOrientation()
+            
+            // Force portrait orientation
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait)) { error in
+                    print("Failed to update geometry: \(error)")
+                }
+            }
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootViewController = window.rootViewController {
+                rootViewController.setNeedsUpdateOfSupportedInterfaceOrientations()
+            }
         }
     }
 }

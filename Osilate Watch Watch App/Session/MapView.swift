@@ -65,19 +65,8 @@ struct MapView: View {
         
         var body: some View {
             Map(position: $position, interactionModes: .all) {
-                // Show current location marker
-                if let currentLocation = workoutManager.locations.last {
-//                    Annotation("", coordinate: currentLocation.coordinate) {
-//                        Circle()
-//                            .fill(.blue)
-//                            .stroke(.white, lineWidth: 2)
-//                            .frame(width: 16, height: 16)
-//                    }
-                    
-                    UserAnnotation()
-                }
+                UserAnnotation()
                 
-                // Show route polyline
                 if workoutManager.locations.count > 1 {
                     MapPolyline(coordinates: workoutManager.locations.map { $0.coordinate })
                         .stroke(.blue, lineWidth: 5)

@@ -45,6 +45,7 @@ struct SweatSection: View {
                     maxHr = 220 - userAge
                 }
                 .buttonStyle(.bordered)
+                .tint(.sweat)
             }
         } header: {
             HeaderLabel(title: sweatString, systemImage: sweatSystemImage, color: .sweat)

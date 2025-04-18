@@ -83,7 +83,7 @@ class MockWorkout {
 
     func createMockWorkoutEvents(workout: HKWorkout) {
         // Create some workout events
-        let workoutEvents = [
+        let _ = [
             HKWorkoutEvent(
                 type: .pause,
                 dateInterval: DateInterval(
@@ -119,7 +119,7 @@ class MockWorkout {
         
         // Mock a heart rate of 140 bpm at 30 minutes into the workout
         let heartRateQuantity = HKQuantity(unit: heartRateUnit, doubleValue: 140.0)
-        let heartRateSample = HKQuantitySample(
+        let _ = HKQuantitySample(
             type: heartRateType,
             quantity: heartRateQuantity,
             start: workout.startDate.addingTimeInterval(1800), // 30 minutes in

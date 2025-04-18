@@ -170,6 +170,17 @@ struct MoveView: View {
                 refresh()
             }
         }
+        .onChange(of: showToday) { oldValue, newValue in
+            if newValue {
+                withAnimation {
+                    tab = .day
+                }
+            } else {
+                withAnimation {
+                    tab = .week
+                }
+            }
+        }
     }
     
     private func refresh() {
