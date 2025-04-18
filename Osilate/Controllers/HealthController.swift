@@ -2453,18 +2453,12 @@ class HealthController: NSObject {
     func fetchTodaysWorkouts(todayOnly: Bool = true) async -> [HKWorkout] {
         let samples = try? await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[HKSample], Error>) in
             let calendar = Calendar.current
-            let components = calendar.dateComponents([.year, .month, .day], from: .now)
-            var startDate = calendar.date(from: components)
-            
-            if !todayOnly {
-                startDate?.addTimeInterval(-hourInSeconds * 24 * 6)
-            }
-            
-            guard let startDate else {
-                continuation.resume(returning: [])
-                return
-            }
+            var startDate = calendar.startOfDay(for: Date())
             let endDate = Date()
+
+            if !todayOnly {
+                startDate.addTimeInterval(-hourInSeconds * 24 * 6)
+            }
 
             let todayPredicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
             let cyclingPredicate = HKQuery.predicateForWorkouts(with: .cycling)

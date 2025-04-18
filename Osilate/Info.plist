@@ -2,27 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>processing</string>
-		<string>remote-notification</string>
-	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>io.mobn.osilate.refresh</string>
 		<string>io.mobn.osilate.processing</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+		<string>remote-notification</string>
+	</array>
 	<key>com.apple.developer.healthkit.access</key>
 	<true/>
 	<key>com.apple.developer.healthkit.background-delivery</key>
 	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Osilate needs your location to track your workout route.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Osilate needs your location to track your workout route even when in the background.</string>
-	<key>NSHealthShareUsageDescription</key>
-	<string>Osilate reads from Apple Health.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>Osilate saves workout data to Apple Health.</string>
 </dict>
 </plist>

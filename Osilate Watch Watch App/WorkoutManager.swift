@@ -6,6 +6,7 @@
 //
 
 import CoreLocation
+import CoreMotion
 import Foundation
 import HealthKit
 import Observation
@@ -51,6 +52,8 @@ class WorkoutManager: NSObject {
             } else {
                 print("Cannot start location updates - authorization not granted")
             }
+            
+            startAltimeter()
         }
         
         let configuration = HKWorkoutConfiguration()
@@ -111,6 +114,7 @@ class WorkoutManager: NSObject {
     func endWorkout() {
         if isOutdoors {
             locationManager.stopUpdatingLocation()
+            stopAltimeter()
         }
         
         session?.end()
@@ -137,8 +141,7 @@ class WorkoutManager: NSObject {
     var elevationStart: Double = -1
     var elevationGain: Double = 0
     var elevationLost: Double = 0
-    var relativeElevationChange: Double = 0
-    var lastElevation: Double?
+    private var lastRelativeAltitude: Double = 0
     var workout: HKWorkout?
     
     func updateForStatistics(_ statistics: HKStatistics?) {
@@ -218,13 +221,13 @@ class WorkoutManager: NSObject {
         elevationStart = -1
         elevationGain = 0
         elevationLost = 0
-        relativeElevationChange = 0
-        lastElevation = nil
     }
     
     // MARK: - Location
     let locationManager = CLLocationManager()
     var locations: [CLLocation] = []
+    private let altimeter = CMAltimeter()
+    private var isAltimeterActive = false
 }
 
 // MARK: - HKWorkoutSessionDelegate
@@ -374,22 +377,6 @@ extension WorkoutManager: CLLocationManagerDelegate {
                 }
             }
         }
-        
-        // Calculate elevation changes only after we have a stable starting point
-        if let lastLocation = locations.dropLast().last, elevationStart != -1 {
-            let elevationChange = location.altitude - lastLocation.altitude
-            
-            // Filter out unreasonable elevation changes (usually GPS errors)
-            if elevationChange > 0 && elevationChange < 10 {
-                elevationGain += elevationChange
-            } else if elevationChange < 0 && elevationChange > -10 {
-                elevationLost += abs(elevationChange)
-            }
-            
-            relativeElevationChange = location.altitude - elevationStart
-            
-            lastElevation = lastLocation.altitude
-        }
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -406,5 +393,34 @@ extension WorkoutManager: CLLocationManagerDelegate {
         @unknown default:
             break
         }
+    }
+    
+    func startAltimeter() {
+        guard CMAltimeter.isRelativeAltitudeAvailable() else {
+            print("Altimeter not available on this device.")
+            return
+        }
+        
+        isAltimeterActive = true
+        lastRelativeAltitude = 0
+        elevationGain = 0
+        elevationLost = 0
+
+        altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, error in
+            guard let self = self, let data = data, self.isAltimeterActive else { return }
+            let relAlt = data.relativeAltitude.doubleValue // in meters
+            let delta = relAlt - self.lastRelativeAltitude
+            if delta > 0 {
+                self.elevationGain += delta
+            } else if delta < 0 {
+                self.elevationLost += -delta
+            }
+            self.lastRelativeAltitude = relAlt
+        }
+    }
+
+    func stopAltimeter() {
+        isAltimeterActive = false
+        altimeter.stopRelativeAltitudeUpdates()
     }
 }

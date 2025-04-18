@@ -11,13 +11,17 @@ struct ElevationView: View {
     @Environment(\.locale) private var locale
     @Environment(WorkoutManager.self) private var workoutManager
     
+    var elevation: Double {
+        workoutManager.elevationStart + (workoutManager.elevationGain - workoutManager.elevationLost)
+    }
+    
     var body: some View {
         ZStack {
             workoutManager.heartRate.zoneColor().opacity(0.2)
             
             VStack(alignment: .leading) {
                 Label {
-                    Text(formattedElevation(workoutManager.lastElevation ?? 0))
+                    Text(formattedElevation(elevation))
                 } icon: {
                     Text("   Elev.   ")
                         .font(.caption2)
@@ -38,7 +42,7 @@ struct ElevationView: View {
                 }
                 
                 Label {
-                    Text(formattedElevation(workoutManager.relativeElevationChange))
+                    Text(formattedElevation(workoutManager.elevationGain - workoutManager.elevationLost))
                 } icon: {
                     Text("Change")
                         .font(.caption2)
