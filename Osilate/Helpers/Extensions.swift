@@ -336,13 +336,16 @@ extension Double {
     }
     
     func zoneColor() -> Color {
+        let zone1Range = Double(hrZone(.one, at: .start))...Double(hrZone(.one, at: .end))
         let zone2Range = Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
         let zone3Range = Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
         let zone4Range = Double(hrZone(.four, at: .start))...Double(hrZone(.four, at: .end))
         let zone5Start = Double(hrZone(.five, at: .start))
         
         switch self {
-            case zone2Range:
+        case zone1Range:
+            return .blue
+        case zone2Range:
             return .yellow
         case zone3Range:
             return .orange
@@ -406,6 +409,23 @@ struct ThousandsAbbreviationFormatStyle: FormatStyle {
             }
         } else {
             return String(value)
+        }
+    }
+}
+
+extension OZone {
+    func color() -> Color {
+        switch self {
+        case .one:
+            return .blue
+        case .two:
+            return .yellow
+        case .three:
+            return .orange
+        case .four:
+            return .red
+        case .five:
+            return .purple
         }
     }
 }

@@ -2446,7 +2446,7 @@ class HealthController: NSObject {
     }
     
     // MARK: - Workouts
-    func fetchTodaysWorkouts(todayOnly: Bool = true) async -> [HKWorkout] {
+    func fetchWorkouts(todayOnly: Bool = true) async -> [HKWorkout] {
         let samples = try? await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[HKSample], Error>) in
             let calendar = Calendar.current
             var startDate = calendar.startOfDay(for: Date())
@@ -2499,6 +2499,85 @@ class HealthController: NSObject {
         let workouts = samples as? [HKWorkout]
         return workouts == nil ? [] : workouts!
     }
+
+    func fetchZones(for workouts: [HKWorkout]) async -> [OZone: TimeInterval] {
+        var zoneDurations: [OZone: TimeInterval] = [:]
+
+        await withTaskGroup(of: [OZone: TimeInterval].self) { group in
+            for workout in workouts {
+                group.addTask {
+                    var localZoneDurations: [OZone: TimeInterval] = [:]
+                    let hrType = HKQuantityType.quantityType(forIdentifier: .heartRate)!
+                    let predicate = HKQuery.predicateForSamples(withStart: workout.startDate, end: workout.endDate, options: [])
+
+                    let samples = await self.fetchHeartRateSamples(type: hrType, predicate: predicate)
+                    guard !samples.isEmpty else { return localZoneDurations }
+
+                    // Sort samples by startDate to ensure correct order
+                    let sortedSamples = samples.sorted { $0.startDate < $1.startDate }
+
+                    for i in 0..<sortedSamples.count {
+                        let curr = sortedSamples[i]
+                        let hrValue = curr.quantity.doubleValue(for: .init(from: "count/min"))
+                        let zone = hrValue.zone()
+
+                        // Calculate duration using next sample's startDate or workout endDate
+                        let duration: TimeInterval
+                        if i < sortedSamples.count - 1 {
+                            let next = sortedSamples[i + 1]
+                            duration = next.startDate.timeIntervalSince(curr.startDate)
+                        } else {
+                            // For the last sample, use workout.endDate
+                            duration = workout.endDate.timeIntervalSince(curr.startDate)
+                        }
+
+                        // Only add positive durations within workout bounds
+                        if duration > 0 && curr.startDate >= workout.startDate && curr.endDate <= workout.endDate {
+                            localZoneDurations[zone, default: 0] += duration
+                        }
+                    }
+
+                    // Validate total duration doesn't exceed workout duration
+                    let totalZoneTime = localZoneDurations.values.reduce(0, +)
+                    let workoutDuration = workout.endDate.timeIntervalSince(workout.startDate)
+                    if totalZoneTime > workoutDuration + 1.0 { // Allow small floating-point errors
+                        print("Warning: Total zone time (\(totalZoneTime)) exceeds workout duration (\(workoutDuration)) for workout starting \(workout.startDate)")
+                        // Scale durations to fit workout duration
+                        let scale = workoutDuration / totalZoneTime
+                        for zone in localZoneDurations.keys {
+                            localZoneDurations[zone]! *= scale
+                        }
+                    }
+
+                    return localZoneDurations
+                }
+            }
+
+            for await localDurations in group {
+                for (zone, duration) in localDurations {
+                    zoneDurations[zone, default: 0] += duration
+                }
+            }
+            
+            for zone in OZone.allCases {
+                if zoneDurations[zone] == nil {
+                    zoneDurations[zone] = 0
+                }
+            }
+        }
+
+        return zoneDurations
+    }
+
+    private func fetchHeartRateSamples(type: HKQuantityType, predicate: NSPredicate) async -> [HKQuantitySample] {
+        await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)]) { _, samples, _ in
+                continuation.resume(returning: samples as? [HKQuantitySample] ?? [])
+            }
+            healthStore.execute(query)
+        }
+    }
+    
 }
 
 extension HealthController: HKWorkoutSessionDelegate {

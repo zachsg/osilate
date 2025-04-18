@@ -7,8 +7,19 @@
 
 import Foundation
 
-enum OZone: String, Codable, CaseIterable {
-   case one, two, three, four, five
+enum OZone: String, Codable, CaseIterable, Comparable {
+   case one = "1", two = "2", three = "3", four = "4", five = "5"
+    
+    static func < (lhs: OZone, rhs: OZone) -> Bool {
+        let order: [OZone] = [.one, .two, .three, .four, .five]
+        
+        guard let lhsIndex = order.firstIndex(of: lhs),
+              let rhsIndex = order.firstIndex(of: rhs) else {
+            return false // Fallback, should not occur with defined cases
+        }
+        
+        return lhsIndex < rhsIndex
+    }
 }
 
 enum OZoneStartEnd: String, Codable, CaseIterable {

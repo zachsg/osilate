@@ -15,46 +15,72 @@ struct Workouts: View {
     @AppStorage(showTodayKey) var showToday = showTodayDefault
     
     @State private var workoutList = [HKWorkout]()
-    @State private var loading = true
+    @State private var loadingWorkouts = true
+    @State private var zoneDurations: [OZone: TimeInterval] = [:]
+    @State private var loadingZones = true
     
     var body: some View {
-        Section {
-            if loading {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                }
-            } else if workoutList.isEmpty {
-                Text("No workouts so far.")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(workoutList, id: \.uuid) { workout in
-                    WorkoutCard(workout: workout)
-                }
+        Group {
+            ZonesSection(zoneDurations: $zoneDurations, loading: $loadingZones, showToday: $showToday)
+            
+            WorkoutsSection(workoutList: $workoutList, loading: $loadingWorkouts, showToday: $showToday)
+        }
+        .onAppear {
+            Task {
+                await fetchAll()
             }
-        } header: {
-            HeaderLabel(title: "Workouts \(showToday ? "Today" : "Past Week")", systemImage: "sun.max", color: .accent)
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
                 Task {
-                    await fetchWorkouts()
+                    await fetchAll()
                 }
             }
         }
         .onChange(of: showToday) { oldValue, newValue in
             Task {
-                await fetchWorkouts()
+                await fetchAll()
             }
         }
     }
     
+    private func fetchAll() async {
+        await fetchWorkouts()
+        await fetchZones()
+    }
+    
     private func fetchWorkouts() async {
-        loading = true
-        workoutList = await healthController.fetchTodaysWorkouts(todayOnly: showToday ? true: false)
-        loading = false
+        await MainActor.run {
+            loadingWorkouts = true
+            print("loading workouts")
+        }
+        
+        let workouts = await healthController.fetchWorkouts(todayOnly: showToday ? true: false)
+        
+        await MainActor.run {
+            workoutList = workouts
+            loadingWorkouts = false
+            print("workouts loaded")
+        }
+    }
+    
+    private func fetchZones() async {
+        await MainActor.run {
+            loadingZones = true
+            print("loading zones")
+        }
+        
+        let zones = await healthController.fetchZones(for: workoutList)
+        
+        await MainActor.run {
+            zoneDurations = zones
+            loadingZones = false
+            print("zones loaded")
+        }
+        
+        for zone in zoneDurations.keys {
+            print("\(zone.rawValue): \(zoneDurations[zone] ?? 0)")
+        }
     }
 }
 
