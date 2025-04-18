@@ -59,7 +59,7 @@ struct StatRow<Destination: View, Badge: View>: View {
     }
     
     func content() -> some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
                 HStack {
                     Image(systemName: headerImage)
@@ -82,7 +82,6 @@ struct StatRow<Destination: View, Badge: View>: View {
                 HStack(alignment: units != nil && goal == nil ? .firstTextBaseline : .center, spacing: 0) {
                     Text(((stat * 10).rounded())/10, format: .number)
                         .font(.title.weight(.semibold))
-
 
                     VStack(alignment: .leading) {
                         if let goal {

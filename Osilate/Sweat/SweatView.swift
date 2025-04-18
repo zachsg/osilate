@@ -56,10 +56,6 @@ struct SweatView: View {
                         }
                     }
                 }
-                .padding(.vertical, 10)
-                .listRowBackground(Color.clear)
-                .listRowSpacing(0)
-                .listRowInsets(EdgeInsets())
                 
                 Section {
                     StatRow(headerImage: vO2SystemImage, headerTitle: "Cardio fitness", date: healthController.latestCardioFitness, loading: healthController.cardioFitnessLoading, stat: healthController.cardioFitnessMostRecent, color: .sweat, units: vO2Units) {

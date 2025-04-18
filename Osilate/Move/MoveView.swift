@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MoveView: View {
+    @Environment(\.colorScheme) var colorScheme
     @Environment(\.scenePhase) var scenePhase
     @Environment(HealthController.self) private var healthController
     
@@ -99,8 +100,25 @@ struct MoveView: View {
                             .foregroundStyle(.move)
                     }
                 }
-                .padding(.top, 42)
+                .padding(.vertical, 10)
+                .background {
+                    if colorScheme == .dark {
+                        Rectangle().fill(Material.regularMaterial)
+                    } else {
+                        Rectangle().fill(BackgroundStyle.background)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.top, 36)
                 .padding(.bottom, 22)
+                .padding(.horizontal, 20)
+                .background {
+                    if colorScheme == .dark {
+                        Rectangle().fill(BackgroundStyle.background)
+                    } else {
+                        Rectangle().fill(Material.regularMaterial)
+                    }
+                }
                 
                 Picker("Period", selection: $tab) {
                     ForEach(OTimePeriod.allCases, id: \.self) { period in

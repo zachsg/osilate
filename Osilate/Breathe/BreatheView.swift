@@ -72,10 +72,6 @@ struct BreatheView: View {
                                 }
                             }
                         }
-                        .padding(.vertical, 10)
-                        .listRowBackground(Color.clear)
-                        .listRowSpacing(0)
-                        .listRowInsets(EdgeInsets())
                         
                         StatsSection()
                         
@@ -107,10 +103,6 @@ struct BreatheView: View {
                                 }
                             }
                         }
-                        .padding(.vertical, 12)
-                        .listRowBackground(Color.clear)
-                        .listRowSpacing(0)
-                        .listRowInsets(EdgeInsets())
                         
                         StatsSection()
                         
