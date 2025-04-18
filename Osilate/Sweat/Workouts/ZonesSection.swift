@@ -82,13 +82,15 @@ struct ZonesSection: View {
                             )
                             .foregroundStyle(zoneAndMinutes.zone.color())
                             .annotation(position: .trailing) {
-                                HStack(spacing: 1) {
-                                    Text(zoneAndMinutes.minutes, format: .number)
-                                        .fontWeight(.bold)
-                                    Text("min")
+                                if !noZones {
+                                    HStack(spacing: 1) {
+                                        Text(zoneAndMinutes.minutes, format: .number)
+                                            .fontWeight(.bold)
+                                        Text("min")
+                                    }
+                                    .font(.caption)
+                                    .padding(.horizontal, 4)
                                 }
-                                .font(.caption)
-                                .padding(.horizontal, 4)
                             }
                         }
                     }
