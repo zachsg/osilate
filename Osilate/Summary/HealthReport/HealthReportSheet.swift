@@ -90,32 +90,44 @@ struct HealthReportSheet: View {
         }
         .onAppear {
             if hasBodyTemp {
-                healthController.getBodyTempToday()
-                healthController.getBodyTempTwoWeeks()
+                Task {
+                    healthController.getBodyTempToday()
+                    healthController.getBodyTempTwoWeeks()
+                }
             }
            
             if hasRespiration {
-                healthController.getRespirationToday()
-                healthController.getRespirationTwoWeeks()
+                Task {
+                    healthController.getRespirationToday()
+                    healthController.getRespirationTwoWeeks()
+                }
             }
             
             if hasOxygen {
-                healthController.getOxygenToday()
-                healthController.getOxygenTwoWeeks()
+                Task {
+                    healthController.getOxygenToday()
+                    healthController.getOxygenTwoWeeks()
+                }
             }
             
             if hasRhr {
-                healthController.getRhrRecent()
+                Task {
+                    healthController.getRhrRecent()
+                }
             }
             
             if hasHrv {
-                healthController.getHrvToday()
-                healthController.getHrvTwoWeeks()
+                Task {
+                    healthController.getHrvToday()
+                    healthController.getHrvTwoWeeks()
+                }
             }
             
             if hasSleep {
-                healthController.getSleepToday()
-                healthController.getSleepTwoWeeks()
+                Task {
+                    healthController.getSleepToday()
+                    healthController.getSleepTwoWeeks()
+                }
             }
         }
     }

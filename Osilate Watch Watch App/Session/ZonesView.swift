@@ -43,7 +43,7 @@ struct ZonesView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 2)
-                                .foregroundStyle(.green.opacity(0.7))
+                                .foregroundStyle(OZone.one.color().opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.one), height: 28)
                             
                             Label {
@@ -62,7 +62,7 @@ struct ZonesView: View {
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
-                                .foregroundStyle(.yellow.opacity(0.7))
+                                .foregroundStyle(OZone.two.color().opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.two), height: 28)
                             
                             Label {
@@ -81,7 +81,7 @@ struct ZonesView: View {
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
-                                .foregroundStyle(.orange.opacity(0.7))
+                                .foregroundStyle(OZone.three.color().opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.three), height: 28)
                             
                             Label {
@@ -100,7 +100,7 @@ struct ZonesView: View {
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
-                                .foregroundStyle(.red.opacity(0.7))
+                                .foregroundStyle(OZone.four.color().opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.four), height: 28)
                             
                             Label {
@@ -119,7 +119,7 @@ struct ZonesView: View {
                         
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
-                                .foregroundStyle(.purple.opacity(0.7))
+                                .foregroundStyle(OZone.five.color().opacity(0.7))
                                 .frame(width: geometry.size.width * zonePercentage(.five), height: 28)
                             
                             Label {
