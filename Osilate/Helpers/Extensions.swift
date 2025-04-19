@@ -316,19 +316,14 @@ extension Double {
     }
     
     func zone() -> OZone {
-        let zone2Range = Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
-        let zone3Range = Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
-        let zone4Range = Double(hrZone(.four, at: .start))...Double(hrZone(.four, at: .end))
-        let zone5Start = Double(hrZone(.five, at: .start))
-        
         switch self {
-        case zone2Range:
+        case zoneRange(for: .two):
             return .two
-        case zone3Range:
+        case zoneRange(for: .three):
             return .three
-            case zone4Range:
+        case zoneRange(for: .four):
             return .four
-        case let x where x >= zone5Start:
+        case zoneRange(for: .five):
             return .five
         default:
             return .one
@@ -336,25 +331,19 @@ extension Double {
     }
     
     func zoneColor() -> Color {
-        let zone1Range = Double(hrZone(.one, at: .start))...Double(hrZone(.one, at: .end))
-        let zone2Range = Double(hrZone(.two, at: .start))...Double(hrZone(.two, at: .end))
-        let zone3Range = Double(hrZone(.three, at: .start))...Double(hrZone(.three, at: .end))
-        let zone4Range = Double(hrZone(.four, at: .start))...Double(hrZone(.four, at: .end))
-        let zone5Start = Double(hrZone(.five, at: .start))
-        
         switch self {
-        case zone1Range:
+        case zoneRange(for: .one):
+            return .green
+        case zoneRange(for: .two):
             return .blue
-        case zone2Range:
+        case zoneRange(for: .three):
             return .yellow
-        case zone3Range:
-            return .orange
-            case zone4Range:
+        case zoneRange(for: .four):
             return .red
-        case let x where x >= zone5Start:
+        case zoneRange(for: .five):
             return .purple
         default:
-            return .green
+            return .gray
         }
     }
     
@@ -417,11 +406,11 @@ extension OZone {
     func color() -> Color {
         switch self {
         case .one:
-            return .blue
+            return .green
         case .two:
-            return .yellow
+            return .blue
         case .three:
-            return .orange
+            return .yellow
         case .four:
             return .red
         case .five:

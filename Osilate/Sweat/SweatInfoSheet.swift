@@ -70,7 +70,7 @@ struct SweatInfoSheet: View {
                 }
                 
                 Section {
-                    let gradient = Gradient(colors: [.green, .yellow, .orange, .red])
+                    let gradient = Gradient(colors: [OZone.one.color(), OZone.two.color(), OZone.three.color(), OZone.four.color(), OZone.five.color()])
                     
                     VStack(alignment: .leading) {
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
