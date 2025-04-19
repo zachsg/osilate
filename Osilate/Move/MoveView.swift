@@ -100,7 +100,7 @@ struct MoveView: View {
                             .foregroundStyle(.move)
                     }
                 }
-                .padding(.vertical, 10)
+                .padding(.vertical, 12)
                 .background {
                     if colorScheme == .dark {
                         Rectangle().fill(Material.regularMaterial)
@@ -108,10 +108,10 @@ struct MoveView: View {
                         Rectangle().fill(BackgroundStyle.background)
                     }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.top, 36)
+                .clipShape(RoundedRectangle(cornerRadius: 11))
+                .padding(.top, 35)
                 .padding(.bottom, 22)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
                 .background {
                     if colorScheme == .dark {
                         Rectangle().fill(BackgroundStyle.background)
@@ -129,15 +129,15 @@ struct MoveView: View {
                 .padding(.horizontal)
                 
                 TabView(selection: $tab) {
-                    Tab("Day", systemImage: "", value: .day) {
+                    Tab(value: .day) {
                         StepsCardView(completed: completedDay, timeFrame: .day)
                     }
                     
-                    Tab("Week", systemImage: "", value: .week) {
+                    Tab(value: .week) {
                         StepsCardView(completed: completedWeek, timeFrame: .week)
                     }
                     
-                    Tab("Month", systemImage: "", value: .month) {
+                    Tab(value: .month) {
                         StepsCardView(completed: completedMonth, timeFrame: .month)
                     }
                 }
@@ -184,17 +184,23 @@ struct MoveView: View {
     }
     
     private func refresh() {
-        healthController.getStepCountFor(.day)
-        healthController.getStepCountFor(.week)
-        healthController.getStepCountFor(.month)
+        Task {
+            healthController.getStepCountFor(.day)
+            healthController.getStepCountFor(.week)
+            healthController.getStepCountFor(.month)
+        }
         
-        healthController.getDistanceFor(.day)
-        healthController.getDistanceFor(.week)
-        healthController.getDistanceFor(.month)
+        Task {
+            healthController.getDistanceFor(.day)
+            healthController.getDistanceFor(.week)
+            healthController.getDistanceFor(.month)
+        }
 
-        healthController.getStepCountDayByHour()
-        healthController.getStepCountWeekByDay()
-        healthController.getStepCountMonthByDay()
+        Task {
+            healthController.getStepCountDayByHour()
+            healthController.getStepCountWeekByDay()
+            healthController.getStepCountMonthByDay()
+        }
     }
 }
 

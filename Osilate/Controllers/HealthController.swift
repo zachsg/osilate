@@ -2459,43 +2459,19 @@ class HealthController: NSObject {
                 startDate.addTimeInterval(-hourInSeconds * 24 * 6)
             }
 
-            let todayPredicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-            let cyclingPredicate = HKQuery.predicateForWorkouts(with: .cycling)
-            let walkingPredicate = HKQuery.predicateForWorkouts(with: .walking)
-            let runningPredicate = HKQuery.predicateForWorkouts(with: .running)
-            let hikingPredicate = HKQuery.predicateForWorkouts(with: .hiking)
-            let ellipticalPredicate = HKQuery.predicateForWorkouts(with: .elliptical)
-            let functionalStrengthPredicate = HKQuery.predicateForWorkouts(with: .functionalStrengthTraining)
-            let cooldownPredicate = HKQuery.predicateForWorkouts(with: .cooldown)
-            let yogaPredicate = HKQuery.predicateForWorkouts(with: .yoga)
-            let otherPredicate = HKQuery.predicateForWorkouts(with: .other)
-            let compoundOrPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [
-                cyclingPredicate,
-                walkingPredicate,
-                runningPredicate,
-                hikingPredicate,
-                ellipticalPredicate,
-                functionalStrengthPredicate,
-                cooldownPredicate,
-                yogaPredicate,
-                otherPredicate
-            ])
-            let compoundAndPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-                todayPredicate,
-                compoundOrPredicate
-            ])
+            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
             
             let sortByStartDate = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
             
             let query = HKSampleQuery(sampleType: .workoutType(),
-                                      predicate: compoundAndPredicate,
+                                      predicate: predicate,
                                       limit: HKObjectQueryNoLimit,
                                       sortDescriptors: [sortByStartDate]) { (query, samples, error) in
                 if let error {
                     continuation.resume(throwing: error)
                     return
                 }
-                continuation.resume(returning: samples!)
+                continuation.resume(returning: samples ?? [])
             }
             healthStore.execute(query)
         }

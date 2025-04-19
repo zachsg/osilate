@@ -75,6 +75,17 @@ struct ZonesSection: View {
                         if chartType == .pie {
                             SectorMark(angle: .value("Zone", zoneAndMinutes.minutes))
                                 .foregroundStyle(zoneAndMinutes.zone.color())
+                                .annotation(position: .overlay) {
+                                    let total = zonesAndMinutes.map { $0.minutes }.reduce(0, +)
+                                    let percentage = (Double(zoneAndMinutes.minutes) / Double(total)).rounded(toPlaces: 2)
+                                    
+                                    Text(percentage, format: .percent)
+                                        .font(.caption.bold())
+                                        .padding(.horizontal, 4)
+                                        .padding(.vertical, 2)
+                                        .background(.thinMaterial)
+                                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                                }
                         } else {
                             BarMark(
                                 x: .value("Minutes", zoneAndMinutes.minutes),
@@ -96,19 +107,20 @@ struct ZonesSection: View {
                     }
                 }
                 .chartYAxis(.hidden)
+                .chartXAxis(.hidden)
                 .chartForegroundStyleScale([/*"1": OZone.one.color(),*/ "2": OZone.two.color(), "3": OZone.three.color(), "4": OZone.four.color(), "5": OZone.five.color()])
                 .chartLegend(.visible)
                 
                 if loading {
                     ProgressView()
                 } else if noZones {
-                    Text("No heart rate data found.")
+                    Text("No heart rate of Zone 2+ found.")
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }
             }
             .padding(4)
-            .background(.background)
+            .background(.regularMaterial)
             .frame(height: 200)
         } header: {
             HeaderLabel(title: "Workout HR Zones \(showToday ? "Today" : "Past Week")", systemImage: chartSystemImage, color: .accent)

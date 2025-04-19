@@ -72,6 +72,8 @@ struct BreatheView: View {
                                 }
                             }
                         }
+                        .padding(.vertical)
+                        .listRowInsets(EdgeInsets())
                         
                         StatsSection()
                         
@@ -103,6 +105,8 @@ struct BreatheView: View {
                                 }
                             }
                         }
+                        .padding(.vertical)
+                        .listRowInsets(EdgeInsets())
                         
                         StatsSection()
                         

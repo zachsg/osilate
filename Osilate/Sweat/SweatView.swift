@@ -56,6 +56,8 @@ struct SweatView: View {
                         }
                     }
                 }
+                .padding(.vertical)
+                .listRowInsets(EdgeInsets())
                 
                 Section {
                     StatRow(headerImage: vO2SystemImage, headerTitle: "Cardio fitness", date: healthController.latestCardioFitness, loading: healthController.cardioFitnessLoading, stat: healthController.cardioFitnessMostRecent, color: .sweat, units: vO2Units) {
@@ -122,9 +124,15 @@ struct SweatView: View {
     }
     
     private func refresh() {
-        healthController.getCardioFitnessRecent()
-        healthController.getRhrRecent()
-        healthController.getRecoveryRecent()
+        Task {
+            healthController.getCardioFitnessRecent()
+        }
+        Task {
+            healthController.getRhrRecent()
+        }
+        Task {
+            healthController.getRecoveryRecent()
+        }
     }
 }
 

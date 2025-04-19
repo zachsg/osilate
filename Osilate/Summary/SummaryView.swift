@@ -110,20 +110,29 @@ struct SummaryView: View {
     }
     
     private func refresh() {
-        healthController.getStepCountFor(.day)
-        healthController.getZone2For(.day)
-        healthController.getMindfulMinutesFor(.day)
-        
-        healthController.getStepCountFor(.week)
-        healthController.getZone2For(.week)
-        healthController.getMindfulMinutesFor(.week)
+        Task {
+            healthController.getStepCountFor(.day)
+            healthController.getStepCountFor(.week)
+        }
+        Task {
+            healthController.getZone2For(.day)
+            healthController.getZone2For(.week)
+        }
+        Task {
+            healthController.getMindfulMinutesFor(.day)
+            healthController.getMindfulMinutesFor(.week)
+        }
         
         if showToday {
-            healthController.getStepCountDayByHour()
-            healthController.getZone2DayByHour()
+            Task {
+                healthController.getStepCountDayByHour()
+                healthController.getZone2DayByHour()
+            }
         } else {
-            healthController.getStepCountWeekByDay()
-            healthController.getZone2WeekByDay()
+            Task {
+                healthController.getStepCountWeekByDay()
+                healthController.getZone2WeekByDay()
+            }
         }
     }
 }

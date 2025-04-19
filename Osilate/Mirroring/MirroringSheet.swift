@@ -29,25 +29,11 @@ struct MirroringSheet: View {
         NavigationStack {
             TabView {
                 ZonesView()
-                    .toolbar {
-                        ToolbarItem {
-                            Button {
-                                healthController.isMirroring = false
-                                sheetIsShowing.toggle()
-                            } label: {
-                                Label {
-                                    Text(closeLabel)
-                                } icon: {
-                                    Image(systemName: cancelSystemImage)
-                                }
-                            }
-                        }
-                    }
                     .tabItem {
                         Label("HR Zones", systemImage: "heart.fill")
                     }.tag(1)
                 
-                if !isOutdoors {
+                if isOutdoors {
                     MapView()
                         .tabItem {
                             Label("Map", systemImage: "map")
@@ -56,6 +42,20 @@ struct MirroringSheet: View {
             }
             .navigationTitle("Mirroring")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        healthController.isMirroring = false
+                        sheetIsShowing.toggle()
+                    } label: {
+                        Label {
+                            Text(closeLabel)
+                        } icon: {
+                            Image(systemName: cancelSystemImage)
+                        }
+                    }
+                }
+            }
         }
         .unlockRotation()
     }

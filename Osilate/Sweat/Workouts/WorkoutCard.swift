@@ -15,32 +15,39 @@ struct WorkoutCard: View {
     let workout: HKWorkout
     
     @State private var showingMap = false
+    @State private var showingZones = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Image(systemName: activityTypeIcon)
-                    .font(.title2)
+                    .font(.title3)
                     .foregroundColor(.accentColor)
                 
                 VStack(alignment: .leading, spacing: -1) {
                     Text(activityTypeString)
-                        .font(.headline)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
                     
                     Text(formattedDate)
-                        .font(.footnote)
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 
                 Spacer()
                 
                 Text(formattedDuration)
-                    .font(.headline)
-                    .padding(6)
-                    .background(.accent.opacity(0.2))
-                    .cornerRadius(6)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(.regularMaterial)
+                    .cornerRadius(4)
             }
             .padding(.horizontal)
+            
+            Divider()
+                .padding(.horizontal)
             
             // Stats section
             HStack(spacing: 20) {
@@ -64,13 +71,21 @@ struct WorkoutCard: View {
                 
                 statView(title: "Calories", value: formattedCalories)
                 
-                if workout.workoutActivities.count > 0 {
-                    Divider().frame(height: 30)
-                    statView(title: "Segments", value: "\(workout.workoutActivities.count)")
+                Spacer()
+                
+                Button {
+                    withAnimation {
+                        showingZones.toggle()
+                    }
+                } label: {
+                    Image(systemName: "chart.pie")
                 }
+                .buttonStyle(.plain)
+                .listRowBackground(EmptyView())
+                .listRowInsets(EdgeInsets())
+                .foregroundStyle(.accent)
                 
                 if isOutdoors {
-                    Spacer()
                     Button {
                         withAnimation {
                             showingMap.toggle()
@@ -78,16 +93,13 @@ struct WorkoutCard: View {
                     } label: {
                         Image(systemName: "map")
                     }
+                    .buttonStyle(.plain)
+                    .listRowBackground(EmptyView())
+                    .listRowInsets(EdgeInsets())
+                    .foregroundStyle(.accent)
                 }
             }
             .padding(.horizontal)
-            
-//            if isOutdoors {
-//                if showingMap {
-//                    WorkoutMap(workout: workout)
-//                        .padding(.horizontal)
-//                }
-//            }
         }
         .padding(.vertical, 12)
         .background {
@@ -102,7 +114,10 @@ struct WorkoutCard: View {
         .sheet(isPresented: $showingMap) {
             WorkoutMap(workout: workout, sheetIsShowing: $showingMap)
         }
-
+        .sheet(isPresented: $showingZones) {
+            ZonesOneWorkout(workout: workout, sheetIsShowing: $showingZones)
+                .presentationDetents([.medium])
+        }
     }
     
     // MARK: - Helper Views
@@ -114,7 +129,7 @@ struct WorkoutCard: View {
                 .foregroundColor(.secondary)
             
             Text(value)
-                .font(.subheadline)
+                .font(.footnote)
                 .fontWeight(.semibold)
         }
     }
