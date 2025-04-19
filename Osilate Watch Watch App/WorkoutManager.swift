@@ -339,7 +339,7 @@ struct WorkoutElapsedTime: Codable {
 extension WorkoutManager: CLLocationManagerDelegate {
     func setupLocationManager() {
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager.activityType = .fitness
         locationManager.distanceFilter = 1
         locationManager.allowsBackgroundLocationUpdates = true
@@ -409,17 +409,36 @@ extension WorkoutManager: CLLocationManagerDelegate {
         lastRelativeAltitude = 0
         elevationGain = 0
         elevationLost = 0
+        
+        let elevationChangeThreshold: Double = 0.75 // Minimum change to consider
+        let maxPlausibleDelta: Double = 10.0 // Maximum plausible change (meters) between readings - EXPERIMENT!
 
         altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, error in
             guard let self = self, let data = data, self.isAltimeterActive else { return }
-            let relAlt = data.relativeAltitude.doubleValue // in meters
+
+            let relAlt = data.relativeAltitude.doubleValue
             let delta = relAlt - self.lastRelativeAltitude
-            if delta > 0 {
-                self.elevationGain += delta
-            } else if delta < 0 {
-                self.elevationLost += -delta
+            let absDelta = abs(delta)
+
+            // 1. Check if the change is plausibly large (not an extreme spike)
+            guard absDelta < maxPlausibleDelta else {
+                print("Discarding implausible delta: \(delta)m")
+                // Don't update lastRelativeAltitude here, wait for a more stable reading
+                return
             }
-            self.lastRelativeAltitude = relAlt
+
+            // 2. Check if the (plausible) change exceeds the noise threshold
+            if absDelta > elevationChangeThreshold {
+                if delta > 0 {
+                    self.elevationGain += delta
+                } else {
+                    self.elevationLost += -delta // Add absolute value
+                }
+                
+                // Update lastRelativeAltitude only when a significant AND plausible change is processed
+                self.lastRelativeAltitude = relAlt
+            }
+            // else: Change is plausible but too small (noise), do nothing.
         }
     }
 
