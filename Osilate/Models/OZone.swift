@@ -11,11 +11,11 @@ enum OZone: String, Codable, CaseIterable, Comparable {
    case zero = "0", one = "1", two = "2", three = "3", four = "4", five = "5"
     
     static func < (lhs: OZone, rhs: OZone) -> Bool {
-        let order: [OZone] = [.one, .two, .three, .four, .five]
+        let order: [OZone] = [.zero, .one, .two, .three, .four, .five]
         
         guard let lhsIndex = order.firstIndex(of: lhs),
               let rhsIndex = order.firstIndex(of: rhs) else {
-            return false // Fallback, should not occur with defined cases
+            return false
         }
         
         return lhsIndex < rhsIndex
