@@ -131,7 +131,7 @@ class WorkoutManager: NSObject {
     
     // MARK: - Workout Metrics
     var heartRateSamples: [(timestamp: Date, value: Double)] = []
-    var timeInZones: [OZone: TimeInterval] = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+    var timeInZones: [OZone: TimeInterval] = [.zero: 0, .one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
     var averageHeartRate: Double = 0
     var heartRate: Double = 0
     var activeEnergy: Double = 0
@@ -185,7 +185,7 @@ class WorkoutManager: NSObject {
         guard heartRateSamples.count > 1 else { return }
         
         // Reset timeInZones
-        timeInZones = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+        timeInZones = [.zero: 0, .one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
         
         // Calculate time spent in each zone
         for i in 1..<heartRateSamples.count {
@@ -212,7 +212,7 @@ class WorkoutManager: NSObject {
         workout = nil
         activeEnergy = 0
         heartRateSamples = []
-        timeInZones = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+        timeInZones = [.zero: 0, .one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
         averageHeartRate = 0
         heartRate = 0
         distance = 0

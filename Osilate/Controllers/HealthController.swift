@@ -229,7 +229,7 @@ class HealthController: NSObject {
     var activeEnergy: Double = 0
     var distance: Double = 0
     var heartRateSamples: [(timestamp: Date, value: Double)] = []
-    var timeInZones: [OZone: TimeInterval] = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+    var timeInZones: [OZone: TimeInterval] = [.zero: 0, .one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
     var averageHeartRate: Double = 0
     var heartRate: Double = 0
     var elapsedTimeInterval: TimeInterval = 0
@@ -296,7 +296,7 @@ class HealthController: NSObject {
         guard heartRateSamples.count > 1 else { return }
         
         // Reset timeInZones
-        timeInZones = [.one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
+        timeInZones = [.zero: 0, .one: 0, .two: 0, .three: 0, .four: 0, .five: 0]
         
         // Calculate time spent in each zone
         for i in 1..<heartRateSamples.count {

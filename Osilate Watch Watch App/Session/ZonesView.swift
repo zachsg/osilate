@@ -40,11 +40,30 @@ struct ZonesView: View {
                 workoutManager.heartRate.zoneColor().opacity(0.3)
                 
                 GeometryReader { geometry in
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .foregroundStyle(OZone.zero.color().opacity(0.7))
+                                .frame(width: geometry.size.width * zonePercentage(.zero), height: 26)
+                            
+                            Label {
+                                HStack {
+                                    Text(formatTimeInterval(workoutManager.timeInZones[.zero] ?? 0))
+                                    Spacer()
+                                    if zone == .zero {
+                                        HeartPulse()
+                                    }
+                                }
+                            } icon: {
+                                Image(systemName: "0.circle")
+                            }
+                            .padding(.leading, 2)
+                        }
+                        
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 2)
                                 .foregroundStyle(OZone.one.color().opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.one), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.one), height: 26)
                             
                             Label {
                                 HStack {
@@ -63,7 +82,7 @@ struct ZonesView: View {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(OZone.two.color().opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.two), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.two), height: 26)
                             
                             Label {
                                 HStack {
@@ -82,7 +101,7 @@ struct ZonesView: View {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(OZone.three.color().opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.three), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.three), height: 26)
                             
                             Label {
                                 HStack {
@@ -101,7 +120,7 @@ struct ZonesView: View {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(OZone.four.color().opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.four), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.four), height: 26)
                             
                             Label {
                                 HStack {
@@ -120,7 +139,7 @@ struct ZonesView: View {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
                                 .foregroundStyle(OZone.five.color().opacity(0.7))
-                                .frame(width: geometry.size.width * zonePercentage(.five), height: 28)
+                                .frame(width: geometry.size.width * zonePercentage(.five), height: 26)
                             
                             Label {
                                 HStack {
@@ -139,7 +158,7 @@ struct ZonesView: View {
                     .font(.title3.monospacedDigit().lowercaseSmallCaps())
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .scenePadding()
-                    .padding(.top, 60)
+                    .padding(.top, 50)
                 }
             }
             .ignoresSafeArea()
@@ -158,6 +177,7 @@ struct ZonesView: View {
     private func formatTimeInterval(_ interval: TimeInterval) -> String {
         let minutes = Int(interval) / 60
         let seconds = Int(interval) % 60
+        
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }

@@ -37,6 +37,7 @@ struct SessionPagingView: View {
             .tag(Tab.nowPlaying)
         }
         .navigationTitle(workoutManager.selectedWorkout?.name ?? "")
+//        .navigationTitle(workoutManager.builder?.elapsedTime.secondsAsTime(units: .abbreviated) ?? "")
         .navigationBarBackButtonHidden()
         .toolbar(selection == .nowPlaying ? .hidden : .visible, for: .navigationBar)
         .toolbar {

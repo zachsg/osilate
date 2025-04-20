@@ -67,11 +67,30 @@ struct ZonesView: View {
                         }
                         
                         ScrollView {
-                            VStack(spacing: 4) {
+                            VStack(spacing: 0) {
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .foregroundStyle(OZone.zero.color().opacity(0.7))
+                                        .frame(width: geometry.size.width * zonePercentage(.zero), height: 48)
+                                    
+                                    Label {
+                                        HStack {
+                                            Text(formatTimeInterval(healthController.timeInZones[.zero] ?? 0))
+                                            Spacer()
+                                            if zone == .zero {
+                                                HeartPulse()
+                                            }
+                                        }
+                                    } icon: {
+                                        Image(systemName: "0.circle")
+                                    }
+                                    .padding(.leading, 12)
+                                }
+                                
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 2)
                                         .foregroundStyle(OZone.one.color().opacity(0.7))
-                                        .frame(width: geometry.size.width * zonePercentage(.one), height: 50)
+                                        .frame(width: geometry.size.width * zonePercentage(.one), height: 48)
                                     
                                     Label {
                                         HStack {
@@ -90,7 +109,7 @@ struct ZonesView: View {
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 4)
                                         .foregroundStyle(OZone.two.color().opacity(0.7))
-                                        .frame(width: geometry.size.width * zonePercentage(.two), height: 50)
+                                        .frame(width: geometry.size.width * zonePercentage(.two), height: 48)
                                     
                                     Label {
                                         HStack {
@@ -109,7 +128,7 @@ struct ZonesView: View {
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 4)
                                         .foregroundStyle(OZone.three.color().opacity(0.7))
-                                        .frame(width: geometry.size.width * zonePercentage(.three), height: 50)
+                                        .frame(width: geometry.size.width * zonePercentage(.three), height: 48)
                                     
                                     Label {
                                         HStack {
@@ -128,7 +147,7 @@ struct ZonesView: View {
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 4)
                                         .foregroundStyle(OZone.four.color().opacity(0.7))
-                                        .frame(width: geometry.size.width * zonePercentage(.four), height: 50)
+                                        .frame(width: geometry.size.width * zonePercentage(.four), height: 48)
                                     
                                     Label {
                                         HStack {
@@ -147,7 +166,7 @@ struct ZonesView: View {
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 4)
                                         .foregroundStyle(OZone.five.color().opacity(0.7))
-                                        .frame(width: geometry.size.width * zonePercentage(.five), height: 50)
+                                        .frame(width: geometry.size.width * zonePercentage(.five), height: 48)
                                     
                                     Label {
                                         HStack {

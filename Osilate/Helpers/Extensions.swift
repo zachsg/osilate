@@ -272,6 +272,8 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
     
     if startOrEnd == .start {
         return switch zone {
+        case .zero:
+            0
         case .one:
             Int((Double(maxHr) * 0.5).rounded())
         case .two:
@@ -285,6 +287,8 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
         }
     } else {
         return switch zone {
+        case .zero:
+            Int((Double(maxHr) * 0.5).rounded()) - 1
         case .one:
             Int((Double(maxHr) * 0.6).rounded()) - 1
         case .two:
@@ -302,6 +306,8 @@ func hrZone(_ zone: OZone, at startOrEnd: OZoneStartEnd) -> Int {
 extension Double {
     func zoneRange(for zone: OZone) -> ClosedRange<Double> {
         switch zone {
+        case .zero:
+            return Double(hrZone(.zero, at: .start))...Double(hrZone(.zero, at: .end))
         case .one:
             return Double(hrZone(.one, at: .start))...Double(hrZone(.one, at: .end))
         case .two:
@@ -317,6 +323,10 @@ extension Double {
     
     func zone() -> OZone {
         switch self {
+        case zoneRange(for: .zero):
+            return .zero
+        case zoneRange(for: .one):
+            return .one
         case zoneRange(for: .two):
             return .two
         case zoneRange(for: .three):
@@ -332,6 +342,8 @@ extension Double {
     
     func zoneColor() -> Color {
         switch self {
+        case zoneRange(for: .zero):
+            return .mint
         case zoneRange(for: .one):
             return .green
         case zoneRange(for: .two):
@@ -343,7 +355,7 @@ extension Double {
         case zoneRange(for: .five):
             return .purple
         default:
-            return .gray
+            return .mint
         }
     }
     
@@ -405,6 +417,8 @@ struct ThousandsAbbreviationFormatStyle: FormatStyle {
 extension OZone {
     func color() -> Color {
         switch self {
+        case .zero:
+            return .mint
         case .one:
             return .green
         case .two:
