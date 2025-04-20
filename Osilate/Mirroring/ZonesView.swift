@@ -187,7 +187,7 @@ struct ZonesView: View {
                     .font(.title.monospacedDigit().lowercaseSmallCaps())
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .scenePadding()
+                    .padding(.horizontal)
                 }
             }
         }

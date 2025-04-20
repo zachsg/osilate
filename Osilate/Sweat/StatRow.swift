@@ -59,7 +59,7 @@ struct StatRow<Destination: View, Badge: View>: View {
     }
     
     func content() -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 2) {
             HStack {
                 HStack {
                     Image(systemName: headerImage)
@@ -67,23 +67,19 @@ struct StatRow<Destination: View, Badge: View>: View {
                 }
                 .foregroundStyle(color)
                 
-//                if loading {
-//                    ProgressView()
-//                }
-                
                 Spacer()
                 
                 Text(date, format: date.dateFormat())
                     .foregroundStyle(.tertiary)
             }
-            .font(.footnote.bold())
+            .font(.caption.bold())
             
             HStack {
                 HStack(alignment: units != nil && goal == nil ? .firstTextBaseline : .center, spacing: 0) {
                     Text(((stat * 10).rounded())/10, format: .number)
-                        .font(.title.weight(.semibold))
+                        .font(.title3.weight(.semibold))
 
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 0) {
                         if let goal {
                             VStack(alignment: .leading) {
                                 Text("\(percentComplete(action: stat, goal: goal))")
@@ -101,7 +97,7 @@ struct StatRow<Destination: View, Badge: View>: View {
                             Text(units)
                         }
                     }
-                    .font(.caption.bold())
+                    .font(.caption2.bold())
                     .foregroundStyle(.secondary)
                     .padding(.leading, 2)
                 }

@@ -18,6 +18,7 @@ struct MoveView: View {
     @State private var tab: OTimePeriod = .day
     @State private var animationAmount = 0.0
     @State private var showingInfoAlert = false
+    @State private var viewID = UUID() // To force view updates when tab changes from elsewhere
     
     var movePercent: Double {
         if showToday {
@@ -136,12 +137,13 @@ struct MoveView: View {
                     Tab(value: .week) {
                         StepsCardView(completed: completedWeek, timeFrame: .week)
                     }
-                    
+
                     Tab(value: .month) {
                         StepsCardView(completed: completedMonth, timeFrame: .month)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
+                .id(viewID)
             }
             .refreshable {
                 refresh()
@@ -171,14 +173,9 @@ struct MoveView: View {
             }
         }
         .onChange(of: showToday) { oldValue, newValue in
-            if newValue {
-                withAnimation {
-                    tab = .day
-                }
-            } else {
-                withAnimation {
-                    tab = .week
-                }
+            withAnimation {
+                tab = newValue ? .day : .week
+                viewID = UUID() // Trigger a refresh of TabView
             }
         }
     }
