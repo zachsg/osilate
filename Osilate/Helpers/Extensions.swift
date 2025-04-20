@@ -343,19 +343,19 @@ extension Double {
     func zoneColor() -> Color {
         switch self {
         case zoneRange(for: .zero):
-            return .mint
-        case zoneRange(for: .one):
             return .green
-        case zoneRange(for: .two):
+        case zoneRange(for: .one):
             return .blue
-        case zoneRange(for: .three):
+        case zoneRange(for: .two):
             return .yellow
+        case zoneRange(for: .three):
+            return .orange
         case zoneRange(for: .four):
             return .red
         case zoneRange(for: .five):
             return .purple
         default:
-            return .mint
+            return .clear
         }
     }
     
@@ -418,13 +418,13 @@ extension OZone {
     func color() -> Color {
         switch self {
         case .zero:
-            return .mint
-        case .one:
             return .green
-        case .two:
+        case .one:
             return .blue
-        case .three:
+        case .two:
             return .yellow
+        case .three:
+            return .orange
         case .four:
             return .red
         case .five:

@@ -31,7 +31,7 @@ struct ZonesSection: View {
         var zonesAndMinutes = [ZoneAndMinutes]()
         
         for zone in zoneDurations.keys {
-            if zone != .one {
+            if zone != .zero && zone != .one {
                 let minutes = Int(((zoneDurations[zone] ?? 0) / 60).rounded(toPlaces: 1))
                 let zoneAndMinutes = ZoneAndMinutes(minutes: minutes, zone: zone)
                 
@@ -52,7 +52,7 @@ struct ZonesSection: View {
         var time: TimeInterval = 0
         
         for zone in zoneDurations.keys {
-            if zone != .one {
+            if zone != .zero && zone != .one {
                 time += zoneDurations[zone] ?? 0
             }
         }

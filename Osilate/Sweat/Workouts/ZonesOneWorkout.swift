@@ -33,12 +33,10 @@ struct ZonesOneWorkout: View {
         var zonesAndMinutes = [ZoneAndMinutes]()
         
         for zone in zoneDurations.keys {
-            if zone != .one {
-                let minutes = Int(((zoneDurations[zone] ?? 0) / 60).rounded(toPlaces: 1))
-                let zoneAndMinutes = ZoneAndMinutes(minutes: minutes, zone: zone)
-                
-                zonesAndMinutes.append(zoneAndMinutes)
-            }
+            let minutes = Int(((zoneDurations[zone] ?? 0) / 60).rounded(toPlaces: 1))
+            let zoneAndMinutes = ZoneAndMinutes(minutes: minutes, zone: zone)
+            
+            zonesAndMinutes.append(zoneAndMinutes)
         }
         
         zonesAndMinutes.sort { $0.zone > $1.zone }
@@ -54,9 +52,7 @@ struct ZonesOneWorkout: View {
         var time: TimeInterval = 0
         
         for zone in zoneDurations.keys {
-            if zone != .one {
-                time += zoneDurations[zone] ?? 0
-            }
+            time += zoneDurations[zone] ?? 0
         }
         
         return time == 0
@@ -114,7 +110,7 @@ struct ZonesOneWorkout: View {
                     }
                     .chartYAxis(.hidden)
                     .chartXAxis(.hidden)
-                    .chartForegroundStyleScale([/*"1": OZone.one.color(),*/ OZone.two.rawValue: OZone.two.color(), OZone.three.rawValue: OZone.three.color(), OZone.four.rawValue: OZone.four.color(), OZone.five.rawValue: OZone.five.color()])
+                    .chartForegroundStyleScale([OZone.zero.rawValue: OZone.zero.color(), OZone.one.rawValue: OZone.one.color(), OZone.two.rawValue: OZone.two.color(), OZone.three.rawValue: OZone.three.color(), OZone.four.rawValue: OZone.four.color(), OZone.five.rawValue: OZone.five.color()])
                     .chartLegend(.visible)
                     
                     if loading {
