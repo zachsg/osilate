@@ -341,7 +341,7 @@ extension WorkoutManager: CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager.activityType = .fitness
-        locationManager.distanceFilter = 1
+        locationManager.distanceFilter = 2
         locationManager.allowsBackgroundLocationUpdates = true
         
         // Force the permission dialog to appear immediately
