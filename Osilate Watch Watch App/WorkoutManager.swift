@@ -410,7 +410,7 @@ extension WorkoutManager: CLLocationManagerDelegate {
         elevationGain = 0
         elevationLost = 0
         
-        let elevationChangeThreshold: Double = 0.5 // Minimum change to consider
+        let elevationChangeThreshold: Double = 1.5 // Minimum change to consider
         let maxPlausibleDelta: Double = 5.0 // Maximum plausible change (meters) between readings - EXPERIMENT!
 
         altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, error in
