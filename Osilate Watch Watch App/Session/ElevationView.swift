@@ -21,7 +21,11 @@ struct ElevationView: View {
             
             VStack(alignment: .leading) {
                 Label {
-                    Text(formattedElevation(elevation))
+                    if workoutManager.elevationStart < 0 {
+                        Text("Calibrating...")
+                    } else {
+                        Text(formattedElevation(elevation))
+                    }
                 } icon: {
                     Text("   Elev.   ")
                         .font(.caption2)

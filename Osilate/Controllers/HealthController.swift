@@ -2571,6 +2571,7 @@ extension HealthController: HKWorkoutSessionDelegate {
         case .running:
             self.isMirroring = true
         case .ended, .stopped:
+            self.mirroredSession = nil
             self.isMirroring = false
         default:
             return

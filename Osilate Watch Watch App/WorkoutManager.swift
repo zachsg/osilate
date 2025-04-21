@@ -221,6 +221,7 @@ class WorkoutManager: NSObject {
         elevationStart = -1
         elevationGain = 0
         elevationLost = 0
+        isOutdoors = false
     }
     
     // MARK: - Location
@@ -228,6 +229,13 @@ class WorkoutManager: NSObject {
     var locations: [CLLocation] = []
     private let altimeter = CMAltimeter()
     private var isAltimeterActive = false
+    private let maxPlausibleRawDelta: Double = 5.0 // Max plausible raw change between consecutive readings (meters)
+    private let movingAverageWindowSize: Int = 3 // Number of readings to average (Experiment: 3-5)
+    private var altitudeBuffer: [Double] = []   // Stores recent relative altitudes
+    private var previousSmoothedAltitude: Double? = nil // Stores the average from the *last* calculation
+
+    // Threshold for the *smoothed* delta (can likely be smaller now)
+    let smoothedDeltaThreshold: Double = 0.3
 }
 
 // MARK: - HKWorkoutSessionDelegate
@@ -405,40 +413,88 @@ extension WorkoutManager: CLLocationManagerDelegate {
             return
         }
         
+        // Reset state
         isAltimeterActive = true
-        lastRelativeAltitude = 0
+        lastRelativeAltitude = 0 // Still useful for the raw spike check
         elevationGain = 0
         elevationLost = 0
-        
-        let elevationChangeThreshold: Double = 1.5 // Minimum change to consider
-        let maxPlausibleDelta: Double = 5.0 // Maximum plausible change (meters) between readings - EXPERIMENT!
+        altitudeBuffer.removeAll()
+        previousSmoothedAltitude = nil
 
         altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, error in
             guard let self = self, let data = data, self.isAltimeterActive else { return }
 
-            let relAlt = data.relativeAltitude.doubleValue
-            let delta = relAlt - self.lastRelativeAltitude
-            let absDelta = abs(delta)
+            let currentRawAltitude = data.relativeAltitude.doubleValue
+            let rawDelta = currentRawAltitude - self.lastRelativeAltitude // For spike check
 
-            // 1. Check if the change is plausibly large (not an extreme spike)
-            guard absDelta < maxPlausibleDelta else {
-                print("Discarding implausible delta: \(delta)m")
-                // Don't update lastRelativeAltitude here, wait for a more stable reading
+            // --- 1. Raw Spike Check ---
+            // Still useful to discard truly massive instant jumps before they enter the average
+            guard abs(rawDelta) < self.maxPlausibleRawDelta else {
+                print("Discarding implausible raw delta: \(rawDelta)m")
+                // Don't update lastRelativeAltitude yet, wait for a less spikey reading
+                return
+            }
+            // Update lastRelativeAltitude *after* raw spike check passes
+            self.lastRelativeAltitude = currentRawAltitude
+            // --- End Raw Spike Check ---
+
+
+            // --- 2. Moving Average Calculation ---
+            // Add current reading to buffer
+            self.altitudeBuffer.append(currentRawAltitude)
+
+            // Keep buffer size limited
+            if self.altitudeBuffer.count > self.movingAverageWindowSize {
+                self.altitudeBuffer.removeFirst()
+            }
+
+            // Only proceed if buffer is full enough for a meaningful average
+            guard self.altitudeBuffer.count == self.movingAverageWindowSize else {
+                // Buffer not full yet, wait for more data
+                // Optional: Set initial previousSmoothedAltitude once buffer is full for the first time
+                if self.altitudeBuffer.count == self.movingAverageWindowSize && self.previousSmoothedAltitude == nil {
+                     self.previousSmoothedAltitude = self.altitudeBuffer.reduce(0, +) / Double(self.movingAverageWindowSize)
+                }
                 return
             }
 
-            // 2. Check if the (plausible) change exceeds the noise threshold
-            if absDelta > elevationChangeThreshold {
-                if delta > 0 {
-                    self.elevationGain += delta
-                } else {
-                    self.elevationLost += -delta // Add absolute value
-                }
-                
-                // Update lastRelativeAltitude only when a significant AND plausible change is processed
-                self.lastRelativeAltitude = relAlt
+            // Calculate current smoothed altitude (average)
+            let currentSmoothedAltitude = self.altitudeBuffer.reduce(0, +) / Double(self.movingAverageWindowSize)
+
+            // Ensure we have a previous average to compare against
+            guard let prevSmoothedAlt = self.previousSmoothedAltitude else {
+                 // This should ideally only happen once after the buffer fills
+                 self.previousSmoothedAltitude = currentSmoothedAltitude
+                 return
             }
-            // else: Change is plausible but too small (noise), do nothing.
+
+            let smoothedDelta = currentSmoothedAltitude - prevSmoothedAlt
+            let absSmoothedDelta = abs(smoothedDelta)
+            // --- End Moving Average Calculation ---
+
+
+            // --- 3. Apply Logic to Smoothed Delta ---
+            if absSmoothedDelta > self.smoothedDeltaThreshold {
+                 print("Smoothed Delta (\(String(format: "%.2f", smoothedDelta))m) exceeds threshold (\(self.smoothedDeltaThreshold)m).") // Debugging
+                if smoothedDelta > 0 {
+                    // Accumulate the smoothed change, NOT the raw delta
+                    self.elevationGain += smoothedDelta
+                     print("  Adding Smoothed Gain: \(String(format: "%.2f", smoothedDelta))m -> Total Gain: \(String(format: "%.2f", self.elevationGain))m")
+                } else {
+                    self.elevationLost += -smoothedDelta // Add absolute value
+                     print("  Adding Smoothed Loss: \(String(format: "%.2f", -smoothedDelta))m -> Total Loss: \(String(format: "%.2f", self.elevationLost))m")
+                }
+            } else {
+                 // Smoothed delta is too small, likely noise that the average dampened.
+                 // print("Smoothed Delta (\(String(format: "%.2f", smoothedDelta))m) is below threshold.") // Debugging
+            }
+            // --- End Apply Logic ---
+
+
+            // --- 4. Update Previous Smoothed Altitude ---
+            // Update for the *next* iteration's comparison
+            self.previousSmoothedAltitude = currentSmoothedAltitude
+            // --- End Update ---
         }
     }
 
